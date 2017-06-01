@@ -118,7 +118,7 @@ namespace NullSpace.SDK
 		/// <param name="camera">The camera to hide the body from. Calls camera.HideLayer(int)</param>
 		/// <param name="hapticObjectLayer">The layer that is removed from the provided camera's culling mask.</param>
 		/// <returns>The created body mimic</returns>
-		public static BodyMimic Initialize(Camera camera = null, int hapticObjectLayer = 31)
+		public static BodyMimic Initialize(Camera camera = null, int hapticObjectLayer = NSManager.HAPTIC_LAYER)
 		{
 			GameObject go = Resources.Load<GameObject>("Body Mimic");
 

@@ -194,21 +194,45 @@ namespace NullSpace.SDK
 				}
 				return null;
 			}
+
+			public void SetAllVisibility(bool revealed)
+			{
+				if (regions != null)
+				{
+					return;
+				}
+
+				for (int i = 0; i < regions.Count; i++)
+				{
+					SetVisiblity(revealed, regions[i]);
+				}
+			}
+			private void SetVisiblity(bool revealed, GameObject region)
+			{
+				if (region != null)
+				{
+					MeshRenderer rend = region.GetComponent<MeshRenderer>();
+					if (rend != null)
+					{
+						rend.enabled = revealed;
+					}
+				}
+			}
 		}
 
 		[SerializeField]
 		public PlayerTorso playerTorso;
-		[SerializeField]
-		public PlayerArm LeftArm;
-		[SerializeField]
-		public PlayerArm RightArm;
+		//[SerializeField]
+		//public PlayerArm LeftArm;
+		//[SerializeField]
+		//public PlayerArm RightArm;
 
-		public enum BodyLocation { Front, BackLeft, BackRight, LeftSide, RightSide }
-		public BodyLocation myLocation = BodyLocation.Front;
+		//public enum BodyLocation { Front, BackLeft, BackRight, LeftSide, RightSide }
+		//public BodyLocation myLocation = BodyLocation.Front;
 		/// <summary>
 		/// This gets an existing PlayerBody in the scene. If none exists, it will attempt to Initialize the BodyMimic functionality.
 		/// 
-		/// It is suggested to call HideLayer(31) on your game's cameras (to hide the visual colliders)
+		/// It is suggested to call HideLayer(NSManager.HAPTIC_LAYER) on your game's cameras (to hide the visual colliders)
 		/// </summary>
 		/// <returns></returns>
 		public static PlayerBody Find()
@@ -317,7 +341,7 @@ namespace NullSpace.SDK
 			//Debug.Log("closest: " + closest.name + "\n");
 			if (closest != null && closest.GetComponent<HapticLocation>() != null)
 			{
-				return closest.GetComponent<HapticLocation>().MyLocation;
+				return closest.GetComponent<HapticLocation>().Where;
 			}
 			Debug.LogError("Could not find the closest pad. Returning an empty location\n" + closest.name);
 			return AreaFlag.None;

@@ -28,7 +28,7 @@ namespace NullSpace.SDK
 			if (Input.GetKeyDown(KeyCode.F4))
 			{
 				//This sets up a base body. It hands in the camera and the layer to hide.
-				BodyMimic.Initialize(Camera.main, 31);
+				BodyMimic.Initialize(Camera.main, NSManager.HAPTIC_LAYER);
 			}
 			#endregion
 			#region Setup Camera Mimic

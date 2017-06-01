@@ -24,6 +24,8 @@ namespace NullSpace.SDK
 	/// </summary>
 	public sealed class NSManager : MonoBehaviour
 	{
+		public const int HAPTIC_LAYER = 31;
+
 		#region Public Events 
 		/// <summary>
 		/// Raised when a suit disconnects
