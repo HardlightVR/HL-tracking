@@ -160,9 +160,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   typeOfCollision: 3
-  ImpactArea: 1.5
+  BigImpactArea: 0.35
   CanCollide: 1
   DestroyAfterCollision: 1
+  DestroyDelay: 1.5
   rootObject: {fileID: 0}
 --- !u!135 &135000013559967526
 SphereCollider:

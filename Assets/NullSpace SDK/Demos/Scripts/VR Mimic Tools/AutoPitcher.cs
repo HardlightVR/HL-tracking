@@ -5,10 +5,30 @@ namespace NullSpace.SDK.Demos
 {
 	public class AutoPitcher : MonoBehaviour
 	{
-		Vector2 pitchFrequency = new Vector2(.40f, 1.6f);
-		Vector2 spawnRange = new Vector2(25f, 35f);
-		Vector2 pitchSpeed = new Vector2(35f, 60f);
-		public bool pitching = false;
+		/// <summary>
+		/// The elapsed duration range between pitches (sometimes it'll be longer, sometimes shorter)
+		/// </summary>
+		Vector2 pitchFrequencyRange = new Vector2(.40f, 1.6f);
+		/// <summary>
+		/// The range of spawn distances for new meteors.
+		/// </summary>
+		Vector2 spawnDistRange = new Vector2(25f, 35f);
+		/// <summary>
+		/// The range of pitch speeds.
+		/// Note: Projectiles of higher indices get a bit of speed upping
+		/// </summary>
+		Vector2 pitchSpeedRange = new Vector2(35f, 60f);
+
+		/// <summary>
+		/// Set to false to cancel pitching.
+		/// Setting to true will not resume pitching (probably not important for this sample code)
+		/// </summary>
+		public bool Pitching = false;
+		/// <summary>
+		/// Controls if the AutoPitcher will accidentally shoot at an incorrect non-body position.
+		/// </summary>
+		public bool CanMiss = false;
+
 		private int counter = 0;
 		private int levelUpCounter = 20;
 		private int level = 0;
@@ -30,17 +50,19 @@ namespace NullSpace.SDK.Demos
 
 		IEnumerator AutoPitch()
 		{
+			//Delay our start so the VRMimic/BodyMimic can get initialized.
 			yield return new WaitForSeconds(1);
-			pitching = true;
-			while (pitching)
+			Pitching = true;
+			while (Pitching)
 			{
-				yield return new WaitForSeconds(Random.Range(pitchFrequency.x, pitchFrequency.y));
+				yield return new WaitForSeconds(Random.Range(pitchFrequencyRange.x, pitchFrequencyRange.y));
 				Pitch();
 			}
 		}
 
 		private void Update()
 		{
+			//Testing to force individual pitch types.
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
 				Pitch(0);
@@ -107,25 +129,46 @@ namespace NullSpace.SDK.Demos
 			//Shoot the projectile towards the player.
 			Rigidbody rb = go.GetComponent<Rigidbody>();
 
+			//Find the world position of the target (a random node)
 			Vector3 target = HardlightSuit.Find().FindRandomLocation().transform.position;
 
-			if (Random.Range(0, 50) > 40)
+			if (CanMiss)
 			{
-				target += Vector3.right * Random.Range(-0.5f, 0.5f);
-				target += Vector3.forward * Random.Range(-0.5f, 0.5f);
+				//A fifth of the time
+				if (Random.Range(0, 50) > 40)
+				{
+					//We'll random miss the player.
+					target += Vector3.right * Random.Range(-0.5f, 0.5f);
+					target += Vector3.forward * Random.Range(-0.5f, 0.5f);
+				}
 			}
-			Debug.DrawLine(go.transform.position, target, Color.red, 5.0f);
-			rb.AddForce((target - go.transform.position) * Random.Range(pitchSpeed.x, pitchSpeed.y) * (1 + index) / 4.0f);
 
+			//Draw a line to show where it's going.
+			Debug.DrawLine(go.transform.position, target, Color.red, 8.0f);
+
+			if (rb != null)
+			{
+				//Add some force to send the projectile on it's way.
+				float speed = Random.Range(pitchSpeedRange.x, pitchSpeedRange.y) * ((1 + index) / 4.0f);
+				rb.AddForce((target - go.transform.position) * speed);
+			}
+
+			//Track the amount of pitches we've made
 			counter++;
 
+			//When we've pitched enough
 			if (counter > levelUpCounter)
 			{
+				//Up the experience intensity
 				Escalate();
 			}
 		}
 
-		//So the experience gets more intense over time?
+		/// <summary>
+		/// Escalate the experience over time
+		/// Ups the pitch speeds and frequencies.
+		/// Level is also used to control which projectiles get used.
+		/// </summary>
 		void Escalate()
 		{
 			//Level controls
@@ -133,12 +176,12 @@ namespace NullSpace.SDK.Demos
 			levelUpCounter += 5;
 
 			//Firing frequency
-			pitchFrequency.x = Mathf.Clamp(pitchFrequency.x - .03f, .2f, 5);
-			pitchFrequency.y = Mathf.Clamp(pitchFrequency.y - .06f, .5f, 5);
+			pitchFrequencyRange.x = Mathf.Clamp(pitchFrequencyRange.x - .03f, .2f, 5);
+			pitchFrequencyRange.y = Mathf.Clamp(pitchFrequencyRange.y - .06f, .5f, 5);
 
 			//Firing speeds (slowly creeps into bigger ranges)
-			pitchSpeed.x += 2;
-			pitchSpeed.y += 3;
+			pitchSpeedRange.x += 2;
+			pitchSpeedRange.y += 3;
 
 			//Display the level up effect.
 			EscalateEffect.Play();
@@ -155,12 +198,11 @@ namespace NullSpace.SDK.Demos
 
 			Vector3 fwd = camTransform.forward;
 			fwd.y = 0;
-			
+
 			//We never fire from below or behind the player.
-			return (fwd * Random.Range(spawnRange.x, spawnRange.y) +
+			return (fwd * Random.Range(spawnDistRange.x, spawnDistRange.y) +
 						Random.Range(-20, 20) * camTransform.right +
 						Random.Range(3, 25) * camTransform.up);
 		}
-
 	}
 }

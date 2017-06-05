@@ -10,30 +10,66 @@ namespace NullSpace.SDK
 		[Header("Body Hang Origin")]
 		public GameObject hmd;
 
-		[Range(0, .35f)]
-		public float TiltAmtWithHMD = 0.0f;
+		/// <summary>
+		/// [Not currently in use]
+		/// This is stub code for future tracking improvements that allow the body to tilt with the HMD (left/right, forward/backward)
+		/// For more information, look into CalculateHMDTilt()
+		/// </summary>
+		//[Range(0, .35f)]
+		//public float TiltAmtWithHMD = 0.0f;
 
+		/// <summary>
+		/// Big surprise, your body is below your head and neck. 
+		/// This lets you adjust the body position. You might want to configure this as a game option/calibration step
+		/// for players of different body distributions (long neck vs young with shorter neck vs giraffes)
+		/// </summary>
 		[Header("How far down the body is from HMD")]
 		[Range(-2, 2)]
 		public float NeckVerticalAnchor = .25f;
 
+		/// <summary>
+		/// The body is locked a bit back from where the HMD's position will be. 
+		/// This controls how far forward or backward.
+		/// </summary>
 		[Header("How far fwd or back the body is")]
 		[Range(-2, 2)]
 		public float NeckFwdAnchor = 0;
 
+		/// <summary>
+		/// This lets you configure a different position when this box is checked. Useful to simulate human height when your Vive/Oculus/HMD is on your desk.
+		/// </summary>
+		[Header("For when your HMD is on your desk")]
 		public bool UseDevHeight = false;
 		public float devHeightPercentage = -0.15f;
 
+		/// <summary>
+		/// The direction the headset currently thinks is forward (regardless of overtilt up or down)
+		/// Flattens the fwd vector onto the XZ plane. Then switches to using the Up/Down vector on the XZ plane if looking too far down or too far up.
+		/// </summary>
 		public Vector3 assumedForward = Vector3.zero;
 		public Vector3 LastUpdatedPosition = Vector3.zero;
 
-		private float updateRate = .15f;
+		/// <summary>
+		/// The internal control of updateRate
+		/// This could be temporarily increased/decreased based on context.
+		/// </summary>
+		private float updateRate;
 
-		public float TimeSinceUpdate = .2f;
+		/// <summary>
+		/// This controls how rigidly the body follows the HMD's position and orientation
+		/// </summary>
+		private float TargetUpdateRate = .15f;
+
 		private float UpdateDuration = .75f;
 		private float UpdateCounter = .2f;
+		/// <summary>
+		/// Where the BodyMimic should be (for lerping)
+		/// </summary>
 		Vector3 targetPosition;
 
+		/// <summary>
+		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
+		/// </summary>
 		[Header("Exceed this val to force update")]
 		public float SnapUpdateDist = 1.0f;
 		private Vector3 LastRelativePosition;
@@ -41,6 +77,11 @@ namespace NullSpace.SDK
 		//[Header("Floor Evaluation")]
 		//public bool UseHeadRaycasting = false;
 		//public LayerMask validFloorLayers = ~((1 << 2) | (1 << 9) | (1 << 10) | (1 << 12) | (1 << 13) | (1 << 15));
+
+		private void Awake()
+		{
+			updateRate = TargetUpdateRate;
+		}
 
 		void FixedUpdate()
 		{
@@ -78,7 +119,7 @@ namespace NullSpace.SDK
 				LastUpdatedPosition = hmd.transform.position;
 
 				//We reset the update rate. The core of this logic was to have certain criteria that used a higher update rate (so we would get closer to the next update quicker)
-				updateRate = .15f;
+				updateRate = TargetUpdateRate;
 			}
 
 			//float prog = UpdateDuration - UpdateCounter;
@@ -110,6 +151,37 @@ namespace NullSpace.SDK
 		void ImmediateUpdate()
 		{
 			transform.position = hmd.transform.position + LastRelativePosition;
+		}
+
+		/// <summary>
+		/// [Unused Stub]
+		/// This function is pseudocode for a future feature - calculating body mimic's tilt based on the headset orientation/recent movement
+		/// </summary>
+		void CalculateHMDTilt()
+		{
+			//Look at the orientation of the HMD.
+			//Case 1: Standing Straight
+			//		No behavior change
+			//
+			//
+			//
+			//Case 2: Look Left/Right (Only Y Axis Rotation)
+			//
+			//
+			//Case 3: Look Up/Down (Only X axis Rotation)
+			//		Check for change in local Y position
+			//			If Y decreased recently, they might be peering down and leaning over.
+			//			TILT Forward around Body's Right vector
+			//
+			//
+			//Case 4: Confused Tilt Left/Right (Only Z axis Rotation)
+			//		Check for change in local X vector (their right)
+			//			If they moved in their local X space recently, they might be peaking around a corner
+			//			TILT L/R around Body's Fwd vector
+			//
+			//Case 5: [Multiple cases at once]
+			//		Due to the complex nature of these steps, it might be better to define each as their own operation that influences the end body orientation, and apply them separately. There will obviously be weird cases from the player doing handstands or cartwheels.
+			//
 		}
 
 		/// <summary>
