@@ -124,7 +124,6 @@ namespace NullSpace.SDK.Editor
 			{
 				if (MyDefinition == null)
 				{
-					Undo.RecordObject(MyDefinition, "Creation of the Definition");
 					MyDefinition = ScriptableObject.CreateInstance<SuitDefinition>();
 					MyDefinition.Init();
 				}
@@ -230,7 +229,7 @@ namespace NullSpace.SDK.Editor
 			}
 			void SuitRootObjectField(GUILayoutOption[] options)
 			{
-				GUIContent content = new GUIContent("Suit Root (Optional)", "For modifying an existing configuration. In the future this will try to find the related objects based on common naming conventions.");
+				GUIContent content = new GUIContent("Suit Root", "For modifying an existing configuration. In the future this will try to find the related objects based on common naming conventions.");
 
 				myPane.TutorialHighlight(2, () =>
 				{
@@ -431,7 +430,7 @@ namespace NullSpace.SDK.Editor
 				string output = string.Empty;
 				string tooltip = "This will create Suit components on" + (MyDefinition.AddChildObjects ? " children of the selected objects" : " the selected objects");
 				GUIContent content = new GUIContent("Create HardlightCollider", tooltip);
-				bool OperationForbidden = CountValidSuitHolders() < 1;
+				bool OperationForbidden = CountValidSuitHolders() < 1 && MyDefinition.HasRoot;
 				bool Result = false;
 
 				myPane.TutorialHighlight(7, () =>
@@ -526,7 +525,10 @@ namespace NullSpace.SDK.Editor
 				return validCount;
 			}
 
+			void TransplantSuitDefinitionToHardlightSuit()
+			{
 
+			}
 			#endregion
 
 			#region Processing Functions
@@ -582,10 +584,13 @@ namespace NullSpace.SDK.Editor
 			{
 				if (hardlightSuit != null)
 				{
+					//Assign the visible suit root.
+					MyDefinition.SuitRoot = hardlightSuit.gameObject;
+
 					//ERROR: This isn't an actual valid check yet.
 					if (hardlightSuit.Definition.CountValidZoneHolders() <= 0)
 					{
-						hardlightSuit.EnsureInit();
+						hardlightSuit.CheckListValidity();
 
 						MyDefinition.ZoneHolders = hardlightSuit.ZoneHolders.ToList();
 						MyDefinition.SceneReferences = hardlightSuit.SceneReferences.ToList();
@@ -595,7 +600,6 @@ namespace NullSpace.SDK.Editor
 					}
 					else
 					{
-						MyDefinition.SuitRoot = hardlightSuit.gameObject;
 						//This field is populated when the Definition is created.
 						//MyDefinition.DefinedAreas = hardlightSuit.Definition.DefinedAreas.ToList();
 						MyDefinition.ZoneHolders = hardlightSuit.Definition.ZoneHolders.ToList();
@@ -896,8 +900,8 @@ namespace NullSpace.SDK.Editor
 				HardlightSuit suit = GetRootHardlightSuitComponent();
 				if (suit)
 				{
-					bool userResult = EditorUtility.DisplayDialog("Remove HardlightSuit Component", "Delete Hardlight Suit Definition\n(Stores a SuitDefinition for fast reimplementation)", "Remove", "Cancel");
-					if (userResult)
+					bool userResult = EditorUtility.DisplayDialog("Remove HardlightSuit Component", "Delete Hardlight Suit Definition\n(Stores a SuitDefinition for fast reimplementation)", "Don't Remove", "Remove");
+					if (!userResult)
 					{
 						DeleteHardlightSuitComponent(suit);
 					}
@@ -946,6 +950,8 @@ namespace NullSpace.SDK.Editor
 			mat = Resources.Load<Material>("EditorIcon");
 
 			List<HardlightSuit> existingDefinitions = FindObjectsOfType<HardlightSuit>().ToList();
+
+			//Debug.Log("Found: " + existingDefinitions.Count + "\n");
 
 			EditorSuitConfig suit = null;
 

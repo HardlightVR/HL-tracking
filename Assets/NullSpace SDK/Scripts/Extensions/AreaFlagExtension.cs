@@ -17,9 +17,9 @@
 
 		public static bool IsSingleArea(this AreaFlag baseFlag)
 		{
-			return baseFlag.NumberOfAreas() == 1;
+			return baseFlag.AreaCount() == 1;
 		}
-		public static int NumberOfAreas(this AreaFlag baseFlag)
+		public static int AreaCount(this AreaFlag baseFlag)
 		{
 			//This is credited as the Hamming Weight, Popcount or Sideways Addition.
 			//Source: Stack Overflow
