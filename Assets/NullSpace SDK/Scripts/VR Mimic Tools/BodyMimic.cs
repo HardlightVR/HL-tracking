@@ -202,10 +202,13 @@ namespace NullSpace.SDK
 
 			if (newMimic != null)
 			{
+				GameObject cameraObject = camera == null ? Camera.main.gameObject : camera.gameObject;
+				MimickedObjects objs = VRObjectMimic.Get(cameraObject);
+
 				//Set the BodyMimic's target to the VRObjectMimic
 				mimic = newMimic.GetComponent<BodyMimic>();
-				mimic.hmd = VRObjectMimic.Holder.VRCamera.gameObject;
-				mimic.transform.SetParent(VRObjectMimic.Holder.Root.transform);
+				mimic.hmd = objs.VRCamera.gameObject;
+				mimic.transform.SetParent(VRObjectMimic.Get(cameraObject).Root.transform);
 			}
 
 			if (camera != null)

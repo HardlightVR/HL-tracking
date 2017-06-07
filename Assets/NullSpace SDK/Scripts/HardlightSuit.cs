@@ -215,7 +215,7 @@ namespace NullSpace.SDK
 				body.Init();
 				return body;
 			}
-			VRMimic.Initialize(true);
+			VRMimic.Initialize();
 
 			body = FindObjectOfType<HardlightSuit>();
 			if (body != null)

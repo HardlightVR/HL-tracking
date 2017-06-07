@@ -87,16 +87,16 @@ namespace NullSpace.SDK
 			if (Input.GetKeyDown(KeyCode.F11))
 			{
 				AreaFlag flag = (AreaFlag.All_Areas).RemoveArea(AreaFlag.Back_Both);
-				Debug.Log(flag.AreaCount() + "\n" + flag.IsSingleArea());
+				Debug.Log(flag.NumberOfAreas() + "\n" + flag.IsSingleArea());
 
 				flag = AreaFlag.Back_Both;
-				Debug.Log(flag.AreaCount() + "\n" + flag.IsSingleArea());
+				Debug.Log(flag.NumberOfAreas() + "\n" + flag.IsSingleArea());
 
 				flag = AreaFlag.Right_All;
-				Debug.Log(flag.AreaCount() + "\n" + flag.IsSingleArea());
+				Debug.Log(flag.NumberOfAreas() + "\n" + flag.IsSingleArea());
 
 				flag = AreaFlag.Mid_Ab_Left;
-				Debug.Log(flag.AreaCount() + "\n" + flag.IsSingleArea());
+				Debug.Log(flag.NumberOfAreas() + "\n" + flag.IsSingleArea());
 			}
 			#endregion
 		}
@@ -106,7 +106,7 @@ namespace NullSpace.SDK
 			yield return new WaitForSeconds(.5f);
 
 			//This sets up a base body. It hands in the camera and the layer to hide.
-			VRMimic.Initialize(true);
+			VRMimic.Initialize();
 		}
 	}
 }

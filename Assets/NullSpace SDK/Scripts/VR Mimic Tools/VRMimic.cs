@@ -23,7 +23,7 @@ namespace NullSpace.SDK
 
 					if (instance == null)
 					{
-						Initialize(true);
+						Initialize();
 					}
 					else
 					{
@@ -39,7 +39,14 @@ namespace NullSpace.SDK
 		private bool initialized = false;
 		public VRObjectMimic VRCamera
 		{
-			get { return VRObjectMimic.Holder.VRCamera; }
+			get
+			{
+				if (!initialized)
+				{
+					Debug.LogError("VRMimic not yet initialized before attempting to get the VRCamera. Will attempt setup assuming Camera.main is the VR Camera.");
+				}
+				return VRObjectMimic.Get().VRCamera;
+			}
 		}
 
 		private void Init(bool UseBodyMimic = true, Camera vrCamera = null, int hapticLayer = NSManager.HAPTIC_LAYER)
@@ -60,7 +67,7 @@ namespace NullSpace.SDK
 			Init();
 		}
 
-		public static void Initialize(bool UseBodyMimic, Camera vrCamera = null, int hapticLayer = NSManager.HAPTIC_LAYER)
+		public static void Initialize(Camera vrCamera = null, int hapticLayer = NSManager.HAPTIC_LAYER)
 		{
 			GameObject singleton = new GameObject();
 			instance = singleton.AddComponent<VRMimic>();

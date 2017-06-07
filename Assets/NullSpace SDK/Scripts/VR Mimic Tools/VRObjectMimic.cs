@@ -6,16 +6,13 @@ namespace NullSpace.SDK
 	public class VRObjectMimic : MonoBehaviour
 	{
 		private static MimickedObjects _holder;
-		public static MimickedObjects Holder
+		public static MimickedObjects Get(GameObject coreCamera = null)
 		{
-			get
+			if (_holder == null)
 			{
-				if (_holder == null)
-				{
-					_holder = Initialize();
-				}
-				return _holder;
+				_holder = Initialize(coreCamera);
 			}
+			return _holder;
 		}
 
 		public GameObject ObjectToMimic;
@@ -53,11 +50,21 @@ namespace NullSpace.SDK
 			transform.localScale = ObjectToMimic.transform.localScale + ScaleMultiplier;
 		}
 
-		public static MimickedObjects Initialize()
+		public static MimickedObjects Initialize(GameObject CameraToMimic = null)
 		{
-			//Find the headset and each of the controllers
-			SteamVR_Camera camera = FindObjectOfType<SteamVR_Camera>();
-			//var controllers = FindObjectsOfType<SteamVR_Controller>();
+			if (CameraToMimic == null)
+			{
+				//Find the headset and each of the controllers
+				//		This solution is the most efficient, but couples us to steam vr.
+				//		CameraToMimic = FindObjectOfType<SteamVR_Camera>().gameObject;
+
+				//		Controller stub code
+				//		var controllers = FindObjectsOfType<SteamVR_Controller>();
+
+				//We assume the main camera is the VR Camera.
+				CameraToMimic = Camera.main.gameObject;
+			}
+
 
 			MimickedObjects mimickingObjects = new MimickedObjects();
 
@@ -69,15 +76,15 @@ namespace NullSpace.SDK
 			go.transform.SetParent(parent.transform);
 			go.name = "Camera Mimic";
 			mimickingObjects.VRCamera = go.AddComponent<VRObjectMimic>();
-			mimickingObjects.VRCamera.Init(camera.gameObject);
+			mimickingObjects.VRCamera.Init(CameraToMimic);
 			mimickingObjects.VRCamera.MimickedObjectType = MimickedObject.Camera;
-			
+
 			//mimickingObjects.ControllerA = controllers.First();
 			//mimickingObjects.ControllerB = controllers.Last();
 
 			_holder = mimickingObjects;
 
-			return Holder;
+			return Get(CameraToMimic);
 		}
 	}
 

@@ -30,7 +30,7 @@ namespace NullSpace.SDK
 		{
 			if (!origin.IsSingleArea())
 			{
-				Debug.LogError("Invalid AreaFlag Provided: Origin is [" + origin.AreaCount() + "] area(s).\n\tImpulse Generator only supports single area flag values.\n");
+				Debug.LogError("Invalid AreaFlag Provided: Origin is [" + origin.NumberOfAreas() + "] area(s).\n\tImpulse Generator only supports single area flag values.\n");
 				return null;
 			}
 
@@ -82,7 +82,7 @@ namespace NullSpace.SDK
 		{
 			if (!origin.IsSingleArea() || !destination.IsSingleArea())
 			{
-				Debug.LogError("Invalid AreaFlag Provided: Origin is [" + origin.AreaCount() + "] area(s) and Destination is [" + destination.AreaCount() + "] area(s).\n\tImpulse Generator only supports single area flag values.\n");
+				Debug.LogError("Invalid AreaFlag Provided: Origin is [" + origin.NumberOfAreas() + "] area(s) and Destination is [" + destination.NumberOfAreas() + "] area(s).\n\tImpulse Generator only supports single area flag values.\n");
 				return null;
 			}
 			CreateImpulse creation = delegate (float attenuation, float totalLength, HapticSequence seq)

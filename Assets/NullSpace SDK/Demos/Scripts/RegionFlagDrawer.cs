@@ -31,7 +31,6 @@ public class RegionFlagsAttributeDrawer : PropertyDrawer
 		int buttonsIntValue = _property.intValue;
 		int enumLength = _property.enumNames.Length;
 		int buttonCount = CountValidEntries(_property) + 4;
-		//int bothCount = _property.enumNames.Where(x => x.Contains("Both")).Count();
 		bool[] buttonPressed = new bool[enumLength];
 		bool[] pressedLastFrame = new bool[enumLength];
 		float buttonWidth = EditorGUIUtility.currentViewWidth - (EditorGUIUtility.labelWidth + EditorGUIUtility.fieldWidth);
@@ -43,7 +42,6 @@ public class RegionFlagsAttributeDrawer : PropertyDrawer
 				buttonWidth,
 				20);
 
-		//GUIStyle gStyle = new GUIStyle(GUI.skin.button);
 		FoldoutOpened = EditorGUI.Toggle(buttonPos, (FoldoutOpened ? "Hide Areas" : "Show Areas"), FoldoutOpened);
 
 		int offset = 0;

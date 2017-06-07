@@ -111,9 +111,9 @@ namespace NullSpace.SDK.Editor
 				else
 				{
 					myPane.IsTutorialStep(myPane.IsStepWithinRange(1, 8), () =>
-					 {
-						 NSEditorStyles.DrawLabel("Expand this foldout to continue!", 105, 14);
-					 });
+					{
+						NSEditorStyles.DrawLabel("Expand this foldout to continue!", 105, 14);
+					});
 				}
 				#endregion
 
@@ -525,10 +525,7 @@ namespace NullSpace.SDK.Editor
 				return validCount;
 			}
 
-			void TransplantSuitDefinitionToHardlightSuit()
-			{
 
-			}
 			#endregion
 
 			#region Processing Functions
@@ -997,9 +994,9 @@ namespace NullSpace.SDK.Editor
 				string showQuickButtonName = QuickButtonFoldout ? "Hide" : "Show";
 
 				TutorialHighlight(!QuickButtonFoldout && IsStepWithinRange(9, 9), () =>
-				 {
-					 QuickButtonFoldout = NSEditorStyles.DrawGUILayoutToggle(QuickButtonFoldout, showQuickButtonName + " Existing Hardlight Colliders");
-				 });
+				{
+					QuickButtonFoldout = NSEditorStyles.DrawGUILayoutToggle(QuickButtonFoldout, showQuickButtonName + " Existing Hardlight Colliders");
+				});
 
 				if (QuickButtonFoldout)
 				{
