@@ -35,7 +35,7 @@ namespace NullSpace.SDK
 		/// This variable is used to store the original box color so we can correctly revert.
 		/// </summary>
 		private Color defaultBoxColor = default(Color);
-#endif 
+#endif
 		#endregion
 
 		private Collider _singleVolumeCollider;
@@ -209,67 +209,121 @@ namespace NullSpace.SDK
 		/// <returns></returns>
 		public static HardlightSuit Find()
 		{
-			HardlightSuit body = FindObjectOfType<HardlightSuit>();
-			if (body != null)
+			HardlightSuit suit = FindObjectOfType<HardlightSuit>();
+			if (suit != null)
 			{
-				body.Init();
-				return body;
+				suit.Init();
+				return suit;
 			}
-			VRMimic.Initialize();
+			if (VRMimic.ValidInstance())
+			{
+				suit = FindObjectOfType<HardlightSuit>();
+				if (suit != null)
+				{
+					suit.Init();
+					return suit;
+				}
+			}
+			else
+			{
+				Debug.Log("Attempted to run HardlightSuit.Find() before calling VRMimic.Initialize()\nMust run VRMimic Initialize first - so you can configure hiding settings.");
+			}
 
-			body = FindObjectOfType<HardlightSuit>();
-			if (body != null)
-			{
-				body.Init();
-				return body;
-			}
 			return null;
 		}
 
 		/// <summary>
-		/// [Helper function] Looks for a haptic file - "Resources/Haptics/" + file
-		/// Identical to making a new HapticSequence and calling it's LoadFromAsset("Haptics/" + file) function
+		/// [Helper function] Looks for a haptic sequence File - "Resources/Haptics/" + filename
+		/// Identical to making a new HapticSequence and calling it's LoadFromAsset("Haptics/" + filename) function
 		/// </summary>
-		/// <param name="file"></param>
+		/// <param name="sequenceFile"></param>
 		/// <returns></returns>
-		public HapticSequence GetSequence(string file)
+		public HapticSequence GetSequence(string sequenceFile)
 		{
 			HapticSequence seq = new HapticSequence();
-			seq.LoadFromAsset("Haptics/" + file);
+			seq.LoadFromAsset("Haptics/" + sequenceFile);
 			return seq;
 		}
 
+		#region Simple Hit (Nearest and Nearby)
 		/// <summary>
-		/// Plays the file on the nearest SINGLE HapticLocation
+		/// Plays the sequence file on the single nearest HapticLocation
 		/// Note: A HapticLocation can have an AreaFlag with multiple pads selected.
 		/// </summary>
 		/// <param name="point">A point in world space to compare</param>
-		/// <param name="file">Looks for a haptic file - "Resources/Haptics/" + file</param>
+		/// <param name="sequenceFile">Looks for a haptic sequence - "Resources/Haptics/" + filename</param>
 		/// <param name="maxDistance">The max distance the point can be from any HapticLocations</param>
-		public void Hit(Vector3 point, string file, float maxDistance = 5.0f)
+		public AreaFlag HitNearest(Vector3 point, string sequenceFile, float maxDistance = 5.0f)
 		{
-			AreaFlag loc = FindNearestFlag(point, maxDistance);
-			if (loc != AreaFlag.None)
-			{
-				HapticSequence seq = GetSequence(file);
-				seq.CreateHandle(loc).Play();
-			}
-			else
-			{
-				Debug.Log("None\n");
-			}
+			return HitNearest(point, GetSequence(sequenceFile), maxDistance);
 		}
 
 		/// <summary>
+		/// Plays the sequence on the single nearest HapticLocation
+		/// Note: A HapticLocation can have an AreaFlag with multiple pads selected.
+		/// </summary>
+		/// <param name="point">A point in world space to compare</param>
+		/// <param name="sequence">The sequence to play on the nearest location</param>
+		/// <param name="maxDistance">The max distance the point can be from any HapticLocations</param>
+		public AreaFlag HitNearest(Vector3 point, HapticSequence sequence, float maxDistance = 5.0f)
+		{
+			AreaFlag Where = FindNearestFlag(point, maxDistance);
+			if (Where != AreaFlag.None)
+			{
+				sequence.CreateHandle(Where).Play();
+			}
+			else
+			{
+				Debug.Log("Projectile hit the HardlightSuit but found no objects hit. Perhaps the maxDistance (" + maxDistance + ") is too small?\n\tOr the suit/prefab wasn't configured correctly.\n");
+			}
+			return Where;
+		}
+
+		/// <summary>
+		/// Plays the file on all HapticLocations within a certain radius of the provided point.
+		/// </summary>
+		/// <param name="point">A point in world space to compare</param>
+		/// <param name="sequenceFile">Looks for a haptic sequence - "Resources/Haptics/" + filename</param>
+		/// <param name="impactRadius">The body is about .6 wide, .72 tall and .25 deep</param>
+		public AreaFlag HitNearby(Vector3 point, string sequenceFile, float impactRadius = .35f)
+		{
+			return HitNearby(point, GetSequence(sequenceFile), impactRadius);
+		}
+
+		/// <summary>
+		/// Plays the sequence on all HapticLocations within a certain radius of the provided point.
+		/// </summary>
+		/// <param name="point">A point in world space to compare</param>
+		/// <param name="sequence">The sequence to play on the nearby locations</param>
+		/// <param name="impactRadius">The body is about .6 wide, .72 tall and .25 deep</param>
+		public AreaFlag HitNearby(Vector3 point, HapticSequence sequence, float impactRadius = .35f)
+		{
+			AreaFlag Where = FindAllFlagsWithinRange(point, impactRadius, true);
+
+			if (Where != AreaFlag.None)
+			{
+				sequence.CreateHandle(Where).Play();
+			}
+			else
+			{
+				Debug.Log("Projectile hit the HardlightSuit but found no objects hit. Perhaps the impactRadius (" + impactRadius + ") is too small?\n\tOr the suit/prefab wasn't configured correctly.\n");
+			}
+
+			return Where;
+		}
+		#endregion
+
+		#region Impulses
+		/// <summary>
 		/// Calls ImpulseGenerator.BeginEmanatingEffect with the given sequence and depth.
 		/// </summary>
-		/// <param name="loc">The location to start the emanation.</param>
-		/// <param name="seq">The sequence to use.</param>
+		/// <param name="origin">The location to start the emanation.</param>
+		/// <param name="sequence">The sequence to use.</param>
 		/// <param name="depth">How many steps you want the emanation to take.</param>
-		/// <param name="duration">How long the entire impulse should take</param>
-		public void EmanatingHit(AreaFlag loc, HapticSequence seq, float duration = .75f, int depth = 2)
+		/// <param name="impulseDuration">How long the entire impulse should take</param>
+		public void EmanatingHit(AreaFlag origin, HapticSequence sequence, float impulseDuration = .75f, int depth = 2)
 		{
-			ImpulseGenerator.BeginEmanatingEffect(loc, depth).WithDuration(duration).Play(seq);
+			ImpulseGenerator.BeginEmanatingEffect(origin, depth).WithDuration(impulseDuration).Play(sequence);
 		}
 
 		/// <summary>
@@ -277,11 +331,11 @@ namespace NullSpace.SDK
 		/// </summary>
 		/// <param name="startLocation">The origin of the traversing impulse.</param>
 		/// <param name="endLocation">The destination of the traversing impulse.</param>
-		/// <param name="seq">The sequence to use.</param>
-		/// <param name="duration">How long the entire impulse should take</param>
-		public void TraversingHit(AreaFlag startLocation, AreaFlag endLocation, HapticSequence seq, float duration = .75f)
+		/// <param name="sequence">The sequence to use.</param>
+		/// <param name="impulseDuration">How long the entire impulse should take</param>
+		public void TraversingHit(AreaFlag startLocation, AreaFlag endLocation, HapticSequence sequence, float impulseDuration = .75f)
 		{
-			ImpulseGenerator.BeginTraversingImpulse(startLocation, endLocation).WithDuration(duration).Play(seq);
+			ImpulseGenerator.BeginTraversingImpulse(startLocation, endLocation).WithDuration(impulseDuration).Play(sequence);
 		}
 
 		/// <summary>
@@ -289,18 +343,18 @@ namespace NullSpace.SDK
 		/// Has support for repetitions
 		/// </summary>
 		/// <param name="point">A point near the player's body</param>
-		/// <param name="seq">The HapticSequence to play on each pad visited.</param>
+		/// <param name="sequence">The HapticSequence to play on each pad visited.</param>
 		/// <param name="impulseDuration">How long the entire impulse takes to visit each step of the depth</param>
 		/// <param name="depth">The depth of the emanating impulse</param>
 		/// <param name="repeats">Support for repeated impulse</param>
 		/// <param name="delayBetweenRepeats">Do we delay between the impulse plays (delay of 0 will play all at once, having no effect)</param>
 		/// <param name="maxDistance">Will not return locations further than the max distance.</param>
-		public void HitImpulse(Vector3 point, HapticSequence seq, float impulseDuration = .2f, int depth = 2, int repeats = 0, float delayBetweenRepeats = .15f, float maxDistance = 5.0f)
+		public void HitImpulse(Vector3 point, HapticSequence sequence, float impulseDuration = .2f, int depth = 2, int repeats = 0, float delayBetweenRepeats = .15f, float maxDistance = 5.0f)
 		{
 			AreaFlag loc = FindNearestFlag(point, maxDistance);
 			if (loc != AreaFlag.None)
 			{
-				ImpulseGenerator.Impulse imp = ImpulseGenerator.BeginEmanatingEffect(loc, depth).WithEffect(seq).WithDuration(impulseDuration);
+				ImpulseGenerator.Impulse imp = ImpulseGenerator.BeginEmanatingEffect(loc, depth).WithEffect(sequence).WithDuration(impulseDuration);
 				if (repeats > 0)
 				{
 					StartCoroutine(RepeatedEmanations(imp, delayBetweenRepeats, repeats));
@@ -339,9 +393,11 @@ namespace NullSpace.SDK
 				Debug.LogWarning("Invalid Hit at " + point + "\n");
 			}
 		}
+		#endregion
 
+		#region Finding HapticLocation and Flags
 		/// <summary>
-		/// Finds the nearest HapticLocation.MyLocation on the PlayerTorso to the provided point
+		/// Finds the nearest HapticLocation.Where on the HardlightSuit to the provided point
 		/// </summary>
 		/// <param name="point">The world space to compare to the PlayerTorso body.</param>
 		/// <param name="maxDistance">Disregard body parts less than the given distance</param>
@@ -438,7 +494,7 @@ namespace NullSpace.SDK
 					float dist = Vector3.Distance(point, loc.transform.position);
 					if (Physics.Raycast(point, loc.transform.position - point, out hit, dist, hitLayers))
 					{
-						Debug.Log("Hit: " + hit.collider.name + "\n" + hit.collider.gameObject.layer + "\n");
+						//Debug.Log("Hit: " + hit.collider.name + "\n" + hit.collider.gameObject.layer + "\n");
 						Debug.DrawLine(point, hit.point, Color.red, 15.0f);
 					}
 					else
@@ -452,18 +508,18 @@ namespace NullSpace.SDK
 			}
 			return null;
 		}
+
 		/// <summary>
-		/// Gets a random HapticLocation on the configured PlayerTorso.
+		/// Gets a random HapticLocation on the configured HardlightSuit.
 		/// </summary>
 		/// <returns>A valid HapticLocation on the body (defaults to null if none are configured or if it is configured incorrectly.</returns>
-		public HapticLocation FindRandomLocation(bool DisplayInEditor = false)
+		public HapticLocation FindRandomLocation(AreaFlag OnlyAreasWithinSet = AreaFlag.All_Areas, bool DisplayInEditor = false)
 		{
-			HapticLocation loc = Definition.GetRandomLocationObject().GetComponent<HapticLocation>();
+			HapticLocation loc = Definition.GetRandomLocationWithinSet(OnlyAreasWithinSet).GetComponent<HapticLocation>();
 			if (loc != null)
 			{
 				if (DisplayInEditor)
 				{
-					Debug.Log("HIT\n");
 					ColorHapticLocationInEditor(loc, Color.blue);
 				}
 
@@ -473,7 +529,9 @@ namespace NullSpace.SDK
 				Debug.LogError("Failed to complete PlayerBody.FindRandomLocation(). The returned object did not have a HapticLocation component\n");
 			return null;
 		}
+		#endregion
 
+		#region Debug Coloring
 		/// <summary>
 		/// This function is a no-op outside of the editor.
 		/// Preprocessor defines keep it from impacting your game's performance.
@@ -493,25 +551,6 @@ namespace NullSpace.SDK
 				StartCoroutine(ColorHapticLocationCoroutine(rend, color));
 			}
 #endif
-		}
-
-		/// <summary>
-		/// [Unused] intended as an Editor window function.
-		/// </summary>
-		/// <param name="index"></param>
-		/// <param name="suit"></param>
-		public void AddSceneReference(int index, HardlightCollider suit)
-		{
-			if (SceneReferences == null)
-			{
-				SceneReferences = new List<HardlightCollider>();
-			}
-
-			//if (SceneReferences.Count < index)
-			//{
-			SceneReferences.Add(suit);
-			//}
-
 		}
 
 #if UNITY_EDITOR
@@ -534,7 +573,9 @@ namespace NullSpace.SDK
 			rend.material.color = defaultBoxColor;
 		}
 #endif
+		#endregion
 
+		#region Repeating and Delayed Impulses
 		/// <summary>
 		/// A coroutine for repeating an emanation on a delay X times.
 		/// </summary>
@@ -562,6 +603,7 @@ namespace NullSpace.SDK
 		{
 			yield return new WaitForSeconds(delay);
 			impulse.Play();
-		}
+		} 
+		#endregion
 	}
 }

@@ -164,6 +164,26 @@ namespace NullSpace.SDK
 			return _plugin.SampleCurrentlyPlayingEffects();
 			//return _plugin.SampleStrengths();
 		}
+		/// <summary>
+		/// Control the haptic volume of an area directly. 
+		/// </summary>
+		/// <param name="singleArea">An AreaFlag representing a single area</param>
+		/// <param name="strength">Strength to play, from 0.0-1.0</param>
+		public void ControlDirectly(AreaFlag singleArea, double strength)
+		{
+			//_plugin.ControlDirectly(singleArea, strength * .66f);
+		}
+
+		/// <summary>
+		/// Control the haptic volume of multiple areas directly. 
+		/// </summary>
+		/// <param name="singleAreas">List of AreaFlags, each representing a single area</param>
+		/// <param name="strengths">Strength to play, from 0-255</param>
+		public void ControlDirectly(AreaFlag[] singleAreas, ushort[] strengths)
+		{
+			//_plugin.ControlDirectly(singleAreas, strengths);
+
+		}
 
 		/// <summary>
 		/// Tell the manager to use a different IMU calibrator
@@ -382,7 +402,11 @@ namespace NullSpace.SDK
 
 		void OnApplicationQuit()
 		{
-			_plugin.DisableTracking();
+			if (_plugin != null)
+			{
+				_plugin.DisableTracking();
+			}
+
 			ClearAllEffects();
 			System.Threading.Thread.Sleep(100);
 		}
