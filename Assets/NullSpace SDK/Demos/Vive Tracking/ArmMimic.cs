@@ -37,6 +37,13 @@ namespace NullSpace.SDK
 
 		public Vector3 ForearmOffset;
 
+		public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
+		public ArmKinematicMode ArmMode = ArmKinematicMode.ControllerOnly;
+
+		public ForwardKinematicArms ControllerOnlyKinematics;
+		public ForwardKinematicArms UpperArmKinematics;
+		public ForwardKinematicArms LowerArmKinematics;
+
 		public bool drawWireConnectorsOnlyWhenSelected = false;
 
 		//Needs to be easily reskins
@@ -64,6 +71,72 @@ namespace NullSpace.SDK
 			if (ShoulderMount == null || TrackerMount == null || ControllerConnection == null)
 			{
 				SetMimicEnable(false);
+			}
+
+			if (UpperArmKinematics != null && TrackerMount != null)
+			{
+				UpperArmKinematics.Target = TrackerMount.gameObject;
+			}
+			if (ControllerConnection != null)
+			{
+				if (LowerArmKinematics != null)
+				{
+					LowerArmKinematics.Target = ControllerConnection.gameObject;
+				}
+				if (ControllerOnlyKinematics != null)
+				{
+					ControllerOnlyKinematics.Target = ControllerConnection.gameObject;
+				}
+			}
+
+			SetArmKinematicMode(ArmMode);
+		}
+
+		public void SetArmKinematicMode(ArmKinematicMode SetToMode)
+		{
+			bool EncounteredProblem = false;
+			if (SetToMode == ArmKinematicMode.ViveUpperArms)
+			{
+				if (LowerArmKinematics != null && UpperArmKinematics != null)
+				{
+					ArmMode = SetToMode;
+					LowerArmKinematics.enabled = true;
+					UpperArmKinematics.enabled = true;
+				}
+				else
+				{ EncounteredProblem = true; }
+
+				if (ControllerOnlyKinematics != null)
+				{
+					ControllerOnlyKinematics.enabled = false;
+				}
+			}
+			else if (SetToMode == ArmKinematicMode.ControllerOnly)
+			{
+				if (LowerArmKinematics != null && UpperArmKinematics != null)
+				{
+					LowerArmKinematics.enabled = false;
+					UpperArmKinematics.enabled = false;
+				}
+				if (ControllerOnlyKinematics != null)
+				{
+					ArmMode = SetToMode;
+					ControllerOnlyKinematics.enabled = true;
+				}
+				else
+				{ EncounteredProblem = true; }
+			}
+			else
+			{
+				EncounteredProblem = true;
+			}
+
+			if (EncounteredProblem)
+			{
+				ArmMode = ArmKinematicMode.ArmsDisabled;
+				Debug.LogError("Arm Kinematics encountered a problem. Deactivating arms.\n");
+				//Turn off ALL the arm kinematics
+				//Report an error
 			}
 		}
 
@@ -96,16 +169,7 @@ namespace NullSpace.SDK
 
 		void UpdateMimic()
 		{
-			//UpperArmParent.transform.rotation = TrackerMount.transform.rotation;
 
-			//Quaternion forearmQuatOffset = Quaternion.Euler(ForearmOffset.x, ForearmOffset.y, ForearmOffset.z);
-
-			//ForearmParent.transform.rotation = ControllerConnection.transform.rotation * forearmQuatOffset;
-	
-			
-			
-			
-			//ControllerJoint.connectedBody
 		}
 
 		void CheckForReenable()

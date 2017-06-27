@@ -9,11 +9,12 @@ public class ForwardKinematicArms : MonoBehaviour
 	//public Vector3 POne;
 	//public float DistanceOne;
 	//public float AlphaZero;
-	public GameObject Target;
 
 	public bool ReportLogs = false;
 	public bool RandomizeStart = true;
+	public bool RandomizeTarget = false;
 	public RobotJoint[] Joints;
+	public GameObject Target;
 
 	//[Range(-360, 360)]
 	//public float AngleOne;
@@ -30,6 +31,7 @@ public class ForwardKinematicArms : MonoBehaviour
 
 	public float DistanceToTarget;
 
+	public Vector3 LastTarget;
 
 	public void Start()
 	{
@@ -39,8 +41,11 @@ public class ForwardKinematicArms : MonoBehaviour
 			Target.name = "Forward Kinematics Target [Runtime Created]";
 
 		}
-		Target.transform.position = Joints[0].transform.position + Random.insideUnitSphere;
 
+		if (RandomizeTarget)
+		{
+			Target.transform.position = Joints[0].transform.position + Random.insideUnitSphere;
+		}
 		if (RandomizeStart)
 		{
 			if (Joints != null)
@@ -52,6 +57,13 @@ public class ForwardKinematicArms : MonoBehaviour
 				}
 			}
 		}
+
+		string report = "[" + gameObject.name + " - Original Positions]\n";
+		for (int i = 0; i < Joints.Length; i++)
+		{
+			report += Joints[i].name + "  " + Joints[i].transform.position + "\n";
+		}
+		Debug.Log(report + "\n");
 	}
 
 
@@ -69,12 +81,12 @@ public class ForwardKinematicArms : MonoBehaviour
 	//}
 	public void Update()
 	{
-		Vector3 result = ForwardKinematics(GetAngles().ToArray());
+		LastTarget = ForwardKinematics(GetAngles().ToArray());
 		//	Debug.Log("Position goes from: " + Joints[0].transform.position + " to " + result.ToString() + "\n");
 
 		if (Target != null)
 		{
-			DistanceToTarget = Vector3.Distance(Target.transform.position, result);
+			DistanceToTarget = Vector3.Distance(Target.transform.position, LastTarget);
 			//Debug.Log("Distance to target: " + DistanceToTarget + "\n");
 
 			InverseKinematics(Target.transform.position, GetAngles());
@@ -139,7 +151,8 @@ public class ForwardKinematicArms : MonoBehaviour
 	public Vector3 ForwardKinematics(float[] angles, int depth = int.MaxValue)
 	{
 		//Start with the position of the first joint
-		Vector3 prevPoint = Joints[0].transform.position;
+		Vector3 prevPoint = Vector3.zero;
+		//Vector3 prevPoint = Joints[0].transform.position;
 		Quaternion rotation = Quaternion.identity;
 
 		string reportAngles = "";
@@ -151,15 +164,19 @@ public class ForwardKinematicArms : MonoBehaviour
 
 			float ang = angles[i - 1];
 
-			reportAngles = (reportAngles) + (ang) + ("\t ") + rotation.ToString() + ("\t ");
+			reportAngles = (reportAngles) + (ang) + ("\t ") + rotation.ToString() + ("\n ");
 			//Calculate the point of this joint based on the previous point + the rotation offset start offset.
-			Vector3 nextPoint = prevPoint + rotation * Joints[i].StartOffset;
+			Vector3 ThisJointsRotatedOffset = rotation * Joints[i].StartOffset;
+			Vector3 nextPoint = prevPoint + ThisJointsRotatedOffset;
 
 			prevPoint = nextPoint;
 
 			if (Application.isPlaying)
 			{
-				//Joints[i].transform.position = prevPoint;
+				reportAngles += "name: " + Joints[i].name + "\t" + Joints[i].transform.position;
+				//Vector3 diff = Joints[i].transform.localPosition - prevPoint;
+				Joints[i].transform.rotation = rotation;
+				//Joints[i].transform.localPosition = ThisJointsRotatedOffset;
 			}
 			//Debug.Log(prevPoint + "\n");	
 			//Joints[i].transform.position = nextPoint;
@@ -168,7 +185,8 @@ public class ForwardKinematicArms : MonoBehaviour
 		if (ReportLogs)
 			Debug.Log(reportAngles + "\n");
 
-		return prevPoint;
+		//return prevPoint;
+		return Joints[0].transform.position + prevPoint;
 	}
 
 	public float[] GetAngles()
@@ -182,53 +200,89 @@ public class ForwardKinematicArms : MonoBehaviour
 		return OfficialAngles.ToArray();
 	}
 
+	public Vector3 visualizeOffset = Vector3.forward * .1f;
+
 	void OnDrawGizmos()
 	{
 		Gizmos.color = Color.black;
 		Vector3 start = Vector3.zero;
 		Vector3 end = Vector3.zero;
-		Vector3 offset = Vector3.forward * .1f;
 		bool atEnd = false;
-		if (Joints != null)
+
+		bool ShouldJointDraw = false;
+		#region Joint Draw
+		if (ShouldJointDraw)
 		{
-			for (int i = 0; i < Joints.Length; i++)
+			if (Joints != null)
 			{
-				if (Joints[i] != null)
+				for (int i = 0; i < Joints.Length; i++)
 				{
-					Gizmos.color = Joints[i].myColor - new Color(0, 0, 0, .25f);
+					if (Joints[i] != null)
+					{
+						Gizmos.color = new Color(Joints[i].myColor.r, Joints[i].myColor.g, Joints[i].myColor.b, 1);
 
-					atEnd = Joints.Length > i + 1;
+						atEnd = Joints.Length > i + 1;
 
-					//Debug.Log(Joints.Length + "  " + i + "\n" + atEnd);
-					start = Joints[i].transform.position;
-					end = !atEnd ? start : Joints[i + 1].transform.position;
-					//Gizmos.DrawLine(start, end);
+						//Debug.Log(Joints.Length + "  " + i + "\n" + atEnd);
+						start = Joints[i].transform.position;
+						end = !atEnd ? start : Joints[i + 1].transform.position;
 
-					//Gizmos.DrawCube(start, Vector3.one * .05f);
+
+#if UNITY_EDITOR
+						Vector3 LocalAxis = transform.rotation * Joints[i].Axis;
+						UnityEditor.Handles.color = Gizmos.color;
+						UnityEditor.Handles.DrawDottedLine(start + visualizeOffset, end + visualizeOffset, 3);
+						//UnityEditor.Handles.DrawSphere(Joints[i].transform.position, LocalAxis, Joints[i].JointGizmoSize);
+						//Gizmos.DrawLine(start + visualizeOffset, end + visualizeOffset);
+						Gizmos.DrawSphere(start + visualizeOffset, .05f);
+#endif
+
+
+					}
 				}
-			}
-			for (int i = 0; i < Joints.Length; i++)
-			{
-				if (Joints[i] != null)
+				for (int i = 0; i < Joints.Length; i++)
 				{
-					Gizmos.color = Joints[i].myColor - new Color(0, 0, 0, .25f);
+					if (Joints[i] != null)
+					{
+						Gizmos.color = new Color(Joints[i].myColor.r, Joints[i].myColor.g, Joints[i].myColor.b, 1);
 
-					atEnd = Joints.Length > i + 1;
-					start = ForwardKinematics(GetAngles(), i + 1);
-					end = !atEnd ? start : ForwardKinematics(GetAngles(), i + 2);
-					Gizmos.DrawLine(start + offset, end + offset);
+						atEnd = Joints.Length > i + 1;
+						start = ForwardKinematics(GetAngles(), i + 1);
+						end = !atEnd ? start : ForwardKinematics(GetAngles(), i + 2);
 
-					Gizmos.DrawCube(start + offset, Vector3.one * .05f);
+
+
+#if UNITY_EDITOR
+						Vector3 LocalAxis = transform.rotation * Joints[i].Axis;
+						UnityEditor.Handles.color = Gizmos.color;
+						UnityEditor.Handles.DrawDottedLine(start + visualizeOffset * 2, end + visualizeOffset * 2, 3);
+						//UnityEditor.Handles.DrawSphere(Joints[i].transform.position, LocalAxis, Joints[i].JointGizmoSize);
+						//Gizmos.DrawLine(start + visualizeOffset, end + visualizeOffset);
+						Gizmos.DrawSphere(start + visualizeOffset * 2, .05f);
+#endif
+					}
 				}
 			}
 		}
+		#endregion
 
 		if (Target != null)
 		{
 			Gizmos.color = new Color(.8f, .7f, 0.0f, 1.0f);
 			Gizmos.DrawSphere(Target.transform.position, .025f);
-			Gizmos.DrawSphere(Target.transform.position + offset, .025f);
+			if(ShouldJointDraw)
+				Gizmos.DrawSphere(Target.transform.position + visualizeOffset, .025f);
 		}
+
+		Gizmos.DrawSphere(LastTarget + Vector3.right * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget - Vector3.right * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget + Vector3.up * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget - Vector3.up * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget + Vector3.forward * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget - Vector3.forward * .03f, .01f);
+		Gizmos.DrawSphere(LastTarget, .01f);
+
+		Gizmos.DrawLine(LastTarget, Target.transform.position);
 	}
 
 }

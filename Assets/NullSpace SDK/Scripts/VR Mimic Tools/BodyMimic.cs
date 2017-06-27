@@ -211,10 +211,14 @@ namespace NullSpace.SDK
 			if (WhichSide == ArmMimic.ArmSide.Left)
 			{
 				LeftArm = Arm;
+				LeftArm.transform.SetParent(LeftShoulder.transform);
+				LeftArm.transform.localPosition = Arm.transform.right * -.5f;
 			}
 			else
 			{
 				RightArm = Arm;
+				RightArm.transform.SetParent(RightShoulder.transform);
+				RightArm.transform.localPosition = Arm.transform.right * .5f;
 			}
 		}
 
