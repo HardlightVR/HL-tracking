@@ -67,6 +67,11 @@ namespace NullSpace.SDK
 		/// </summary>
 		Vector3 targetPosition;
 
+		public GameObject LeftShoulder;
+		public GameObject RightShoulder;
+		public ArmMimic LeftArm;
+		public ArmMimic RightArm;
+
 		/// <summary>
 		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
 		/// </summary>
@@ -184,32 +189,102 @@ namespace NullSpace.SDK
 			//
 		}
 
+		public ArmMimic CreateArm(ArmMimic.ArmSide WhichSide, VRObjectMimic Tracker, VRObjectMimic Controller)
+		{
+			//Create an Arm Prefab
+			ArmMimic newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Arm Mimic Prefab")).GetComponent<ArmMimic>();
+
+			newArm.name = "Arm Mimic [" + WhichSide.ToString() + "]";
+
+			newArm.transform.SetParent(transform);
+
+			//Initialize the arm prefab (handing in the side and connector points)
+			newArm.Initialize(WhichSide, GetShoulder(WhichSide), Tracker, Controller);
+
+			//Keep track of this as our Left/Right arm?
+			AttachArmToOurBody(WhichSide, newArm);
+			return newArm;
+		}
+
+		public void AttachArmToOurBody(ArmMimic.ArmSide WhichSide, ArmMimic Arm)
+		{
+			if (WhichSide == ArmMimic.ArmSide.Left)
+			{
+				LeftArm = Arm;
+			}
+			else
+			{
+				RightArm = Arm;
+			}
+		}
+
+		public GameObject GetShoulder(ArmMimic.ArmSide WhichSide)
+		{
+			if (WhichSide == ArmMimic.ArmSide.Left)
+			{
+				if (LeftShoulder != null)
+					return LeftShoulder;
+			}
+			else
+			{
+				if (RightShoulder != null)
+					return RightShoulder;
+			}
+			//If this code has reached you, you can add 
+			//return null;
+			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
+			throw new System.Exception("Shoulder Mount Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
+		}
+
+		public ArmMimic AccessArm(ArmMimic.ArmSide WhichSide)
+		{
+			if (WhichSide == ArmMimic.ArmSide.Left)
+			{
+				if (LeftArm != null)
+					return LeftArm;
+			}
+			else
+			{
+				if (LeftArm != null)
+					return LeftArm;
+			}
+			//If this code has reached you, you can add 
+			//return null;
+			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
+			throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
+		}
+
 		/// <summary>
 		/// This function creates and initializes the Body Mimic
 		/// </summary>
 		/// <param name="vrCamera">The camera to hide the body from. Calls camera.HideLayer(int)</param>
 		/// <param name="hapticObjectLayer">The layer that is removed from the provided camera's culling mask.</param>
 		/// <returns>The created body mimic</returns>
-		public static BodyMimic Initialize(Camera vrCamera = null, int hapticObjectLayer = NSManager.HAPTIC_LAYER)
+		public static BodyMimic Initialize(Camera vrCamera, VRObjectMimic CameraRigMimic, int hapticObjectLayer = NSManager.HAPTIC_LAYER)
 		{
-			GameObject go = Resources.Load<GameObject>("Body Mimic");
+			GameObject bodyMimicPrefab = Resources.Load<GameObject>("Body Mimic");
 
 			//Instantiate the prefab of the body mimic.
-			GameObject newMimic = Instantiate<GameObject>(go);
+			GameObject newMimic = Instantiate<GameObject>(bodyMimicPrefab);
 			newMimic.name = "Body Mimic";
 
 			BodyMimic mimic = null;
 
 			if (newMimic != null)
 			{
+				if (vrCamera == null)
+				{
+					Debug.LogWarning("Attempting to initialize body mimic with a null camera.\n\tDefaulting to Camera.main.gameOBject instead. This might not work\n");
+				}
+
 				GameObject cameraObject = vrCamera == null ? Camera.main.gameObject : vrCamera.gameObject;
-				MimickedObjects objs = VRObjectMimic.Get(cameraObject);
+
 				vrCamera = cameraObject.GetComponent<Camera>();
 
 				//Set the BodyMimic's target to the VRObjectMimic
 				mimic = newMimic.GetComponent<BodyMimic>();
-				mimic.hmd = objs.VRCamera.gameObject;
-				mimic.transform.SetParent(VRObjectMimic.Get(cameraObject).Root.transform);
+				mimic.hmd = vrCamera.gameObject;
+				mimic.transform.SetParent(CameraRigMimic.transform);
 			}
 			if (vrCamera != null)
 			{

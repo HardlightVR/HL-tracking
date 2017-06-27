@@ -325,7 +325,10 @@ namespace NullSpace.SDK
 		/// </summary>
 		public void ClearAllEffects()
 		{
-			_plugin.ClearAll();
+			if (_plugin != null)
+			{
+				_plugin.ClearAll();
+			}
 		}
 
 

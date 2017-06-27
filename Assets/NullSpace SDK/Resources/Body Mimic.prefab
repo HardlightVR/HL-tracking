@@ -1451,6 +1451,10 @@ MonoBehaviour:
   devHeightPercentage: -0.15
   assumedForward: {x: 0, y: 0, z: 0}
   LastUpdatedPosition: {x: 0, y: 0, z: 0}
+  LeftShoulder: {fileID: 1000010492535620}
+  RightShoulder: {fileID: 1000012791934842}
+  LeftArm: {fileID: 0}
+  RightArm: {fileID: 0}
   SnapUpdateDist: 1
 --- !u!114 &114000012574369290
 MonoBehaviour:

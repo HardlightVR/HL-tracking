@@ -1,51 +1,57 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace NullSpace.SDK
 {
 	public class VRObjectMimic : MonoBehaviour
 	{
-		private static MimickedObjects _holder;
-		public static MimickedObjects Get(GameObject coreCamera = null)
-		{
-			if (_holder == null)
-			{
-				_holder = Initialize(coreCamera);
-			}
-			return _holder;
-		}
-
 		public GameObject ObjectToMimic;
 		/// <summary>
 		/// Future feature - track if the headset is idle/active. Same with the controllers.
 		/// This allows for default behavior.
 		/// </summary>
 		public enum DetectionState { Active, Idle }
-		public enum MimickedObject { Camera, ControllerA, ControllerB }
-		public MimickedObject MimickedObjectType;
+		public enum TypeOfMimickedObject { Camera, ControllerA, ControllerB, CameraRig, TrackedObject }
+		public TypeOfMimickedObject MimickedObjectType;
 
 		public Vector3 ScaleMultiplier;
 		public Vector3 PositionOffset;
 
 		private bool initialized = false;
 
-
-		void Init(GameObject NewMimicTarget)
+		public void Init(GameObject NewMimicTarget)
 		{
 			if (!initialized)
 			{
-				ObjectToMimic = NewMimicTarget;
+				if (ObjectToMimic == null || NewMimicTarget != null)
+				{
+					ObjectToMimic = NewMimicTarget;
+				}
+
+				if (NewMimicTarget == null)
+				{
+					Debug.Log(name + " - New mimic target is null\n");
+				}
 
 				transform.position = ObjectToMimic.transform.position + PositionOffset;
 				transform.rotation = ObjectToMimic.transform.rotation;
 				transform.localScale = ObjectToMimic.transform.localScale + ScaleMultiplier;
 				initialized = true;
+
+				WatchedByMimic watching = NewMimicTarget.GetComponent<WatchedByMimic>();
+
+				if (watching != null)
+				{
+					Debug.LogError("Multiple mimics are watching [" + NewMimicTarget.name + "]\n\tAdded additional watcher, but you might fail to get the correct watcher.");
+				}
+				watching = NewMimicTarget.AddComponent<WatchedByMimic>();
+				watching.WatchingMimic = this;
 			}
 		}
 
 		void Start()
 		{
-			Init(null);
 		}
 
 		void Update()
@@ -53,35 +59,6 @@ namespace NullSpace.SDK
 			transform.position = ObjectToMimic.transform.position + PositionOffset;
 			transform.rotation = ObjectToMimic.transform.rotation;
 			transform.localScale = ObjectToMimic.transform.localScale + ScaleMultiplier;
-		}
-
-		public static MimickedObjects Initialize(GameObject CameraToMimic = null)
-		{
-			if (CameraToMimic == null)
-			{
-				//We assume the main camera is the VR Camera.
-				CameraToMimic = FindCameraObject();
-			}
-
-			MimickedObjects mimickingObjects = new MimickedObjects();
-
-			VRMimic parent = VRMimic.Instance;
-			parent.name = "VR Mimic Objects";
-			mimickingObjects.Root = parent.gameObject;
-
-			GameObject go = new GameObject();
-			go.transform.SetParent(parent.transform);
-			go.name = "Camera Mimic";
-			mimickingObjects.VRCamera = go.AddComponent<VRObjectMimic>();
-			mimickingObjects.VRCamera.Init(CameraToMimic);
-			mimickingObjects.VRCamera.MimickedObjectType = MimickedObject.Camera;
-
-			//mimickingObjects.ControllerA = controllers.First();
-			//mimickingObjects.ControllerB = controllers.Last();
-
-			_holder = mimickingObjects;
-
-			return Get(CameraToMimic);
 		}
 
 		public static GameObject FindCameraObject()
@@ -94,13 +71,5 @@ namespace NullSpace.SDK
 
 			return cameraObject;
 		}
-	}
-
-	public class MimickedObjects
-	{
-		public GameObject Root;
-		public VRObjectMimic VRCamera;
-		//public VRObjectMimic ControllerA;
-		//public VRObjectMimic ControllerB;
 	}
 }
