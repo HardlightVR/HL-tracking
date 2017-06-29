@@ -203,8 +203,11 @@ namespace NullSpace.SDK.Demos
 
 			//Debug.Log("Escalate: " + (System.DateTime.Now - start).TotalSeconds + " New Pitch Speed Range: " + pitchSpeedRange.ToString() + "\n");
 
-			//Display the level up effect.
-			EscalateEffect.Play();
+			if (EscalateEffect != null)
+			{
+				//Display the level up effect.
+				EscalateEffect.Play();
+			}
 		}
 
 		/// <summary>
