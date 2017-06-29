@@ -10,6 +10,8 @@ namespace NullSpace.SDK
 	/// </summary>
 	public class HapticLocation : MonoBehaviour
 	{
+		public bool LocationActive = true;
+
 		/// <summary>
 		/// An empty, single or complex AreaFlag.
 		/// Empty Ex - AreaFlag.None

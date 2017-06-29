@@ -5,8 +5,7 @@ namespace NullSpace.SDK
 {
 	public class ArmMimic : MonoBehaviour
 	{
-		//Easily supports disabling of the arm.
-
+		[Header("Key External Objects")]
 		//Shoulder Mount position
 		public GameObject ShoulderMount;
 
@@ -25,52 +24,116 @@ namespace NullSpace.SDK
 			}
 		}
 
-		public Component[] Visuals;
-
+		[Header("Arm Mimic Config & State")]
+		public ArmSide WhichArm = ArmSide.Right;
 		public enum ArmSide { Right, Left }
 
-		public ArmSide WhichSide = ArmSide.Right;
-
-		public GameObject UpperArmParent;
-		public GameObject ForearmParent;
-		public GameObject JointParent;
-
-		public Vector3 ForearmOffset;
-
-		public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
 		public ArmKinematicMode ArmMode = ArmKinematicMode.ControllerOnly;
+		public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
 
+		private bool _mimicEnabled;
+		/// <summary>
+		/// We will automatically reenable the Arm Mimic when the controller, shoulder and tracker are all valid
+		/// </summary>
+		public bool AttemptReenable;
+		[SerializeField]
+		private bool _armRenderersEnabled;
+		public bool drawWireConnectorsOnlyWhenSelected = false;
+
+		[Header("Kinematic References")]
 		public ForwardKinematicArms ControllerOnlyKinematics;
 		public ForwardKinematicArms UpperArmKinematics;
 		public ForwardKinematicArms LowerArmKinematics;
 
-		public bool drawWireConnectorsOnlyWhenSelected = false;
+		[Header("Reference Lists")]
+		public Renderer[] ArmRenderers;
 
-		//Needs to be easily reskins
+		public GameObject[] ArmElementsToMirror;
 
-		public bool MimicEnabled;
+		[Header("Haptic Colliders")]
+		public HardlightCollider Forearm;
+		public HardlightCollider UpperArm;
+
+		#region Properties
+		public bool MimicEnabled
+		{
+			get { return _mimicEnabled; }
+			set
+			{
+				_mimicEnabled = value;
+				SetArmRendererEnableState = value;
+			}
+		}
+
+		public bool SetArmRendererEnableState
+		{
+			get { return _armRenderersEnabled; }
+			set
+			{
+				_armRenderersEnabled = value;
+
+				for (int i = 0; i < ArmRenderers.Length; i++)
+				{
+					if (ArmRenderers[i] != null)
+					{
+						ArmRenderers[i].enabled = value;
+					}
+				}
+			}
+		}
 
 		/// <summary>
-		/// We will automatically reenable the Arm Mimic when the controller, shoulder and tracker are all valid
+		/// A property for setting the controller mimic with the ArmMimic.
 		/// </summary>
-		public bool ReenableOnConditions;
+		public VRObjectMimic ControllerKinematicTarget
+		{
+			set
+			{
+				if (LowerArmKinematics != null)
+				{
+					LowerArmKinematics.Target = value.gameObject;
+				}
+				if (ControllerOnlyKinematics != null)
+				{
+					ControllerOnlyKinematics.Target = value.gameObject;
+				}
+			}
+		}
+		/// <summary>
+		/// A property for setting the arm tracker mimic with the ArmMimic.
+		/// </summary>
+		public VRObjectMimic ArmViveTrackerTarget
+		{
+			set
+			{
+				if (UpperArmKinematics != null)
+				{
+					UpperArmKinematics.Target = value.gameObject;
+				}
+			}
+		}
+		#endregion
 
 		public void Initialize(ArmSide WhichSide, GameObject ShoulderMount, VRObjectMimic TrackerMount, VRObjectMimic ControllerConnection)
 		{
-			this.WhichSide = WhichSide;
+			name = "Arm Mimic [" + WhichSide.ToString() + "]";
+
+			this.WhichArm = WhichSide;
 			this.ShoulderMount = ShoulderMount;
 			this.TrackerMount = TrackerMount;
 			this.ControllerConnection = ControllerConnection;
 
+			SetArmColliderAreaFlags();
+
 			MimicEnabled = true;
-			ReenableOnConditions = true;
+			AttemptReenable = true;
 		}
 
 		void Start()
 		{
 			if (ShoulderMount == null || TrackerMount == null || ControllerConnection == null)
 			{
-				SetMimicEnable(false);
+				MimicEnabled = false;
 			}
 
 			if (UpperArmKinematics != null && TrackerMount != null)
@@ -90,6 +153,33 @@ namespace NullSpace.SDK
 			}
 
 			SetArmKinematicMode(ArmMode);
+		}
+
+		/// <summary>
+		/// By default the elements are configured for the right.
+		/// This mirrors parts of the shoulder configuration.
+		/// </summary>
+		public void MirrorKeyArmElements()
+		{
+			if (ArmElementsToMirror != null)
+			{
+				for (int i = 0; i < ArmElementsToMirror.Length; i++)
+				{
+					Vector3 current = ArmElementsToMirror[i].transform.localPosition;
+					ArmElementsToMirror[i].transform.localPosition = new Vector3(current.x * -1, current.y, current.z);
+				}
+			}
+		}
+
+		public void SetArmColliderAreaFlags()
+		{
+			//Set our colliders to use the correct side.
+			Forearm.regionID = WhichArm == ArmSide.Left ? AreaFlag.Forearm_Left : AreaFlag.Forearm_Right;
+			UpperArm.regionID = WhichArm == ArmSide.Left ? AreaFlag.Upper_Arm_Left : AreaFlag.Upper_Arm_Right;
+
+			//Add the arms to the suit themselves
+			HardlightSuit.Find().ModifyValidRegions(Forearm.regionID, Forearm.gameObject, Forearm);
+			HardlightSuit.Find().ModifyValidRegions(UpperArm.regionID, UpperArm.gameObject, UpperArm);
 		}
 
 		public void SetArmKinematicMode(ArmKinematicMode SetToMode)
@@ -146,24 +236,9 @@ namespace NullSpace.SDK
 			{
 				UpdateMimic();
 			}
-			else if (ReenableOnConditions)
+			else if (AttemptReenable)
 			{
 				CheckForReenable();
-			}
-		}
-		public void SetMimicEnable(bool enabled)
-		{
-			MimicEnabled = enabled;
-
-			//Hide the visuals
-			SetMimicVisual(enabled);
-		}
-		private void SetMimicVisual(bool visible)
-		{
-			if (Visuals != null)
-			{
-				//Set the state of the visuals
-				//Visual.SetActive(visible);
 			}
 		}
 
@@ -176,7 +251,7 @@ namespace NullSpace.SDK
 		{
 			if (ShoulderMount != null && TrackerMount != null && ControllerConnection != null)
 			{
-				SetMimicEnable(true);
+				MimicEnabled = true;
 			}
 		}
 

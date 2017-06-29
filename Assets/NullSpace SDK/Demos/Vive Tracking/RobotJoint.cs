@@ -31,18 +31,20 @@ public class RobotJoint : MonoBehaviour
 
 	void DrawWireframe()
 	{
-		Gizmos.color = Color.white;
-
 		//Start at transform
 		//Draw 6 circles on the axis of rotation.
 
 #if UNITY_EDITOR
-
 		Vector3 LocalAxis = transform.rotation * Axis;
 		UnityEditor.Handles.color = new Color(myColor.r, myColor.g, myColor.b, 1f);
 		UnityEditor.Handles.DrawDottedLine(transform.position - LocalAxis * JointGizmoSize, transform.position +LocalAxis * JointGizmoSize, 5);
 		UnityEditor.Handles.DrawWireDisc(transform.position, LocalAxis, JointGizmoSize);
+
+		Gizmos.color = new Color(myColor.r, myColor.g, myColor.b, 1f);
+		Gizmos.DrawSphere(transform.position, .01f);
 #endif
+
+
 
 	}
 

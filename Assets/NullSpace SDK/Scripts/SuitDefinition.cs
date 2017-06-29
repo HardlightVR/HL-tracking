@@ -36,6 +36,23 @@ namespace NullSpace.SDK
 		[SerializeField]
 		public bool AddExclusiveTriggerCollider = true;
 
+		[SerializeField]
+		[Header("Disabled Regions")]
+		public FilterFlag _disabledRegions;
+		public FilterFlag DisabledRegions
+		{
+			get
+			{
+				if (_disabledRegions == null)
+				{
+					//Make a new one.
+					_disabledRegions = new FilterFlag();
+				}
+				return _disabledRegions;
+			}
+			set { _disabledRegions = value; }
+		}
+
 		public void Init()
 		{
 			SetDefaultAreas();
@@ -159,13 +176,17 @@ namespace NullSpace.SDK
 			//Look through all the objects. Check which is closest.
 			for (int i = 0; i < SceneReferences.Count; i++)
 			{
-				//objPos = SceneReferences[i] != null ? SceneReferences[i].ObjectPosition : Vector3.one * float.MaxValue;
-				float newDist = Vector3.Distance(point, SceneReferences[i].ObjectPosition);
-
-				if (newDist < closestDist && newDist < maxDistance)
+				//Disallow locations we have marked as inactive.
+				if (SceneReferences[i].LocationActive)
 				{
-					closest = SceneReferences[i].Representation;
-					closestDist = newDist;
+					//objPos = SceneReferences[i] != null ? SceneReferences[i].ObjectPosition : Vector3.one * float.MaxValue;
+					float newDist = Vector3.Distance(point, SceneReferences[i].ObjectPosition);
+
+					if (newDist < closestDist && newDist < maxDistance)
+					{
+						closest = SceneReferences[i].Representation;
+						closestDist = newDist;
+					}
 				}
 			}
 			//Debug.Log("Closest: " + closest.name + "\n");
@@ -221,7 +242,9 @@ namespace NullSpace.SDK
 			{
 				float newDist = Vector3.Distance(point, SceneReferences[i].ObjectPosition);
 
-				if (newDist < closestDist)
+				bool isCloser = newDist < closestDist;
+				bool islocationActive = SceneReferences[i].LocationActive;
+				if (isCloser && islocationActive)
 				{
 					closestObjects.Add(SceneReferences[i].Representation);
 				}
@@ -230,7 +253,7 @@ namespace NullSpace.SDK
 			//Debug.Log(hit.Count + "\n");
 			return hit.ToArray();
 		}
-		
+
 		/// <summary>
 		/// Gets a random GameObject from the suit (which has a HapticLocation) that is within the set of potential areas.
 		/// You can request 'AreaFlag.Right_All' to get any random right area.
@@ -239,6 +262,12 @@ namespace NullSpace.SDK
 		/// <returns>A game object within the random set. Can be null if you ask for AreaFlag.None or for spots that aren't on your configured body.</returns>
 		public GameObject GetRandomLocationWithinSet(AreaFlag setOfPotentialAreas)
 		{
+			//TODO: Refactor this
+			//Give me a random area flag within the set of area flag.
+			//Apply filter to that set.
+			//Then get the index of that area.
+
+
 			var limitedAreas = DefinedAreas.Where(x => setOfPotentialAreas.HasFlag(x));
 			int index = Random.Range(0, limitedAreas.Count());
 
@@ -263,6 +292,7 @@ namespace NullSpace.SDK
 			}
 			return null;
 		}
+
 		#endregion
 
 		#region Visibility control (if you aren't using CameraExtension.HideLayer)
@@ -288,7 +318,7 @@ namespace NullSpace.SDK
 					rend.enabled = revealed;
 				}
 			}
-		} 
+		}
 		#endregion
 	}
 }

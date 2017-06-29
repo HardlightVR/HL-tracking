@@ -23,8 +23,10 @@ public class ForwardKinematicArms : MonoBehaviour
 	//[Range(-360, 360)]
 	//public float AngleThree;
 
-	public float SamplingDistance = 0.1f;
-	public float LearningRate = 0.25f;
+	public float SamplingDistance = 0.25f;
+	[Range(1, 3)]
+	public int IKSampleRate = 4;
+	public float LearningRate = 300.0f;
 	public float DistanceThreshold = .1f;
 
 	public float[] OfficialAngles;
@@ -58,14 +60,13 @@ public class ForwardKinematicArms : MonoBehaviour
 			}
 		}
 
-		string report = "[" + gameObject.name + " - Original Positions]\n";
-		for (int i = 0; i < Joints.Length; i++)
-		{
-			report += Joints[i].name + "  " + Joints[i].transform.position + "\n";
-		}
-		Debug.Log(report + "\n");
+		//string report = "[" + gameObject.name + " - Original Positions]\n";
+		//for (int i = 0; i < Joints.Length; i++)
+		//{
+		//	report += Joints[i].name + "  " + Joints[i].transform.position + "\n";
+		//}
+		//Debug.Log(report + "\n");
 	}
-
 
 	//Calculate Step:
 	//POne = PZero + rotate(DistanceOne, PZero, alphaZero)
@@ -89,7 +90,10 @@ public class ForwardKinematicArms : MonoBehaviour
 			DistanceToTarget = Vector3.Distance(Target.transform.position, LastTarget);
 			//Debug.Log("Distance to target: " + DistanceToTarget + "\n");
 
-			InverseKinematics(Target.transform.position, GetAngles());
+			for (int i = 0; i < IKSampleRate; i++)
+			{
+				InverseKinematics(Target.transform.position, GetAngles());
+			}
 		}
 	}
 
@@ -266,23 +270,30 @@ public class ForwardKinematicArms : MonoBehaviour
 		}
 		#endregion
 
+		#region Target
 		if (Target != null)
 		{
 			Gizmos.color = new Color(.8f, .7f, 0.0f, 1.0f);
 			Gizmos.DrawSphere(Target.transform.position, .025f);
-			if(ShouldJointDraw)
+			if (ShouldJointDraw)
 				Gizmos.DrawSphere(Target.transform.position + visualizeOffset, .025f);
 		}
+		#endregion
 
-		Gizmos.DrawSphere(LastTarget + Vector3.right * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget - Vector3.right * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget + Vector3.up * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget - Vector3.up * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget + Vector3.forward * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget - Vector3.forward * .03f, .01f);
-		Gizmos.DrawSphere(LastTarget, .01f);
+		#region Last Target Sphere Cluster
+		if (LastTarget != Vector3.zero)
+		{
+			Gizmos.DrawSphere(LastTarget + Vector3.right * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget - Vector3.right * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget + Vector3.up * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget - Vector3.up * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget + Vector3.forward * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget - Vector3.forward * .03f, .01f);
+			Gizmos.DrawSphere(LastTarget, .01f);
 
-		Gizmos.DrawLine(LastTarget, Target.transform.position);
+			Gizmos.DrawLine(LastTarget, Target.transform.position);
+		} 
+		#endregion
 	}
 
 }

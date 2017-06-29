@@ -194,8 +194,6 @@ namespace NullSpace.SDK
 			//Create an Arm Prefab
 			ArmMimic newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Arm Mimic Prefab")).GetComponent<ArmMimic>();
 
-			newArm.name = "Arm Mimic [" + WhichSide.ToString() + "]";
-
 			newArm.transform.SetParent(transform);
 
 			//Initialize the arm prefab (handing in the side and connector points)
@@ -213,6 +211,7 @@ namespace NullSpace.SDK
 				LeftArm = Arm;
 				LeftArm.transform.SetParent(LeftShoulder.transform);
 				LeftArm.transform.localPosition = Arm.transform.right * -.5f;
+				LeftArm.MirrorKeyArmElements();
 			}
 			else
 			{

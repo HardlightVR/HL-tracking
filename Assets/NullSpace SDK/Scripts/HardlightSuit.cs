@@ -77,6 +77,13 @@ namespace NullSpace.SDK
 			}
 		}
 
+		[SerializeField]
+		public FilterFlag DisabledRegions
+		{
+			get { return Definition.DisabledRegions; }
+			set { Definition.DisabledRegions = value; }
+		}
+
 		#region Transplanted Lists & Fields (from SuitDefinition)
 		//This is a bunch of transplanted SuitDefinition class content to leverage prefab serialization.
 		//See the summary comment on SuitDefinition in HardlightSuit.cs to understand why
@@ -104,7 +111,8 @@ namespace NullSpace.SDK
 		public bool AddExclusiveTriggerCollider = true;
 		private bool initialized = false;
 
-		public void CheckListValidity()
+#if UNITY_EDITOR
+		public void _EditorOnlyCheckListValidity()
 		{
 			//Ensure the lists are all valid
 			if (DefinedAreas == null || DefinedAreas.Count == 0)
@@ -120,31 +128,13 @@ namespace NullSpace.SDK
 				SceneReferences = Definition.SceneReferences.ToList();
 			}
 		}
+#endif
 		#endregion
 
-		/// <summary>
-		/// This is a function that collapses the valid areas for runtime.
-		/// Prevents hitting a null reference when we try to find a specific area.
-		/// </summary>
-		public void CollapseValidAreasForRuntime()
+		#region Start, Init and other Setup	
+		private void Start()
 		{
-			for (int i = SceneReferences.Count - 1; i > -1; i--)
-			{
-				bool validDefined = (DefinedAreas == null);
-				bool zonesDefined = (ZoneHolders == null);
-				bool refsDefined = (SceneReferences == null);
-				if (validDefined || zonesDefined || refsDefined)
-				{
-					Debug.LogError("Pruning malfunction\n");
-				}
-
-				if (SceneReferences[i] == null)
-				{
-					SceneReferences.RemoveAt(i);
-					ZoneHolders.RemoveAt(i);
-					DefinedAreas.RemoveAt(i);
-				}
-			}
+			Init();
 		}
 
 		public void Init()
@@ -152,6 +142,11 @@ namespace NullSpace.SDK
 			//If we AREN'T initialized
 			if (!initialized)
 			{
+				if (!AreListsValid())
+				{
+					Debug.LogError("Attempting to initialize HardlightSuit [" + name + "] but one or more of my lists are null.\n\tThis is likely a problem with the asset or prefab itself.\n");
+				}
+
 				//Get rid of empty fields
 				CollapseValidAreasForRuntime();
 
@@ -159,18 +154,82 @@ namespace NullSpace.SDK
 				Definition.DefinedAreas = DefinedAreas.ToList();
 				Definition.ZoneHolders = ZoneHolders.ToList();
 				Definition.SceneReferences = SceneReferences.ToList();
+
 				Definition.AddChildObjects = AddChildObjects;
 				Definition.HapticsLayer = HapticsLayer;
 				Definition.AddExclusiveTriggerCollider = AddExclusiveTriggerCollider;
+
 				Definition.SetupDictionary();
 				initialized = true;
 			}
 		}
 
-		private void Start()
+		private bool AreListsValid()
 		{
-			Init();
+			bool validDefined = (DefinedAreas == null);
+			bool zonesDefined = (ZoneHolders == null);
+			bool refsDefined = (SceneReferences == null);
+			if (validDefined || zonesDefined || refsDefined)
+			{
+				//Debug.LogError("Pruning malfunction\n");
+				return false;
+			}
+			return true;
 		}
+
+		private void CollapseValidAreasForRuntime()
+		{
+			List<int> indicesOfInvalidReferences = FindIndicesOfInvalidReferences();
+
+			AddInvalidRegionsToFilter(indicesOfInvalidReferences);
+			RemoveInvalidReferences(indicesOfInvalidReferences);
+		}
+
+		private List<int> FindIndicesOfInvalidReferences()
+		{
+			List<int> indicesOfInvalidReferences = new List<int>();
+
+			for (int i = 0; i < SceneReferences.Count; i++)
+			{
+				if (SceneReferences[i] == null)
+				{
+					indicesOfInvalidReferences.Add(i);
+				}
+			}
+			return indicesOfInvalidReferences;
+		}
+
+		private void AddInvalidRegionsToFilter(List<int> indicesOfInvalidReferences)
+		{
+			//Step through the list normally.
+			for (int i = 0; i < indicesOfInvalidReferences.Count; i++)
+			{
+				if (DefinedAreas.Count > i)
+				{
+					DisabledRegions.DisableArea(DefinedAreas[i]);
+				}
+			}
+		}
+
+		/// <summary>
+		/// This is a function that collapses the valid areas for runtime.
+		/// Prevents hitting a null reference when we try to find a specific area.
+		/// </summary>
+		private void RemoveInvalidReferences(List<int> indicesOfInvalidReferences)
+		{
+			//WARNING:
+			//Don't traverse list in front->back order, deletion will change the indices
+
+			//Start at the back of the invalid list (last indices) -> delete those first
+			for (int i = indicesOfInvalidReferences.Count - 1; i > -1; i--)
+			{
+				int indexOfInvalidElement = indicesOfInvalidReferences[i];
+				SceneReferences.RemoveAt(indexOfInvalidElement);
+				ZoneHolders.RemoveAt(indexOfInvalidElement);
+				DefinedAreas.RemoveAt(indexOfInvalidElement);
+			}
+		}
+		#endregion
 
 		/// <summary>
 		/// The HardlightSuit supports two forms of collisions:
@@ -200,6 +259,83 @@ namespace NullSpace.SDK
 					SceneReferences[i].myCollider.enabled = targetState;
 				}
 			}
+		}
+
+		/// <summary>
+		/// This function replaces existing elements so we can change the suit definition more easily at runtime (say the player's arm is added or destroyed)
+		/// </summary>
+		/// <param name="SingleFlagToModify"></param>
+		/// <param name="SingleHolder"></param>
+		/// <param name="newCollider"></param>
+		/// <returns></returns>
+		public bool ModifyValidRegions(AreaFlag SingleFlagToModify, GameObject SingleHolder, HardlightCollider newCollider)
+		{
+			bool Succeeded = false;
+
+			if (!SingleFlagToModify.IsSingleArea())
+			{
+				Debug.LogError("Attempted to modify the valid regions of the Hardlight Suit by providing a complex AreaFlag.\n\tThis function does not yet support complex area flags. Call it individually for each flag if you need to do this.");
+
+				return false;
+			}
+
+			if (SingleHolder == null || newCollider == null || SingleFlagToModify == AreaFlag.None)
+			{
+				Debug.LogError("Attempted to modify the valid regions of the Hardlight Suit to provide invalid elements (either the collider or the holder) or to provide an AreaFlag of None (" + SingleFlagToModify.ToString() + ")");
+				return false;
+			}
+
+			bool ReplacedExistingElement = false;
+
+			var indexOfFlag = -1;
+			GameObject oldHolder = null;
+			HardlightCollider oldCollider = null;
+			//If we have the area flag already
+			if (Definition.DefinedAreas.Contains(SingleFlagToModify))
+			{
+				ReplacedExistingElement = true;
+
+				//Find which index it is (index is the access key to all three lists)
+				indexOfFlag = Definition.DefinedAreas.IndexOf(SingleFlagToModify);
+
+				//Store the old holder and old collider
+				oldHolder = Definition.ZoneHolders[indexOfFlag];
+				oldCollider = Definition.SceneReferences[indexOfFlag];
+
+				oldHolder.SetActive(false);
+
+				//No longer have this location as disabled
+				DisabledRegions.EnableArea(SingleFlagToModify);
+
+				//Replace the old elements
+				Definition.ZoneHolders[indexOfFlag] = SingleHolder;
+				Definition.SceneReferences[indexOfFlag] = newCollider;
+				Succeeded = true;
+			}
+			//Flag does not yet exist in the dictionary (it was empty so it was deleted)
+			else
+			{
+				//Store the index of the new element we're adding.
+				indexOfFlag = DefinedAreas.Count;
+				Definition.DefinedAreas.Add(SingleFlagToModify);
+
+				//Add the new elements
+				Definition.ZoneHolders.Add(SingleHolder);
+				Definition.SceneReferences.Add(newCollider);
+
+				//This location is now enabled.
+				DisabledRegions.EnableArea(SingleFlagToModify);
+
+				Succeeded = true;
+			}
+
+			if (ReplacedExistingElement)
+			{
+				//Do something about the old elements?
+				//What if we want to revert?
+			}
+
+			return Succeeded;
 		}
 
 		/// <summary>
@@ -243,6 +379,38 @@ namespace NullSpace.SDK
 			HapticSequence seq = new HapticSequence();
 			seq.LoadFromAsset("Haptics/" + sequenceFile);
 			return seq;
+		}
+
+		/// <summary>
+		/// This function is for 
+		/// This function has unintended consequences if you use multiple areaflags on the same area (such as Chest_Both)
+		/// 
+		/// </summary>
+		/// <param name="enabled"></param>
+		/// <param name="flag"></param>
+		public void SetHapticLocationActivity(bool enabled, AreaFlag flag)
+		{
+			throw new System.Exception("Incomplete\n");
+
+			if (DefinedAreas.Contains(flag))
+			{
+				var indexOfArea = DefinedAreas.IndexOf(flag);
+				if (indexOfArea < 0)
+				{
+					Debug.LogError("Deactivate Haptic Location failed. It did not contain the requested flag " + flag.ToString() + "\n");
+					return;
+				}
+				SceneReferences[indexOfArea].LocationActive = enabled;
+				AreaFlag locationsArea = SceneReferences[indexOfArea].MyLocation.Where;
+				if (enabled)
+				{
+					DisabledRegions.DisableArea(locationsArea);
+				}
+				else
+				{
+					DisabledRegions.DisableArea(locationsArea);
+				}
+			}
 		}
 
 		#region Simple Hit (Nearest and Nearby)
@@ -461,7 +629,7 @@ namespace NullSpace.SDK
 			{
 				HapticLocation loc = closest[i].GetComponent<HapticLocation>();
 				//Debug.DrawLine(source, loc.transform.position, Color.green, 15.0f);
-				if (closest[i] != null && loc != null)
+				if (closest[i] != null && loc != null && loc.LocationActive)
 				{
 					Debug.DrawLine(point, loc.transform.position, Color.red, 15.0f);
 
@@ -488,7 +656,7 @@ namespace NullSpace.SDK
 			{
 				HapticLocation loc = closest[i].GetComponent<HapticLocation>();
 				Debug.DrawLine(point, loc.transform.position, Color.green, 15.0f);
-				if (closest[i] != null && loc != null)
+				if (closest[i] != null && loc != null && loc.LocationActive)
 				{
 					RaycastHit hit;
 					float dist = Vector3.Distance(point, loc.transform.position);
@@ -511,13 +679,25 @@ namespace NullSpace.SDK
 
 		/// <summary>
 		/// Gets a random HapticLocation on the configured HardlightSuit.
+		/// NOTE: Will remove DisabledRegions
 		/// </summary>
+		/// <param name="OnlyAreasWithinSet">The AreaFlags you want to randomly select from.</param>
+		/// <param name="DisplayInEditor"></param>
 		/// <returns>A valid HapticLocation on the body (defaults to null if none are configured or if it is configured incorrectly.</returns>
-		public HapticLocation FindRandomLocation(AreaFlag OnlyAreasWithinSet = AreaFlag.All_Areas, bool DisplayInEditor = false)
+		public HapticLocation FindRandomLocation(AreaFlag OnlyAreasWithinSet = AreaFlag.All_Areas, bool RemoveDisabledRegions = false, bool DisplayInEditor = false)
 		{
+			if (RemoveDisabledRegions)
+			{
+				OnlyAreasWithinSet = OnlyAreasWithinSet.RemoveArea(DisabledRegions.InactiveRegions);
+			}
+
 			HapticLocation loc = Definition.GetRandomLocationWithinSet(OnlyAreasWithinSet).GetComponent<HapticLocation>();
 			if (loc != null)
 			{
+				if (!loc.LocationActive)
+				{
+					Debug.LogError("FindRandomLocation and GetRandomLocationWithinSet have returned a HapticLocation that is marked as inactive.\n\tThis is an expected bug but should be fixed in the future - try using DeactiveHapticLocation to turn regions off.\n");
+				}
 				if (DisplayInEditor)
 				{
 					ColorHapticLocationInEditor(loc, Color.blue);
@@ -603,7 +783,7 @@ namespace NullSpace.SDK
 		{
 			yield return new WaitForSeconds(delay);
 			impulse.Play();
-		} 
+		}
 		#endregion
 	}
 }

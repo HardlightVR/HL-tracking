@@ -29,6 +29,12 @@ namespace NullSpace.SDK
 		[Header("If collider is null, performs a GetComponent", order = 5)]
 		public bool TryFindCollider = false;
 
+		public bool LocationActive
+		{
+			get { return MyLocation.LocationActive; }
+			set { MyLocation.LocationActive = value; }
+		}
+
 		public AreaFlag regionID
 		{
 			get { return MyLocation.Where; }
