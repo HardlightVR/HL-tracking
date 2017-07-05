@@ -31,6 +31,7 @@ namespace NullSpace.SDK
 		public ArmKinematicMode ArmMode = ArmKinematicMode.ControllerOnly;
 		public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
 
+		[SerializeField]
 		private bool _mimicEnabled;
 		/// <summary>
 		/// We will automatically reenable the Arm Mimic when the controller, shoulder and tracker are all valid
@@ -41,9 +42,9 @@ namespace NullSpace.SDK
 		public bool drawWireConnectorsOnlyWhenSelected = false;
 
 		[Header("Kinematic References")]
-		public ForwardKinematicArms ControllerOnlyKinematics;
-		public ForwardKinematicArms UpperArmKinematics;
-		public ForwardKinematicArms LowerArmKinematics;
+		public ArmKinematics ControllerOnlyKinematics;
+		public ArmKinematics UpperArmKinematics;
+		public ArmKinematics LowerArmKinematics;
 
 		[Header("Reference Lists")]
 		public Renderer[] ArmRenderers;
@@ -126,7 +127,7 @@ namespace NullSpace.SDK
 			SetArmColliderAreaFlags();
 
 			MimicEnabled = true;
-			AttemptReenable = true;
+			AttemptReenable = false;
 		}
 
 		void Start()
@@ -191,7 +192,22 @@ namespace NullSpace.SDK
 				{
 					ArmMode = SetToMode;
 					LowerArmKinematics.enabled = true;
+					LowerArmKinematics.ApplyForwardKinematics = true;
+					LowerArmKinematics.ApplyInverseKinematics = true;
+					if (transform.parent != null)
+					{
+						//LowerArmKinematics.RotationBase = transform.parent;
+					}
+
 					UpperArmKinematics.enabled = true;
+					UpperArmKinematics.ApplyForwardKinematics = true;
+					UpperArmKinematics.ApplyInverseKinematics = true;
+
+					if (transform.parent != null)
+					{
+						UpperArmKinematics.RotationBase = transform.parent;
+					}
+
 				}
 				else
 				{ EncounteredProblem = true; }
@@ -199,6 +215,8 @@ namespace NullSpace.SDK
 				if (ControllerOnlyKinematics != null)
 				{
 					ControllerOnlyKinematics.enabled = false;
+					ControllerOnlyKinematics.ApplyForwardKinematics = true;
+					ControllerOnlyKinematics.ApplyInverseKinematics = true;
 				}
 			}
 			else if (SetToMode == ArmKinematicMode.ControllerOnly)
@@ -244,7 +262,18 @@ namespace NullSpace.SDK
 
 		void UpdateMimic()
 		{
-
+			if (ControllerOnlyKinematics)
+			{
+				ControllerOnlyKinematics.UpdateKinematics();
+			}
+			if (UpperArmKinematics)
+			{
+				UpperArmKinematics.UpdateKinematics();
+			}
+			if (LowerArmKinematics)
+			{
+				LowerArmKinematics.UpdateKinematics();
+			}
 		}
 
 		void CheckForReenable()
