@@ -203,7 +203,7 @@ namespace NullSpace.SDK
 		{
 			GameObject go = new GameObject();
 			go.transform.SetParent(transform);
-			go.name = "Camera Mimic";
+			go.name = "[" + vrCamera.name + "] Mimic";
 			_vrCamera = go.AddComponent<VRObjectMimic>();
 			_vrCamera.Init(vrCamera);
 			_vrCamera.MimickedObjectType = VRObjectMimic.TypeOfMimickedObject.Camera;

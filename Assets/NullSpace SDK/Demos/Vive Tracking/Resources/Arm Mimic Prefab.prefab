@@ -443,8 +443,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000013812514860}
   - 114: {fileID: 114000014187254144}
-  - 33: {fileID: 33000011333861352}
-  - 23: {fileID: 23000013168350578}
   m_Layer: 31
   m_Name: Vive Tracker Representation
   m_TagString: Untagged
@@ -616,8 +614,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013426942754}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.02, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -645,10 +643,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010140665976}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: -1.17, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000011782553614}
   m_Father: {fileID: 4000013677279278}
@@ -809,7 +807,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010032286678}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -849,7 +847,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010092209528}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -990,35 +988,6 @@ MeshRenderer:
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 1
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
---- !u!23 &23000013168350578
-MeshRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013583246696}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 0}
-  m_SubsetIndices: 
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
   m_SelectedWireframeHidden: 0
@@ -1201,13 +1170,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010033610580}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!33 &33000011333861352
-MeshFilter:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013583246696}
-  m_Mesh: {fileID: 0}
 --- !u!33 &33000011593589660
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -1318,10 +1280,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 1, g: 1, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000010060713798
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1338,6 +1306,9 @@ MonoBehaviour:
   ApplyInverseKinematics: 1
   ApplyJointClamping: 0
   UseRotationBase: 1
+  ShouldDrawKinematicGizmos: 1
+  UseOrientationFitness: 0
+  EndManipulatorGizmoSize: 0
   RotationBase: {fileID: 0}
   Joints:
   - {fileID: 114000012970722876}
@@ -1356,11 +1327,18 @@ MonoBehaviour:
   DistanceToTarget: 0
   WorldDistanceToTarget: 0
   SamplingDistance: 5
+  OrientationSamplingDistance: 0.25
   IKSampleRate: 1
   LearningRate: 650
   DistanceThreshold: 0.02
+  PositionalWeight: 1
+  OrientationWeight: 0.75
   RandomizeStart: 0
   RandomizeTarget: 0
+  CurrentResults:
+    jointsInfo: []
+    Angles: []
+    ComfortSum: 0
   visualizeOffset: {x: 0, y: 0, z: -0.5}
 --- !u!114 &114000010112746070
 MonoBehaviour:
@@ -1377,10 +1355,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 1, g: 1, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000010182808136
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1396,10 +1380,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 1, g: 1, b: 1, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
+  myColor: {r: 0, g: 0, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000010467903864
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1426,11 +1416,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4b3651a2ddcfc747b018d75765b307f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UpdateRegardlessOfArmMimic: 1
+  UpdateRegardlessOfArmMimic: 0
   ApplyForwardKinematics: 1
   ApplyInverseKinematics: 1
   ApplyJointClamping: 0
   UseRotationBase: 1
+  ShouldDrawKinematicGizmos: 1
+  UseOrientationFitness: 0
+  EndManipulatorGizmoSize: 0.1
   RotationBase: {fileID: 0}
   Joints:
   - {fileID: 114000012970722876}
@@ -1469,11 +1462,18 @@ MonoBehaviour:
   DistanceToTarget: 0
   WorldDistanceToTarget: 0
   SamplingDistance: 5
+  OrientationSamplingDistance: 0.25
   IKSampleRate: 1
   LearningRate: 500
   DistanceThreshold: 0.1
+  PositionalWeight: 1
+  OrientationWeight: 0.75
   RandomizeStart: 0
   RandomizeTarget: 0
+  CurrentResults:
+    jointsInfo: []
+    Angles: []
+    ComfortSum: 0
   visualizeOffset: {x: 0, y: 0, z: -0.5}
 --- !u!114 &114000010754309680
 MonoBehaviour:
@@ -1490,10 +1490,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 0.7921569, g: 0.21176471, b: 1, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
+  myColor: {r: 1, g: 0, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000010905478850
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1524,10 +1530,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 0.7921569, g: 0.21176471, b: 1, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
+  myColor: {r: 0, g: 0.141, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.1
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000011303329554
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1558,10 +1570,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 0, g: 1, b: 0.95862055, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
+  myColor: {r: 1, g: 0.88965523, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.025
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000011610855774
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1577,10 +1595,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 1, g: 1, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000011896321232
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1609,10 +1633,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 0.91724133, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000012176535498
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1634,16 +1664,19 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012980279854}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4b3651a2ddcfc747b018d75765b307f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UpdateRegardlessOfArmMimic: 1
+  UpdateRegardlessOfArmMimic: 0
   ApplyForwardKinematics: 1
   ApplyInverseKinematics: 1
   ApplyJointClamping: 0
   UseRotationBase: 1
+  ShouldDrawKinematicGizmos: 1
+  UseOrientationFitness: 0
+  EndManipulatorGizmoSize: 0
   RotationBase: {fileID: 4000011782553614}
   Joints:
   - {fileID: 114000011610855774}
@@ -1673,11 +1706,53 @@ MonoBehaviour:
   DistanceToTarget: 0
   WorldDistanceToTarget: 0.43956
   SamplingDistance: 5
+  OrientationSamplingDistance: 0.25
   IKSampleRate: 1
   LearningRate: 300
   DistanceThreshold: 0.1
+  PositionalWeight: 1
+  OrientationWeight: 0.75
   RandomizeStart: 0
   RandomizeTarget: 0
+  CurrentResults:
+    jointsInfo:
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 0, z: 0}
+      RightDirection: {x: 0, y: 0, z: 0}
+      jointRef: {fileID: 0}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 1, z: 0}
+      RightDirection: {x: 1, y: 0, z: 0}
+      jointRef: {fileID: 114000011300809288}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 1, z: 0}
+      RightDirection: {x: 1, y: 0, z: 0}
+      jointRef: {fileID: 114000013169252186}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 1, z: 0}
+      RightDirection: {x: 1, y: 0, z: 0}
+      jointRef: {fileID: 114000010754309680}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 1, z: 0}
+      RightDirection: {x: 1, y: 0, z: 0}
+      jointRef: {fileID: 114000011495387428}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 1, z: 0}
+      RightDirection: {x: 1, y: 0, z: 0}
+      jointRef: {fileID: 114000012774407418}
+    - Position: {x: 0, y: 0, z: 0}
+      UpDirection: {x: 0, y: 0, z: 0}
+      RightDirection: {x: 0, y: 0, z: 0}
+      jointRef: {fileID: 0}
+    Angles:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    ComfortSum: 3.4028235e+38
   visualizeOffset: {x: 0, y: 0, z: -0.5}
 --- !u!114 &114000012358746182
 MonoBehaviour:
@@ -1694,10 +1769,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -85
   MaxAngle: 150
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
   myColor: {r: 0.8455882, g: 0, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000012388187248
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1726,10 +1807,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 1, g: 0.9843137, b: 0.49803922, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
+  myColor: {r: 1, g: 0, b: 0.972414, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.1
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000012970722876
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1745,10 +1832,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -170
   MaxAngle: 135
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
   myColor: {r: 0, g: 0.516, b: 1, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.1
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000013169252186
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1764,10 +1857,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
-  myColor: {r: 0.7921569, g: 0.21176471, b: 1, a: 1}
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
+  myColor: {r: 0, g: 1, b: 0.13103437, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.075
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000013301197414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1783,10 +1882,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -160
   MaxAngle: 130
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 1, z: 0}
+  ComfortRight: {x: 1, y: 0, z: 0}
   myColor: {r: 0, g: 1, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.075
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 1
+  DrawJointGizmos: 1
 --- !u!114 &114000013377403770
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1862,7 +1967,7 @@ MonoBehaviour:
   _mimicEnabled: 1
   AttemptReenable: 0
   _armRenderersEnabled: 0
-  drawWireConnectorsOnlyWhenSelected: 0
+  DrawWireConnectors: 0
   ControllerOnlyKinematics: {fileID: 114000010553985860}
   UpperArmKinematics: {fileID: 114000010060713798}
   LowerArmKinematics: {fileID: 114000012235604914}
@@ -1902,10 +2007,16 @@ MonoBehaviour:
   StartOffset: {x: 0, y: 0, z: 0}
   MinAngle: -180
   MaxAngle: 180
+  AngleFromUp: 0
+  AngleFromRight: 0
+  AngleFromComfort: 0
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 0, b: 0, a: 1}
   rend: {fileID: 0}
+  JointDiscSize: 0.05
   JointGizmoSize: 0.1
-  DrawAxisOfRotation: 0
+  DrawJointGizmos: 1
 --- !u!114 &114000014187254144
 MonoBehaviour:
   m_ObjectHideFlags: 1

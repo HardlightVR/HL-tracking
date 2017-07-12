@@ -39,7 +39,7 @@ namespace NullSpace.SDK
 		public bool AttemptReenable;
 		[SerializeField]
 		private bool _armRenderersEnabled;
-		public bool drawWireConnectorsOnlyWhenSelected = false;
+		public bool DrawWireConnectors = false;
 
 		[Header("Kinematic References")]
 		public ArmKinematics ControllerOnlyKinematics;
@@ -287,7 +287,7 @@ namespace NullSpace.SDK
 		#region Gizmos
 		void OnDrawGizmos()
 		{
-			if (!drawWireConnectorsOnlyWhenSelected)
+			if (DrawWireConnectors)
 				DrawWireframe();
 		}
 

@@ -286,7 +286,7 @@ namespace NullSpace.SDK
 
 				//Set the BodyMimic's target to the VRObjectMimic
 				mimic = newMimic.GetComponent<BodyMimic>();
-				mimic.hmd = vrCamera.gameObject;
+				mimic.hmd = vrCamera.GetComponent<WatchedByMimic>().WatchingMimic.gameObject;
 				mimic.transform.SetParent(CameraRigMimic.transform);
 			}
 			if (vrCamera != null)
