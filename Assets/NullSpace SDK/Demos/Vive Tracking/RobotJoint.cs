@@ -12,13 +12,20 @@ public class RobotJoint : MonoBehaviour
 	public float AngleFromUp;
 	public float AngleFromRight;
 	public float AngleFromComfort;
+
+	/// <summary>
+	/// The intended up direction for this joint.
+	/// </summary>
 	public Vector3 ComfortUp = Vector3.zero;
 	public Vector3 ComfortRight = Vector3.zero;
 
 	public Color myColor = Color.white;
 	public MeshRenderer rend;
 
+	//The axis of rotation disc
 	public float JointDiscSize = .05f;
+
+	//The general size of a number of the gizmos.
 	public float JointGizmoSize = .1f;
 
 	public bool DrawJointGizmos = true;
@@ -49,10 +56,10 @@ public class RobotJoint : MonoBehaviour
 	void OnDrawGizmos()
 	{
 		if (DrawJointGizmos)
-			DrawWireframe();
+			DrawDisplayGizmos();
 	}
 
-	void DrawWireframe()
+	void DrawDisplayGizmos()
 	{
 		//Start at transform
 		//Draw 6 circles on the axis of rotation.
@@ -60,12 +67,16 @@ public class RobotJoint : MonoBehaviour
 #if UNITY_EDITOR
 		Vector3 LocalAxis = transform.rotation * Axis;
 		UnityEditor.Handles.color = myColor;
+		Gizmos.color = myColor;
+
+		//This draws the axis of rotation for this joint
 		UnityEditor.Handles.DrawDottedLine(transform.position - LocalAxis * JointGizmoSize, transform.position + LocalAxis * JointGizmoSize, 5);
 
+		//This draws the circle that the object rotates around.
 		UnityEditor.Handles.DrawWireDisc(transform.position, LocalAxis, JointDiscSize);
 
-		Gizmos.color = myColor;
-		//Gizmos.DrawSphere(transform.position, .01f);
+		//This draws the visual indication of my comfort up.
+		#region Draw Up Comfort
 		if (ComfortUp != Vector3.zero)
 		{
 			Gizmos.color = myColor - new Color(0, 0, 0, .25f);
@@ -73,11 +84,32 @@ public class RobotJoint : MonoBehaviour
 			Vector3 upPos = transform.position + transform.up * JointGizmoSize * 1.25f + Axis * .005f;
 			Gizmos.DrawSphere(comfortPos, .01f);
 			Gizmos.DrawSphere(upPos, .015f);
+			Gizmos.color = Color.blue - new Color(0, 0, 0, .25f);
+			UnityEditor.Handles.color = Gizmos.color + new Color(0, 0, 0, .5f);
+			Gizmos.DrawLine(comfortPos, comfortPos + Vector3.up * .02f);
+			Gizmos.DrawLine(upPos, upPos + Vector3.up * .02f);
 
 			UnityEditor.Handles.DrawLine(comfortPos, upPos);
-			//UnityEditor.Handles.DrawLine(transform.position + Vector3.forward * .01f, transform.position + transform.up * JointGizmoSize * 1.5f + Vector3.forward * .01f);
-			//UnityEditor.Handles.DrawLine(transform.position + Vector3.forward * .02f, transform.position + ComfortUp * JointGizmoSize * 2 + Vector3.forward * .01f);
 		}
+		#endregion
+
+		//This draws the visual indication of my comfort right.
+		#region Draw Right Comfort
+		if (ComfortRight != Vector3.zero)
+		{
+			Gizmos.color = myColor - new Color(0, 0, 0, .25f);
+			Vector3 comfortPos = transform.position + ComfortRight * JointGizmoSize + Axis * .005f;
+			Vector3 rightPos = transform.position + transform.right * JointGizmoSize * 1.25f + Axis * .005f;
+			Gizmos.DrawSphere(comfortPos, .01f);
+			Gizmos.DrawSphere(rightPos, .015f);
+			Gizmos.color = Color.red - new Color(0, 0, 0, .25f);
+			UnityEditor.Handles.color = Gizmos.color + new Color(0, 0, 0, .5f);
+			Gizmos.DrawLine(comfortPos, comfortPos + Vector3.right * .02f);
+			Gizmos.DrawLine(rightPos, rightPos + Vector3.right * .02f);
+
+			UnityEditor.Handles.DrawLine(comfortPos, rightPos);
+		}
+		#endregion
 #endif
 	}
 

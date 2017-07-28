@@ -278,7 +278,7 @@ public class SteamVR_RenderModel : MonoBehaviour
 					return true;
 				}
 
-				Debug.Log("[" + gameObject.name + "] Render model does not support components, falling back to single mesh.");
+				//Debug.Log("[" + gameObject.name + "] Render model does not support components, falling back to single mesh.");
 			}
 
 			if (!string.IsNullOrEmpty(renderModelName))
@@ -579,7 +579,7 @@ public class SteamVR_RenderModel : MonoBehaviour
 #endif
 		if (!string.IsNullOrEmpty(modelOverride))
 		{
-			Debug.Log("Model override is really only meant to be used in the scene view for lining things up; using it at runtime is discouraged.  Use tracked device index instead to ensure the correct model is displayed for all users.");
+			//Debug.Log("Model override is really only meant to be used in the scene view for lining things up; using it at runtime is discouraged.  Use tracked device index instead to ensure the correct model is displayed for all users.");
 			enabled = false;
 			return;
 		}

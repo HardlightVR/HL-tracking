@@ -30,9 +30,19 @@ public class SteamVR_TrackedObject : MonoBehaviour
 		Device15
 	}
 
-	public EIndex index;
+	[SerializeField]
+	private EIndex _index;
+	public EIndex index
+	{
+		get { return _index; }
+		set
+		{
+			Debug.Log("Adjusting Index   [" + name + "]\n[" + _index + "]  ==>  [" + value + "]");
+			_index = value;
+		}
+	}
 	public Transform origin; // if not set, relative to parent
-    public bool isValid = false;
+	public bool isValid = false;
 
 	private void OnNewPoses(params object[] args)
 	{
@@ -41,7 +51,7 @@ public class SteamVR_TrackedObject : MonoBehaviour
 
 		var i = (int)index;
 
-        isValid = false;
+		isValid = false;
 		var poses = (Valve.VR.TrackedDevicePose_t[])args[0];
 		if (poses.Length <= i)
 			return;
@@ -52,7 +62,7 @@ public class SteamVR_TrackedObject : MonoBehaviour
 		if (!poses[i].bPoseIsValid)
 			return;
 
-        isValid = true;
+		isValid = true;
 
 		var pose = new SteamVR_Utils.RigidTransform(poses[i].mDeviceToAbsoluteTracking);
 

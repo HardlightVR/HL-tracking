@@ -28,6 +28,24 @@ public class ArmKinematics : MonoBehaviour
 
 	[Header("Target Information")]
 	public GameObject Target;
+	public Vector3 TargetPos
+	{
+		get
+		{
+			if (Target == null)
+			{
+				return Vector3.zero;
+			}
+			return Target.transform.position;
+		}
+		set
+		{
+			if (Target != null)
+			{
+				Target.transform.position = value;
+			}
+		}
+	}
 	public Vector3 ForwardKinematicsResult;
 	public Vector3 LastTargetPosition;
 	public float DistanceToTarget;
@@ -64,7 +82,7 @@ public class ArmKinematics : MonoBehaviour
 
 		if (RandomizeTarget)
 		{
-			Target.transform.position = Joints[0].transform.position + Random.insideUnitSphere;
+			TargetPos = Joints[0].transform.position + Random.insideUnitSphere;
 		}
 		if (RandomizeStart)
 		{
@@ -88,19 +106,6 @@ public class ArmKinematics : MonoBehaviour
 		//Debug.Log(report + "\n");
 	}
 
-	//Calculate Step:
-	//POne = PZero + rotate(DistanceOne, PZero, alphaZero)
-	//PTwo = POne + rotate(DistanceTwo, POne, alphaOne)
-
-	//General Equation
-	// P[i-1] + rotate (D[i], P[i-1], Sigma [i-1, k=0] alpha[k] )
-
-	//private class DegreeOfFreedom
-	//{
-	//	public DegreeOfFreedom Before;
-	//	public DegreeOfFreedom After;
-	//}
-
 	public void Update()
 	{
 		if (UpdateRegardlessOfArmMimic && !Application.isPlaying)
@@ -108,9 +113,8 @@ public class ArmKinematics : MonoBehaviour
 			UpdateKinematics();
 		}
 	}
-	/// <summary>
-	/// Called in ArmMimic.Update()
-	/// </summary>
+
+	// Called in ArmMimic.Update()
 	public void UpdateKinematics()
 	{
 		//Debug.Log("Updating: " + name + " FK: " + ApplyForwardKinematics + " IK: " + ApplyInverseKinematics + "\n", this);
@@ -129,7 +133,7 @@ public class ArmKinematics : MonoBehaviour
 			}
 		}
 
-		UpdateWorldDistanceToTarget();
+		GetTargetToLastJoint();
 		SimplifyAngleValues();
 	}
 
@@ -147,17 +151,19 @@ public class ArmKinematics : MonoBehaviour
 	{
 		if (Target != null)
 		{
-			DistanceToTarget = Vector3.Distance(Target.transform.position, Joints[Joints.Length - 1].transform.position);
+			DistanceToTarget = GetTargetToLastJoint();
 
 			for (int i = 0; i < IKSampleRate; i++)
 			{
-				InverseKinematics(Target.transform.position, GetAngles());
+				InverseKinematics(TargetPos, CurrentResults);
 			}
 		}
 	}
 
 	public KinematicInfo FwdKinematics(float[] angles, bool primaryCall = false, int depth = int.MaxValue)
 	{
+		string reportAngles = "";
+
 		KinematicInfo info = new KinematicInfo(angles, depth);
 		//Start with the position of the first joint
 		Vector3 prevPoint = Vector3.zero;
@@ -167,10 +173,12 @@ public class ArmKinematics : MonoBehaviour
 		Vector3 nextUp = Vector3.up;
 		Vector3 nextRight = Vector3.right;
 
-		//Vector3 prevPoint = Joints[0].transform.position;
-		Quaternion rotation = Quaternion.identity;
+		Quaternion rotation = Quaternion.AngleAxis(angles[0], Joints[0].Axis);
 
-		string reportAngles = "";
+		Vector3 ThisJointsRotatedOffset = rotation * Joints[0].StartOffset;
+		Vector3 nextPoint = prevPoint + ThisJointsRotatedOffset;
+		info.Set(0, Joints[0].transform.position, nextUp, nextRight, Joints[0]);
+
 		//For each required joint
 		for (int i = 1; i < Joints.Length && i < depth; i++)
 		{
@@ -181,8 +189,8 @@ public class ArmKinematics : MonoBehaviour
 			rotation *= Quaternion.AngleAxis(angles[currentIndex], Joints[currentIndex].Axis);
 
 			//Calculate the point of this joint based on the previous point + the rotation offset start offset.
-			Vector3 ThisJointsRotatedOffset = rotation * Joints[i].StartOffset;
-			Vector3 nextPoint = prevPoint + ThisJointsRotatedOffset;
+			ThisJointsRotatedOffset = rotation * Joints[i].StartOffset;
+			nextPoint = prevPoint + ThisJointsRotatedOffset;
 			nextUp = rotation * prevUp;
 			nextRight = rotation * prevRight;
 
@@ -196,6 +204,8 @@ public class ArmKinematics : MonoBehaviour
 			prevUp = nextUp;
 			prevRight = nextRight;
 
+			if (Joints[i] == null)
+				Debug.Log("Error [" + i + "] is null\n");
 			info.Set(i, nextPoint, nextUp, nextRight, Joints[i]);
 
 			if (RotationBase != null && UseRotationBase)
@@ -211,7 +221,6 @@ public class ArmKinematics : MonoBehaviour
 		if (ReportLogs)
 			Debug.Log(reportAngles + "\n");
 
-		//return Joints[0].transform.position + prevPoint;
 		return info;
 	}
 
@@ -261,9 +270,9 @@ public class ArmKinematics : MonoBehaviour
 	}
 
 	#region Inverse Kinematics
-	public void InverseKinematics(Vector3 target, float[] angles)
+	public void InverseKinematics(Vector3 target, KinematicInfo info)
 	{
-		if (DistanceFromTarget(target, angles) < DistanceThreshold)
+		if (DistanceFromTarget(target, info) < DistanceThreshold)
 		{
 			return;
 		}
@@ -275,36 +284,34 @@ public class ArmKinematics : MonoBehaviour
 			// Update : Solution -= LearningRate * Gradient
 			if (i < Joints.Length - 1)
 			{
-				float gradient = PartialGradient(target, angles, i);
+				float gradient = PartialGradient(target, info.Angles, i);
 				OfficialAngles[i] -= LearningRate * gradient;
 
 				if (ApplyJointClamping)
 				{
-					angles[i] = Mathf.Clamp(angles[i], Joints[i].MinAngle, Joints[i].MaxAngle);
+					info.Angles[i] = Mathf.Clamp(info.Angles[i], Joints[i].MinAngle, Joints[i].MaxAngle);
 				}
 
 				// Early termination
-				if (DistanceFromTarget(target, angles) < DistanceThreshold)
+				if (DistanceFromTarget(target, info.Angles) < DistanceThreshold)
 					return;
 			}
 		}
 	}
 	public float PartialGradient(Vector3 target, float[] angles, int angleIndex)
 	{
-		//Debug.Log("Checking: " + i + " " + angles.Length + "\n");
-		// Saves the angle,
 		// it will be restored later
 		float angle = angles[angleIndex];
 
 		//Evaluate before
 		KinematicInfo beforeInfo = FwdKinematics(angles);
-		float f_x = DistanceFromTarget(target, beforeInfo, angleIndex);
+		float f_x = DistanceFromTarget(target, beforeInfo);
 		float f_y = CalculateOrientationAnglesForFullArm(Vector3.up, beforeInfo, angleIndex);
 
 		angles[angleIndex] += SamplingDistance;
 
 		KinematicInfo afterInfo = FwdKinematics(angles);
-		float f_x_plus_d = DistanceFromTarget(target, afterInfo, angleIndex);
+		float f_x_plus_d = DistanceFromTarget(target, afterInfo);
 		float f_y_plus_d = CalculateOrientationAnglesForFullArm(Vector3.up, afterInfo, angleIndex);
 
 		// Gradient : [F(x+SamplingDistance) - F(x)] / h
@@ -326,14 +333,17 @@ public class ArmKinematics : MonoBehaviour
 			float percentOrientation = orientationGradient * (OrientationWeight / (PositionalWeight + OrientationWeight));
 			percentOrientation = percentOrientation / 100;
 			gradient = percentDistance + percentOrientation;
-
 		}
+
 		// Restores
 		angles[angleIndex] = angle;
 
+		//Debug.Log(gradient + "\n");
+
 		return gradient;
 	}
-	public float DistanceFromTarget(Vector3 target, KinematicInfo info, int angleIndex)
+
+	public float DistanceFromTarget(Vector3 target, KinematicInfo info)
 	{
 		Vector3 point = info.GetLastJoint().Position;
 
@@ -388,9 +398,9 @@ public class ArmKinematics : MonoBehaviour
 		}
 	}
 
-	private void UpdateWorldDistanceToTarget()
+	private float GetTargetToLastJoint()
 	{
-		WorldDistanceToTarget = Vector3.Distance(Target.transform.position, Joints[Joints.Length - 1].transform.position);
+		return Vector3.Distance(TargetPos, Joints[Joints.Length - 1].transform.position);
 	}
 
 	public float GetMaxArmReach()
@@ -402,15 +412,13 @@ public class ArmKinematics : MonoBehaviour
 	{
 		return OfficialAngles.ToArray();
 	}
-
-	public Vector3 visualizeOffset = Vector3.forward * .1f;
 	#endregion
 
 	#region Gizmos
+	public Vector3 visualizeOffset = Vector3.forward * .1f;
 	void OnDrawGizmos()
 	{
 		Gizmos.color = Color.black;
-
 
 		bool ShouldDrawGizmos = false;
 
@@ -497,12 +505,9 @@ public class ArmKinematics : MonoBehaviour
 	}
 	private void DrawTarget()
 	{
-		if (Target != null)
-		{
-			Gizmos.color = new Color(.8f, .7f, 0.0f, 1.0f);
-			Gizmos.DrawSphere(Target.transform.position, .025f);
-			Gizmos.DrawSphere(Target.transform.position + visualizeOffset, .025f);
-		}
+		Gizmos.color = new Color(.8f, .7f, 0.0f, 1.0f);
+		Gizmos.DrawSphere(TargetPos, .025f);
+		Gizmos.DrawSphere(TargetPos + visualizeOffset, .025f);
 	}
 	private void DrawLastTargetSphereCluster()
 	{
@@ -516,15 +521,15 @@ public class ArmKinematics : MonoBehaviour
 			Gizmos.DrawSphere(LastTargetPosition - Vector3.forward * .03f, .01f);
 			Gizmos.DrawSphere(LastTargetPosition, .01f);
 
-			Gizmos.DrawLine(LastTargetPosition, Target.transform.position);
+			Gizmos.DrawLine(LastTargetPosition, TargetPos);
 			Gizmos.color = Color.red;
 			//Debug.Log(Joints[Joints.Length - 1].name + "\n");
-			Gizmos.DrawLine(Target.transform.position, Joints[Joints.Length - 1].transform.position);
+			Gizmos.DrawLine(TargetPos, Joints[Joints.Length - 1].transform.position);
 		}
 	}
 	private void DrawEndManipulator()
 	{
-		Gizmos.color = Color.white;
+		Gizmos.color = Color.white - new Color(0, 0, 0, .5f);
 		Gizmos.DrawSphere(Joints.Last().transform.position, EndManipulatorGizmoSize);
 	}
 	private void DrawEndTarget()
@@ -532,15 +537,13 @@ public class ArmKinematics : MonoBehaviour
 		Gizmos.color = Color.yellow;
 		if (EndManipulatorGizmoSize > 0)
 		{
-			Gizmos.DrawLine(Joints.Last().transform.position, Target.transform.position);
+			Gizmos.DrawLine(Joints.Last().transform.position, TargetPos);
 		}
+		Gizmos.color = Gizmos.color - new Color(0, 0, 0, .5f);
 
-		Gizmos.DrawSphere(Target.transform.position, EndManipulatorGizmoSize);
+		Gizmos.DrawSphere(TargetPos, EndManipulatorGizmoSize);
 	}
 	#endregion
-
-	//Hand in an array of angles & a depth.
-	//Get back an object with an array of positions + orientations
 
 	[System.Serializable]
 	public class JointInformation
@@ -569,6 +572,10 @@ public class ArmKinematics : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// The purpose of this class is to define a set of joints position and rotation data when they are configured by the array of angles stored.
+	/// Also calculates the sum of the angles off from comfort orientation.
+	/// </summary>
 	[System.Serializable]
 	public class KinematicInfo
 	{
@@ -619,6 +626,10 @@ public class ArmKinematics : MonoBehaviour
 			return jointsInfo[jointsInfo.Length - 1];
 		}
 
+		/// <summary>
+		/// This is intended to serve as the collective fitness for orientation.
+		/// </summary>
+		/// <returns></returns>
 		public float SumAnglesFromComfortForEachJoint()
 		{
 			float sumAngle = 0;

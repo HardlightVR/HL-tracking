@@ -262,6 +262,7 @@ namespace NullSpace.SDK
 
 		void UpdateMimic()
 		{
+			//Debug.Log("Updating Mimic: " + name + "\n", this);
 			if (ControllerOnlyKinematics)
 			{
 				ControllerOnlyKinematics.UpdateKinematics();

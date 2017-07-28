@@ -449,7 +449,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1000013882583234
 GameObject:
   m_ObjectHideFlags: 1
@@ -510,7 +510,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012579484284}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -1332,7 +1332,7 @@ MonoBehaviour:
   LearningRate: 650
   DistanceThreshold: 0.02
   PositionalWeight: 1
-  OrientationWeight: 0.75
+  OrientationWeight: 0.00001
   RandomizeStart: 0
   RandomizeTarget: 0
   CurrentResults:
@@ -1461,13 +1461,13 @@ MonoBehaviour:
   LastTargetPosition: {x: 0.1, y: 0, z: 0}
   DistanceToTarget: 0
   WorldDistanceToTarget: 0
-  SamplingDistance: 5
+  SamplingDistance: 2
   OrientationSamplingDistance: 0.25
   IKSampleRate: 1
   LearningRate: 500
   DistanceThreshold: 0.1
   PositionalWeight: 1
-  OrientationWeight: 0.75
+  OrientationWeight: 0.00001
   RandomizeStart: 0
   RandomizeTarget: 0
   CurrentResults:
@@ -1493,8 +1493,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 1, g: 0, b: 0, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.05
@@ -1533,8 +1533,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 0.141, b: 1, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.1
@@ -1573,8 +1573,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 1, g: 0.88965523, b: 0, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.025
@@ -1835,8 +1835,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 0.516, b: 1, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.1
@@ -1860,8 +1860,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 1, b: 0.13103437, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.075
@@ -1885,8 +1885,8 @@ MonoBehaviour:
   AngleFromUp: 0
   AngleFromRight: 0
   AngleFromComfort: 0
-  ComfortUp: {x: 0, y: 1, z: 0}
-  ComfortRight: {x: 1, y: 0, z: 0}
+  ComfortUp: {x: 0, y: 0, z: 0}
+  ComfortRight: {x: 0, y: 0, z: 0}
   myColor: {r: 0, g: 1, b: 0, a: 1}
   rend: {fileID: 0}
   JointDiscSize: 0.075
@@ -2023,7 +2023,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013583246696}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
   m_Name: 

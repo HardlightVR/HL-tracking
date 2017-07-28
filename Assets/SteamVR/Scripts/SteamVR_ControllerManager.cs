@@ -24,6 +24,7 @@ public class SteamVR_ControllerManager : MonoBehaviour
 	{
 		// Add left and right entries to the head of the list so we only have to operate on the list itself.
 		var additional = (this.objects != null) ? this.objects.Length : 0;
+		//Debug.Log("Additional objects: " + additional + "\n" + "Left: " + leftIndex + "   Right: " + rightIndex + "\n");
 		var objects = new GameObject[2 + additional];
 		indices = new uint[2 + additional];
 		objects[0] = right;
