@@ -8,9 +8,15 @@ Delapouite - http://delapouite.com/
 	Keyboard icon
 	Cardboard-box
 	files
-Tracking Icon, Massage Icon, Experience Stars was created by Lorc - http://lorcblog.blogspot.com/ (named Star swirl)
+Lorc - http://lorcblog.blogspot.com/
+	Cog Lock (tracker-icon)
+	Tracking Icon
+	Massage Icon
+	Experience Stars (star swirl)
+	sheikah eye (eye-icon)
+	chip-icon (processor)
 Amplitude & Power Button was created by Lord Berandas - http://berandas.deviantart.com/
-Halt icon & Click Icon was created by Skoll - http://game-icons.net/skoll/originals/click.html
+Controller icon, Halt icon & Click Icon was created by Skoll - http://game-icons.net/skoll/originals/click.html
 
 sbed - https://opengameart.org/content/95-game-icons
 	cancel (CC-BY 3.0 and CC-BY-SA 3.0)

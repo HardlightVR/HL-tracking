@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 using System.Collections;
-using NullSpace.SDK;
+using NullSpace.SDK.Demos;
+using System;
 
 namespace NullSpace.SDK
 {
@@ -9,6 +11,9 @@ namespace NullSpace.SDK
 	{
 		[Header("Body Hang Origin")]
 		public GameObject hmd;
+
+		public enum PositionEvaluationTechnique { PureHmd, PureArms, PureLowerBack, HybridHmdWithArms, HybridLowerBackWithArms, SmartHybrid, None }
+		public PositionEvaluationTechnique PositionTechnique = PositionEvaluationTechnique.PureHmd;
 
 		/// <summary>
 		/// [Not currently in use]
@@ -35,6 +40,18 @@ namespace NullSpace.SDK
 		[Range(-2, 2)]
 		public float NeckFwdAnchor = 0;
 
+		[Header("Weight of the HMD's pose in hybrid modes")]
+		[Range(0, 3)]
+		public float HmdPoseWeight = 1;
+
+		[Header("Combined arm pose weight in hybrid modes")]
+		[Range(0, 3)]
+		public float ArmTrackerPoseWeight = 1.25f;
+
+		[Header("Lower back's pose weight in hybrid modes")]
+		[Range(0, 3)]
+		public float LowerBackTrackerWeight = 1.25f;
+
 		/// <summary>
 		/// This lets you configure a different position when this box is checked. Useful to simulate human height when your Vive/Oculus/HMD is on your desk.
 		/// </summary>
@@ -42,12 +59,35 @@ namespace NullSpace.SDK
 		public bool UseDevHeight = false;
 		public float devHeightPercentage = -0.15f;
 
-		/// <summary>
-		/// The direction the headset currently thinks is forward (regardless of overtilt up or down)
-		/// Flattens the fwd vector onto the XZ plane. Then switches to using the Up/Down vector on the XZ plane if looking too far down or too far up.
-		/// </summary>
-		public Vector3 assumedForward = Vector3.zero;
+		///// <summary>
+		///// The direction the headset currently thinks is forward (regardless of overtilt up or down)
+		///// Flattens the fwd vector onto the XZ plane. Then switches to using the Up/Down vector on the XZ plane if looking too far down or too far up.
+		///// </summary>
+		//public Vector3 assumedForward = Vector3.zero;
 		public Vector3 LastUpdatedPosition = Vector3.zero;
+
+		private CalculatedPose HMDPose;
+		private CalculatedPose ArmPose;
+		private CalculatedPose BackPose;
+
+		/// <summary>
+		/// Where the BodyMimic should be (for lerping)
+		/// </summary>
+		private CalculatedPose _targetPose;
+		private CalculatedPose TargetPose
+		{
+			get
+			{
+				if (_targetPose == null)
+					_targetPose = new CalculatedPose();
+				return _targetPose;
+			}
+
+			set
+			{
+				_targetPose = value;
+			}
+		}
 
 		/// <summary>
 		/// The internal control of updateRate
@@ -62,15 +102,27 @@ namespace NullSpace.SDK
 
 		private float UpdateDuration = .75f;
 		private float UpdateCounter = .2f;
-		/// <summary>
-		/// Where the BodyMimic should be (for lerping)
-		/// </summary>
-		Vector3 targetPosition;
 
 		public GameObject LeftShoulder;
 		public GameObject RightShoulder;
-		public ArmMimic LeftArm;
-		public ArmMimic RightArm;
+		[SerializeField]
+		public AbstractArmMimic LeftArm;
+		[SerializeField]
+		public AbstractArmMimic RightArm;
+
+		public AbsoluteArmMimic AbsoluteLeftArm;
+		public AbsoluteArmMimic AbsoluteRightArm;
+
+		[SerializeField]
+		public AbstractTracker LowerBack;
+
+		[SerializeField]
+		public BodyVisualPrefabData VisualPrefabs;
+		[SerializeField]
+		public BodyVisualPrefabData DataModelPrefabs;
+
+		public AntiqueArmMimic AntiqueLeftArm;
+		public AntiqueArmMimic AntiqueRightArm;
 
 		/// <summary>
 		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
@@ -83,40 +135,358 @@ namespace NullSpace.SDK
 		//public bool UseHeadRaycasting = false;
 		//public LayerMask validFloorLayers = ~((1 << 2) | (1 << 9) | (1 << 10) | (1 << 12) | (1 << 13) | (1 << 15));
 
+		#region Calculated Poses
+		[System.Serializable]
+		private class CalculatedPose
+		{
+			private Vector3 _rootPosition;
+			private Vector3 _position;
+			private Vector3 _forward;
+			private Vector3 _up;
+
+			public Vector3 RootPosition
+			{
+				get
+				{
+					return _rootPosition;
+				}
+
+				set
+				{
+					_rootPosition = value;
+				}
+			}
+			public Vector3 TorsoPosition
+			{
+				get
+				{
+					return _position;
+				}
+
+				set
+				{
+					_position = value;
+				}
+			}
+			public Vector3 Forward
+			{
+				get
+				{
+					return _forward;
+				}
+
+				set
+				{
+					_forward = value;
+				}
+			}
+			public Vector3 Up
+			{
+				get
+				{
+					return _up;
+				}
+
+				set
+				{
+					_up = value;
+				}
+			}
+
+			public CalculatedPose(Vector3 position, Vector3 forward, Vector3 up, Vector3 rootPosition)
+			{
+				TorsoPosition = position;
+				RootPosition = rootPosition;
+				Forward = forward;
+				Up = up;
+			}
+
+			public CalculatedPose()
+			{
+				TorsoPosition = Vector3.zero;
+				Forward = Vector3.forward;
+				Up = Vector3.up;
+			}
+
+			public CalculatedPose(CalculatedPose firstPose, float firstPoseWeight, CalculatedPose secondPose, float secondPoseWeight)
+			{
+				TorsoPosition = (firstPose.TorsoPosition * firstPoseWeight + secondPose.TorsoPosition * secondPoseWeight) / (firstPoseWeight + secondPoseWeight);
+				RootPosition = (firstPose.RootPosition * firstPoseWeight + secondPose.RootPosition * secondPoseWeight) / (firstPoseWeight + secondPoseWeight);
+				Forward = (firstPose.Forward * firstPoseWeight + secondPose.Forward * secondPoseWeight) / (firstPoseWeight + secondPoseWeight);
+				Up = (firstPose.Up * firstPoseWeight + secondPose.Up * secondPoseWeight) / (firstPoseWeight + secondPoseWeight);
+			}
+
+			public void Draw(Color color)
+			{
+				Debug.DrawLine(TorsoPosition, TorsoPosition + Forward.normalized * .25f, color);
+				Debug.DrawLine(TorsoPosition, TorsoPosition + Up.normalized * .5f, color);
+				Debug.DrawLine(TorsoPosition, TorsoPosition + Vector3.Cross(Up, Forward).normalized * .35f, color);
+			}
+		}
+
+		private CalculatedPose EvaluatePositionBySelectedTechnique(float distanceFromGround)
+		{
+			CalculatedPose result;
+			HMDPose = CalculatePoseFromHmd(distanceFromGround);
+			ArmPose = CalculatePoseFromArms(distanceFromGround);
+			BackPose = CalculatePoseFromLowerBack(distanceFromGround);
+
+			if (PositionTechnique == PositionEvaluationTechnique.PureHmd)
+			{
+				result = HMDPose;
+			}
+			else if (PositionTechnique == PositionEvaluationTechnique.PureArms)
+			{
+				result = ArmPose;
+			}
+			else if (PositionTechnique == PositionEvaluationTechnique.PureLowerBack)
+			{
+				result = BackPose;
+			}
+			else if (PositionTechnique == PositionEvaluationTechnique.HybridHmdWithArms)
+			{
+				result = CreateHybridPose(HMDPose, HmdPoseWeight, ArmPose, ArmTrackerPoseWeight);
+			}
+			else if (PositionTechnique == PositionEvaluationTechnique.HybridLowerBackWithArms)
+			{
+				result = CreateHybridPose(BackPose, LowerBackTrackerWeight, ArmPose, ArmTrackerPoseWeight);
+			}
+			else if (PositionTechnique == PositionEvaluationTechnique.SmartHybrid)
+			{
+				result = CalculateTiltTorso();
+			}
+			else
+			{
+				result = new CalculatedPose(Vector3.zero, Vector3.forward, Vector3.up, Vector3.zero);
+			}
+			return result;
+		}
+
+		private CalculatedPose CalculatePoseFromHmd(float distanceFromGround)
+		{
+			Vector3 likelyFwd = CalculateHeadsetBasedForward();
+			Vector3 hmdDown = Vector3.down * distanceFromGround * (UseDevHeight ? devHeightPercentage : NeckVerticalAnchor);
+			var targetPosition = likelyFwd * (.25f + NeckFwdAnchor) + GetHMDPosition() + hmdDown;
+			return new CalculatedPose(targetPosition, likelyFwd, Vector3.up, hmd.transform.position);
+		}
+
+		private CalculatedPose CalculatePoseFromArms(float distanceFromGround)
+		{
+			if (!LeftArm || !RightArm)
+			{
+				return new CalculatedPose();
+			}
+			GameObject LeftJoint = (LeftArm as AbsoluteArmMimic).ShoulderJoint;
+			GameObject RightJoint = (RightArm as AbsoluteArmMimic).ShoulderJoint;
+
+			if (LeftJoint && RightJoint)
+			{
+				//Look at both positions.
+				Vector3 avgPos = (LeftJoint.transform.position + RightJoint.transform.position) / 2;
+
+				Vector3 avgAbovePos = (LeftJoint.transform.position + (LeftArm as AbsoluteArmMimic).UpperArmData.GetUp() + RightJoint.transform.position + (RightArm as AbsoluteArmMimic).UpperArmData.GetUp() * 3) / 2;
+				//Debug.DrawLine(LeftJoint.transform.position, LeftJoint.transform.position + (LeftArm as AbsoluteArmMimic).UpperArmVisual.GetUp() * 3, new Color(.2f, .6f, .9f));
+				//Debug.DrawLine(RightJoint.transform.position, RightJoint.transform.position + (RightArm as AbsoluteArmMimic).UpperArmVisual.GetUp() * 3, new Color(.2f, .6f, .9f));
+
+				Debug.DrawLine(LeftJoint.transform.position, avgPos, new Color(.6f, .3f, .9f));
+				Debug.DrawLine(RightJoint.transform.position, avgPos, new Color(.9f, .3f, .6f));
+				Debug.DrawLine(avgPos, avgAbovePos.normalized * .1f, Color.yellow);
+
+
+				Vector3 forward = Vector3.Cross(avgAbovePos - avgPos, RightJoint.transform.position - LeftJoint.transform.position);
+				//Debug.DrawLine(avgPos, avgPos + forward, Color.red, .5f);
+
+				//Set this as the target position (with the shoulder hang offset)
+				var targetPosition = avgPos + forward * (.25f + NeckFwdAnchor);
+
+				return new CalculatedPose(targetPosition, forward, Vector3.up, (LeftJoint.transform.position + RightJoint.transform.position) / 2);
+			}
+
+			//Default calculated pose spits out an error.
+			return new CalculatedPose();
+		}
+
+		private CalculatedPose CalculatePoseFromLowerBack(float distanceFromGround)
+		{
+			if (LowerBack)
+			{
+				GameObject lowerBack = (LowerBack as AbsoluteLowerBackTracker).gameObject;
+
+				if (lowerBack)
+				{
+					//Look at both positions.
+					Vector3 avgPos = LowerBack.TrackerMimic.transform.position;
+					//Debug.DrawLine(lowerBack.transform.position, avgPos, new Color(.6f, .3f, .9f));
+					Vector3 up = LowerBack.TrackerMimic.transform.up;
+					Debug.DrawLine(avgPos, avgPos + up * .25f, Color.yellow);
+
+					Vector3 forward = Vector3.Cross(up, LowerBack.TrackerMimic.transform.right);
+					Debug.DrawLine(avgPos, avgPos + forward, Color.red);
+
+					//Set this as the target position (with the shoulder hang offset)
+					var targetPosition = avgPos + up * (.25f + NeckVerticalAnchor) + forward * (.25f + NeckFwdAnchor);
+
+					return new CalculatedPose(targetPosition, forward, up, LowerBack.TrackerMimic.transform.position);
+				}
+			}
+
+			//Default calculated pose spits out an error.
+			return new CalculatedPose();
+		}
+
+		private CalculatedPose CreateHybridPose(CalculatedPose firstPose, float firstWeight, CalculatedPose secondPose, float secondWeight)
+		{
+			firstPose.Draw(Color.cyan);
+			secondPose.Draw(Color.green);
+
+			var mergedPose = new CalculatedPose(firstPose, firstWeight, secondPose, secondWeight);
+
+			mergedPose.Draw(Color.white);
+
+			return mergedPose;
+		}
+
+		private CalculatedPose CalculateTiltTorso()
+		{
+			//Horizontal offset
+			Vector3 spineDirection = ArmPose.RootPosition - BackPose.RootPosition;
+
+			Debug.DrawLine(BackPose.RootPosition, BackPose.RootPosition + spineDirection, Color.white);
+
+			//var mergedPose = new CalculatedPose(hmdPos, firstWeight, secondPose, secondWeight);
+
+			//mergedPose.Draw(Color.white);
+
+			return BackPose;
+		}
+		#endregion
+
 		private void Awake()
 		{
 			updateRate = TargetUpdateRate;
 		}
 
+		private void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.H))
+			{
+				DetachVisuals();
+			}
+			if (Input.GetKeyDown(KeyCode.F))
+			{
+				DetachVisuals(false);
+			}
+		}
+
 		void FixedUpdate()
 		{
-			Vector3 hmdNoUp = hmd.transform.forward;
-			hmdNoUp.y = 0;
-			Vector3 hmdUpNoY = hmd.transform.up;
-			hmdUpNoY.y = 0;
 
-			//If we teleport or are too far away
-			if (Vector3.Distance(hmd.transform.position, LastUpdatedPosition) > SnapUpdateDist)
+			//Start with the body position based on the HMD. 
+			//We'll adjust it backward and downward once we solve for this vectors this frame.
+			//TargetBodyPosition = GetHMDPosition();
+
+			HandleSnapTeleportDistanceCheck();
+			HandleUpdateCounterAndRate();
+
+			//float prog = UpdateDuration - UpdateCounter;
+			float distanceFromGround = GetDistanceFromGround();
+			LastUpdatedPosition = GetLastUpdatedPosition();
+			//assumedForward = CalculateAssumedForwardUsingArmsAndHMD();
+			//assumedForward = CalculateHeadsetBasedForward();
+
+			//Debug.DrawLine(hmd.transform.position, hmd.transform.position + CalculateAssumedForwardUsingArmsAndHMD(), Color.yellow);
+
+			//Debug.DrawLine(TargetBodyPosition + Vector3.up * 5.5f, TargetBodyPosition + rep + Vector3.up * 5.5f, Color.grey, .08f);
+
+			//Debug.Log(hit.collider.gameObject.name + "\n is " + dist + " away " + dist * beltHeightPercentage + "  " + hit.collider.gameObject.layer);
+			TargetPose = EvaluatePositionBySelectedTechnique(distanceFromGround);
+
+			AssignBodyMimicPosition();
+
+			//Create the transform based on our position and where we should face.
+			transform.LookAt(transform.position + TargetPose.Forward * 5, TargetPose.Up);
+
+			UpdateChest();
+		}
+
+		#region Non-Pose based Position/Forward calculation
+		private Vector3 CalculateAssumedForwardUsingArmsAndHMD()
+		{
+			Vector3 headsetForward = CalculateHeadsetBasedForward();
+			Vector3 controllerBasedForward = CalculateControllerBasedForward();
+			//Vector3 armBasedForward = CalculateArmBasedForward();
+
+			return (headsetForward + controllerBasedForward) / 2;
+		}
+
+		private Vector3 CalculateControllerBasedForward()
+		{
+			var shoulderCamPosition = hmd.transform.position - CalculateHeadsetBasedForward().normalized;
+			var controllerA = VRMimic.Instance.GetTrackedObjectsOfType(VRObjectMimic.TypeOfMimickedObject.ControllerA).FirstOrDefault();
+			var controllerB = VRMimic.Instance.GetTrackedObjectsOfType(VRObjectMimic.TypeOfMimickedObject.ControllerB).FirstOrDefault();
+
+			int count = (controllerA == null ? 0 : 1) + (controllerB == null ? 0 : 1);
+			var aPos = (controllerA == null ? Vector3.zero : controllerA.transform.position);
+			var bPos = (controllerB == null ? Vector3.zero : controllerB.transform.position);
+
+			//Debug.DrawLine(shoulderCamPosition, aPos, Color.white);
+			//Debug.DrawLine(shoulderCamPosition, bPos, Color.black);
+			//Debug.Log(controllerA + "\t\t" + aPos + "\n" + controllerB + "\t\t" + bPos, this);
+			Vector3 avgControllerPos = (aPos + bPos) / count;
+
+			//Find difference between body and controllers.
+			Vector3 directionToHands = avgControllerPos - shoulderCamPosition;
+			directionToHands.y = 0;
+			return directionToHands;
+		}
+
+		private Vector3 CalculateAverageArmTrackerPositions()
+		{
+			Vector3 avgPos = Vector3.zero;
+			int count = 0;
+			if (LeftArm != null)
 			{
-				//Force an update for now
-				ImmediateUpdate();
+				count++;
+				avgPos = LeftArm.TrackerMount.transform.position;
 			}
-			else
+			if (RightArm != null)
 			{
-				LastRelativePosition = transform.position - hmd.transform.position;
+				count++;
+				avgPos = LeftArm.TrackerMount.transform.position;
 			}
 
-			//We want to use the HMD's Up to find which way we should actually look to solve the overtilting problem
-			float mirrorAngleAmt = Vector3.Angle(hmd.transform.forward, Vector3.up);
+			return count != 0 ? avgPos / count : Vector3.zero;
+		}
 
-			//Check if we need to do a mirror operation
-			if (mirrorAngleAmt < 5 || mirrorAngleAmt > 175)
-			{
-				hmdNoUp = -hmdNoUp;
-			}
+		//private Vector3 CalculateArmBasedForward()
+		//{
+		//	var shoulderCamPosition = hmd.transform.position - CalculateHeadsetBasedForward().normalized;
+		//	var avgTrackerPos = CalculateAverageArmTrackerPositions();
 
+		//}
+
+		private Vector3 CalculateHeadsetBasedForward()
+		{
+			Vector3 flatRight = hmd.transform.right;
+			flatRight.y = 0;
+
+			return Vector3.Cross(flatRight, Vector3.up);
+		}
+		#endregion
+
+		private float GetDistanceFromGround()
+		{
+			return hmd.transform.position.y - hmd.transform.parent.transform.position.y;
+		}
+
+		private Vector3 GetHMDPosition()
+		{
+			return hmd.transform.position;
+		}
+
+		private void HandleUpdateCounterAndRate()
+		{
 			UpdateCounter += Time.deltaTime * updateRate;
-
 			//This is logic to let us update only some of the time.
 			if (UpdateCounter >= UpdateDuration)
 			{
@@ -126,28 +496,31 @@ namespace NullSpace.SDK
 				//We reset the update rate. The core of this logic was to have certain criteria that used a higher update rate (so we would get closer to the next update quicker)
 				updateRate = TargetUpdateRate;
 			}
+		}
 
-			//float prog = UpdateDuration - UpdateCounter;
-			LastUpdatedPosition = Vector3.Lerp(LastUpdatedPosition, hmd.transform.position, .5f);// Mathf.Clamp(prog / UpdateDuration, 0, 1));
+		private void AssignBodyMimicPosition()
+		{
+			transform.position = Vector3.Lerp(transform.position, TargetPose.TorsoPosition, updateRate);
+		}
 
-			Vector3 flatRight = hmd.transform.right;
-			flatRight.y = 0;
+		private Vector3 GetLastUpdatedPosition()
+		{
+			return Vector3.Lerp(LastUpdatedPosition, TargetPose.TorsoPosition, .5f);
+			// Mathf.Clamp(prog / UpdateDuration, 0, 1));
+		}
 
-			Vector3 rep = Vector3.Cross(flatRight, Vector3.up);
-
-			assumedForward = rep.normalized;
-
-			Debug.DrawLine(hmd.transform.position + Vector3.up * 5.5f, hmd.transform.position + rep + Vector3.up * 5.5f, Color.grey, .08f);
-
-			float dist = hmd.transform.position.y - hmd.transform.parent.transform.position.y;
-			//Debug.Log(hit.collider.gameObject.name + "\n is " + dist + " away " + dist * beltHeightPercentage + "  " + hit.collider.gameObject.layer);
-			Vector3 hmdDown = Vector3.down * dist * (UseDevHeight ? devHeightPercentage : NeckVerticalAnchor);
-			targetPosition = assumedForward * (.25f + NeckFwdAnchor) + hmd.transform.position + hmdDown;
-
-			transform.position = Vector3.Lerp(transform.position, targetPosition, updateRate);
-
-			//Create the transform based on our position and where we should face.
-			transform.LookAt(transform.position + assumedForward * 5, Vector3.up);
+		private void HandleSnapTeleportDistanceCheck()
+		{
+			//If we teleport or are too far away
+			if (Vector3.Distance(TargetPose.TorsoPosition, LastUpdatedPosition) > SnapUpdateDist)
+			{
+				//Force an update for now
+				ImmediateUpdate();
+			}
+			else
+			{
+				LastRelativePosition = transform.position - TargetPose.TorsoPosition;
+			}
 		}
 
 		/// <summary>
@@ -155,7 +528,7 @@ namespace NullSpace.SDK
 		/// </summary>
 		public void ImmediateUpdate()
 		{
-			transform.position = hmd.transform.position + LastRelativePosition;
+			transform.position = TargetPose.TorsoPosition + LastRelativePosition;
 		}
 
 		/// <summary>
@@ -189,10 +562,72 @@ namespace NullSpace.SDK
 			//
 		}
 
-		public ArmMimic CreateArm(ArmMimic.ArmSide WhichSide, VRObjectMimic Tracker, VRObjectMimic Controller)
+		public AbstractTracker BindLowerBackTracker(VRObjectMimic Tracker)
 		{
 			//Create an Arm Prefab
-			ArmMimic newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Arm Mimic Prefab")).GetComponent<ArmMimic>();
+			var newLowerBackTracker = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("VRMimic/Lower Back Tracker Root")).GetComponent<AbsoluteLowerBackTracker>();
+
+			newLowerBackTracker.BodyPartPrefabs = VisualPrefabs;
+
+			newLowerBackTracker.Setup(gameObject, Tracker);
+
+			newLowerBackTracker.name = "Absolute Lower Back Tracker";
+			//var offset = Quaternion.Inverse(Tracker.transform.rotation) * newLowerBackTracker.transform.rotation;
+			var offset = Quaternion.Inverse(newLowerBackTracker.transform.rotation) * Tracker.transform.rotation;
+			var before = newLowerBackTracker.transform.rotation;
+
+			LowerBack = newLowerBackTracker;
+
+			return newLowerBackTracker;
+		}
+
+		public void DetachVisuals(bool DropInsteadOfDelete = true)
+		{
+			if (AbsoluteRightArm != null)
+				AbsoluteRightArm.DetachVisuals(DropInsteadOfDelete);
+			if (AbsoluteLeftArm != null)
+				AbsoluteLeftArm.DetachVisuals(DropInsteadOfDelete);
+			LeftArm = null;
+			RightArm = null;
+			AbsoluteLeftArm = null;
+			AbsoluteRightArm = null;
+			DetachArmBar(DropInsteadOfDelete);
+			(LowerBack as AbsoluteLowerBackTracker).DetachVisuals(DropInsteadOfDelete);
+		}
+
+		#region Arms Functions
+		public AbstractArmMimic CreateArm(ArmSide WhichSide, VRObjectMimic Tracker, VRObjectMimic Controller, BodyVisualPrefabData prefabsToUse = null)
+		{
+			var ExistingArm = AccessArm(WhichSide);
+
+			if (ExistingArm != null)
+			{
+				Debug.LogError("Attempted to request an arm when one already existed. Returning existing arm\n", this);
+				return ExistingArm;
+			}
+
+			//Create an Arm Prefab
+			var newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("VRMimic/Absolute Arm Mimic")).GetComponent<AbstractArmMimic>();
+
+			newArm.BodyPartPrefabs = prefabsToUse == null ? VisualPrefabs : prefabsToUse;
+			newArm.NonVisualPrefabs = DataModelPrefabs;
+			VisualPrefabs = prefabsToUse == null ? VisualPrefabs : prefabsToUse;
+
+			newArm.name = "Absolute Arm Mimic " + WhichSide.ToString();
+			newArm.transform.SetParent(transform);
+
+			//Initialize the arm prefab (handing in the side and connector points)
+			newArm.Setup(WhichSide, GetShoulder(WhichSide), Tracker, Controller);
+
+			//Keep track of this as our Left/Right arm?
+			AttachArmToOurBody(WhichSide, newArm);
+			return newArm;
+		}
+
+		public AntiqueArmMimic CreateAntiqueArm(ArmSide WhichSide, VRObjectMimic Tracker, VRObjectMimic Controller)
+		{
+			//Create an Arm Prefab
+			AntiqueArmMimic newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Arm Mimic Prefab")).GetComponent<AntiqueArmMimic>();
 
 			newArm.transform.SetParent(transform);
 
@@ -204,26 +639,43 @@ namespace NullSpace.SDK
 			return newArm;
 		}
 
-		public void AttachArmToOurBody(ArmMimic.ArmSide WhichSide, ArmMimic Arm)
+		public void AttachArmToOurBody(ArmSide WhichSide, AbstractArmMimic Arm)
 		{
-			if (WhichSide == ArmMimic.ArmSide.Left)
+			if (WhichSide == ArmSide.Left)
 			{
 				LeftArm = Arm;
-				LeftArm.transform.SetParent(LeftShoulder.transform);
-				LeftArm.transform.localPosition = Arm.transform.right * -.5f;
-				LeftArm.MirrorKeyArmElements();
+				//LeftArm.transform.SetParent(LeftShoulder.transform);
+				//LeftArm.transform.localPosition = Arm.transform.right * -.5f;
+				//LeftArm.MirrorKeyArmElements();
 			}
 			else
 			{
 				RightArm = Arm;
-				RightArm.transform.SetParent(RightShoulder.transform);
-				RightArm.transform.localPosition = Arm.transform.right * .5f;
+				//RightArm.transform.SetParent(RightShoulder.transform);
+				//RightArm.transform.localPosition = Arm.transform.right * .5f;
 			}
 		}
 
-		public GameObject GetShoulder(ArmMimic.ArmSide WhichSide)
+		public void AttachArmToOurBody(ArmSide WhichSide, AntiqueArmMimic Arm)
 		{
-			if (WhichSide == ArmMimic.ArmSide.Left)
+			if (WhichSide == ArmSide.Left)
+			{
+				AntiqueLeftArm = Arm;
+				AntiqueLeftArm.transform.SetParent(LeftShoulder.transform);
+				AntiqueLeftArm.transform.localPosition = Arm.transform.right * -.5f;
+				AntiqueLeftArm.MirrorKeyArmElements();
+			}
+			else
+			{
+				AntiqueRightArm = Arm;
+				AntiqueRightArm.transform.SetParent(RightShoulder.transform);
+				AntiqueRightArm.transform.localPosition = Arm.transform.right * .5f;
+			}
+		}
+
+		public GameObject GetShoulder(ArmSide WhichSide)
+		{
+			if (WhichSide == ArmSide.Left)
 			{
 				if (LeftShoulder != null)
 					return LeftShoulder;
@@ -239,22 +691,174 @@ namespace NullSpace.SDK
 			throw new System.Exception("Shoulder Mount Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
 		}
 
-		public ArmMimic AccessArm(ArmMimic.ArmSide WhichSide)
+		public AbstractArmMimic AccessArm(ArmSide WhichSide)
 		{
-			if (WhichSide == ArmMimic.ArmSide.Left)
+			if (WhichSide == ArmSide.Left)
 			{
 				if (LeftArm != null)
 					return LeftArm;
 			}
 			else
 			{
-				if (LeftArm != null)
-					return LeftArm;
+				if (RightArm != null)
+					return RightArm;
+			}
+			//If this code has reached you, you can add 
+			return null;
+			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
+			//throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
+		}
+
+		public AntiqueArmMimic AccessAntiqueArm(ArmSide WhichSide)
+		{
+			if (WhichSide == ArmSide.Left)
+			{
+				if (AntiqueLeftArm != null)
+					return AntiqueLeftArm;
+			}
+			else
+			{
+				if (AntiqueRightArm != null)
+					return AntiqueRightArm;
 			}
 			//If this code has reached you, you can add 
 			//return null;
 			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
 			throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
+		}
+		#endregion
+
+		#region Shoulder Bar Effigy
+		[Header("Shoulder Bar Effigy Attributes")]
+		bool ShoulderBarInitialized = false;
+		bool StomachInitialized = false;
+		bool ShouldSetupShoulderBar = true;
+		public GameObject ShoulderBarEffigy;
+		public GameObject StomachEffigy;
+
+		void UpdateChest()
+		{
+			if (ShouldSetupShoulderBar && (ShoulderBarEffigy == null || !ShoulderBarInitialized))
+			{
+				var left = (LeftArm as AbsoluteArmMimic);
+				var right = (RightArm as AbsoluteArmMimic);
+				if (left != null && right != null)
+				{
+					SetupShoulderBar(left, right);
+				}
+			}
+			if (ShoulderBarEffigy != null && ShoulderBarInitialized)
+			{
+				Transform shoulder = ShoulderBarEffigy.transform;
+				float distance = CalculateArmAnchorDistance();
+				Vector3 leftToRight = AbsoluteRightArm.ShoulderJoint.transform.position - AbsoluteLeftArm.ShoulderJoint.transform.position;
+				shoulder.position = AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2;
+				Debug.DrawLine(AbsoluteLeftArm.ShoulderJoint.transform.position, AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized, Color.black);
+				Vector3 stretchLocalScale = shoulder.localScale;
+				stretchLocalScale.z = distance * 3.2f;
+				shoulder.localScale = stretchLocalScale;
+
+				//Debug.DrawLine(shoulder.position, shoulder.position + GetForward(), Color.black);
+				//Debug.DrawLine(shoulder.position, shoulder.position + GetUp(), Color.white);
+				//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
+				Vector3 upDir = AverageArmUp();
+
+				shoulder.LookAt(AbsoluteRightArm.ShoulderJoint.transform.position, upDir);
+
+				//UpdateStomach();
+			}
+		}
+
+		public void SetupShoulderBar(AbsoluteArmMimic lArm, AbsoluteArmMimic rArm)
+		{
+			if (lArm == null || rArm == null)
+			{
+				return;
+				//gameObject.SetActive(false);
+			}
+			ShoulderBarEffigy = GameObject.Instantiate<GameObject>(VisualPrefabs.ShoulderConnectorPrefab);
+			//Debug.Log("Setup chest\n", ShoulderBarEffigy);
+			ShoulderBarEffigy.name = "Chest Effigy";
+			ShoulderBarEffigy.transform.SetParent(transform);
+
+			AbsoluteLeftArm = lArm;
+			AbsoluteRightArm = rArm;
+			ShoulderBarInitialized = true;
+
+			if (LowerBack != null)
+			{
+				AttachLowerBackTrackerToOurBody(LowerBack);
+			}
+		}
+		private void DetachArmBar(bool DropInsteadOfDelete = true)
+		{
+			VisualDisposer disposer = new VisualDisposer();
+
+			disposer.RecordVisual(ShoulderBarEffigy);
+			ShoulderBarEffigy = null;
+			ShoulderBarInitialized = false;
+
+			//Remove the hardlight colliders
+
+			if (DropInsteadOfDelete)
+				disposer.DropRecordedVisuals();
+			else
+				disposer.DeleteRecordedVisuals();
+		}
+
+		private float CalculateArmAnchorDistance()
+		{
+			return Vector3.Distance(AbsoluteLeftArm.ShoulderJoint.transform.position, AbsoluteRightArm.ShoulderJoint.transform.position);
+		}
+
+		private Vector3 CalculateChestEffigyPosition()
+		{
+			Debug.DrawLine(transform.position, AbsoluteRightArm.ShoulderJoint.transform.position, Color.red);
+			Debug.DrawLine(transform.position, AbsoluteLeftArm.ShoulderJoint.transform.position, Color.yellow);
+			return (AbsoluteLeftArm.ShoulderJoint.transform.position + AbsoluteRightArm.ShoulderJoint.transform.position) / 2;
+		}
+		private Vector3 AverageArmUp()
+		{
+			return (AbsoluteLeftArm.UpperArmData.GetUp() + AbsoluteRightArm.UpperArmData.GetUp()) / 2;
+		}
+		private Vector3 AverageArmRight()
+		{
+			return (AbsoluteLeftArm.UpperArmData.GetRight() + AbsoluteRightArm.UpperArmData.GetRight()) / 2;
+		}
+		private Vector3 AverageArmForward()
+		{
+			return (AbsoluteLeftArm.UpperArmData.GetForward() + AbsoluteRightArm.UpperArmData.GetForward()) / 2;
+		}
+		#endregion
+
+		#region Back Tracker
+		public void AttachLowerBackTrackerToOurBody(AbstractTracker lowerBack)
+		{
+			LowerBack = lowerBack;
+			var back = (LowerBack as AbsoluteLowerBackTracker);
+			back.ShoulderBarEffigy = ShoulderBarEffigy;
+			back.BodyPartPrefabs = VisualPrefabs;
+			LowerBack.transform.SetParent(transform);
+			//LowerBack.transform.SetParent(transform);
+			//Debug.Log("Attaching Lower Back Tracker: " + back.name + "\n", LowerBack);
+			//Debug.Log("Assigning shoulder bar effigy: " + back.ShoulderBarEffigy.name + "\n", LowerBack);
+		}
+		#endregion
+
+		void OnDrawGizmos()
+		{
+			DrawPoseGizmos(HMDPose, Color.yellow);
+			DrawPoseGizmos(BackPose, Color.magenta);
+			DrawPoseGizmos(ArmPose, Color.cyan);
+		}
+
+		void DrawPoseGizmos(CalculatedPose pose, Color col)
+		{
+			Gizmos.color = col;
+			Gizmos.DrawSphere(pose.TorsoPosition, .01f);
+			Gizmos.DrawSphere(pose.RootPosition, .035f);
+			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Up.normalized * .25f);
+			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Forward.normalized * .1f);
 		}
 
 		/// <summary>

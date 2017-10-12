@@ -59,8 +59,8 @@ namespace NullSpace.SDK
 		/// This is a short term inefficiency that is intended to be fixed later.
 		/// </summary>
 		[SerializeField]
+		[Header("For Defined Areas, Zone Holders and Scene Refs")]
 		public SuitDefinition _definition;
-		[SerializeField]
 		public SuitDefinition Definition
 		{
 			set { _definition = value; }
@@ -93,6 +93,7 @@ namespace NullSpace.SDK
 		public GameObject SuitRoot;
 
 		[SerializeField]
+		[Header("Do not refer to these fields at runtime")]
 		public List<AreaFlag> DefinedAreas;
 
 		//The Game Objects to fill the fields (which will get hardlight collider references)
@@ -104,6 +105,7 @@ namespace NullSpace.SDK
 		public List<HardlightCollider> SceneReferences;
 
 		[SerializeField]
+		[Space(12)]
 		public int HapticsLayer = NSManager.HAPTIC_LAYER;
 		[SerializeField]
 		public bool AddChildObjects = true;
@@ -158,6 +160,10 @@ namespace NullSpace.SDK
 				Definition.AddChildObjects = AddChildObjects;
 				Definition.HapticsLayer = HapticsLayer;
 				Definition.AddExclusiveTriggerCollider = AddExclusiveTriggerCollider;
+
+				DefinedAreas.Clear();
+				ZoneHolders.Clear();
+				SceneReferences.Clear();
 
 				Definition.SetupDictionary();
 				initialized = true;
@@ -267,10 +273,8 @@ namespace NullSpace.SDK
 		/// <param name="SingleFlagToModify"></param>
 		/// <param name="SingleHolder"></param>
 		/// <param name="newCollider"></param>
-		/// <returns></returns>
 		public bool ModifyValidRegions(AreaFlag SingleFlagToModify, GameObject SingleHolder, HardlightCollider newCollider)
 		{
-			bool Succeeded = false;
 
 			if (!SingleFlagToModify.IsSingleArea())
 			{
@@ -285,6 +289,18 @@ namespace NullSpace.SDK
 				return false;
 			}
 
+			return ReplaceValidRegions(SingleFlagToModify, SingleHolder, newCollider);
+		}
+
+		/// <summary>
+		/// The core actions of ModifyValidRegions (which does the validity checking this function wants)
+		/// </summary>
+		/// <param name="SingleFlagToModify"></param>
+		/// <param name="SingleHolder"></param>
+		/// <param name="newCollider"></param>
+		private bool ReplaceValidRegions(AreaFlag SingleFlagToModify, GameObject SingleHolder, HardlightCollider newCollider)
+		{
+			bool Succeeded = false;
 			bool ReplacedExistingElement = false;
 
 			var indexOfFlag = -1;
@@ -301,8 +317,10 @@ namespace NullSpace.SDK
 				//Store the old holder and old collider
 				oldHolder = Definition.ZoneHolders[indexOfFlag];
 				oldCollider = Definition.SceneReferences[indexOfFlag];
-
-				oldHolder.SetActive(false);
+				if (oldHolder != null && oldHolder != SingleHolder)
+				{
+					oldHolder.SetActive(false);
+				}
 
 				//No longer have this location as disabled
 				DisabledRegions.EnableArea(SingleFlagToModify);

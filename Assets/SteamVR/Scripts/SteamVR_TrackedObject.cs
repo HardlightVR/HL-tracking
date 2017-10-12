@@ -37,7 +37,7 @@ public class SteamVR_TrackedObject : MonoBehaviour
 		get { return _index; }
 		set
 		{
-			Debug.Log("Adjusting Index   [" + name + "]\n[" + _index + "]  ==>  [" + value + "]");
+			//Debug.Log("Adjusting Index   [" + name + "]\n[" + _index + "]  ==>  [" + value + "]");
 			_index = value;
 		}
 	}

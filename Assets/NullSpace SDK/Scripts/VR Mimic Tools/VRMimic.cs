@@ -90,6 +90,28 @@ namespace NullSpace.SDK
 			set { _trackedObjects = value; }
 		}
 
+		private Dictionary<VRObjectMimic.TypeOfMimickedObject, List<VRObjectMimic>> _trackedObjectDict = new Dictionary<VRObjectMimic.TypeOfMimickedObject, List<VRObjectMimic>>();
+		public List<VRObjectMimic> GetTrackedObjectsOfType(VRObjectMimic.TypeOfMimickedObject Key)
+		{
+			if (_trackedObjectDict.ContainsKey(Key))
+			{
+				if (_trackedObjectDict[Key] == null)
+					_trackedObjectDict[Key] = new List<VRObjectMimic>();
+				return _trackedObjectDict[Key];
+			}
+			return new List<VRObjectMimic>();
+		}
+		public void RecordTrackedObject(VRObjectMimic.TypeOfMimickedObject Key, VRObjectMimic newObject)
+		{
+			if (!_trackedObjectDict.ContainsKey(Key))
+			{
+				_trackedObjectDict.Add(Key, new List<VRObjectMimic>());
+			}
+			if (!_trackedObjectDict[Key].Contains(newObject))
+			{
+				_trackedObjectDict[Key].Add(newObject);
+			}
+		}
 
 		public VRObjectMimic GetTrackedObject(int index)
 		{
@@ -111,7 +133,8 @@ namespace NullSpace.SDK
 		}
 		public VRObjectMimic AddTrackedObject(GameObject objectToMimic, VRObjectMimic.TypeOfMimickedObject mimicType = VRObjectMimic.TypeOfMimickedObject.TrackedObject)
 		{
-			bool AlreadyTracked = false;
+			WatchedByMimic watching = objectToMimic.GetComponent<WatchedByMimic>();
+			bool AlreadyTracked = (watching != null);
 
 			//Debug.Log("Adding Tracked Object [" + objectToMimic.name + "] of type [" + mimicType.ToString() + "]\n");
 			if (!AlreadyTracked)
@@ -125,11 +148,18 @@ namespace NullSpace.SDK
 				TrackedObjects.Add(newTracked);
 				newTracked.MimickedObjectType = mimicType;
 
+				RecordTrackedObject(mimicType, newTracked);
+
 				return newTracked;
 			}
+			if (watching.WatchingMimic == null)
+			{
+				throw new System.Exception("An unusual exception has occurred. The WatchedByMimic.WatchingMimic is no longer valid.\n\tDid you modify the object watching " + objectToMimic.name + "?");
+			}
 
-			throw new System.Exception("Not Implemented Exception - returning already tracked object\n");
-			//return null;
+			return watching.WatchingMimic;
+
+			//throw new System.Exception("Not Implemented Exception - returning already tracked object\n");
 		}
 		#endregion
 
@@ -169,14 +199,10 @@ namespace NullSpace.SDK
 		public BodyMimic ActiveBodyMimic
 		{
 			get
-			{
-				return _bodyMimic;
-			}
+			{ return _bodyMimic; }
 
 			set
-			{
-				_bodyMimic = value;
-			}
+			{ _bodyMimic = value; }
 		}
 
 		private void Init(GameObject vrCamera = null, int hapticLayer = NSManager.HAPTIC_LAYER)

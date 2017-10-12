@@ -25,7 +25,7 @@ namespace NullSpace.SDK.Demos
 		void OnTriggerEnter(Collider collider)
 		{
 			HardlightCollider hit = collider.GetComponent<HardlightCollider>();
-			if (hit != null)
+			if (hit != null && LibraryManager.Inst != null)
 			{
 				LibraryManager.Inst.LastSequence.CreateHandle(hit.regionID).Play();
 			}
