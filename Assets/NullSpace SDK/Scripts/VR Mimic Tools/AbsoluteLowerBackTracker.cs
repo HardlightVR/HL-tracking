@@ -6,9 +6,9 @@ namespace NullSpace.SDK
 {
 	public class AbsoluteLowerBackTracker : AbstractTracker
 	{
-		public GameObject ShoulderBarEffigy;
+		public GameObject ShoulderBarData;
 		public GameObject LowerBodyVisual;
-		bool ShouldSetupStomach = true;
+		bool ShouldCreateVisuals = true;
 		bool StomachInitialized = false;
 		public GameObject SingleTorsoEffigy;
 		public List<GameObject> TorsoSegments = new List<GameObject>();
@@ -21,7 +21,6 @@ namespace NullSpace.SDK
 		public float TorsoDepth = .3f;
 
 		public GameObject UpperBodyAnchor;
-		public BodyVisualPrefabData BodyPartPrefabs;
 
 		public Vector3 EulerOffset;
 
@@ -37,32 +36,34 @@ namespace NullSpace.SDK
 		{
 			transform.localPosition = Vector3.zero;
 			transform.rotation = Quaternion.identity;
-			if (TrackerMimic && ShoulderBarEffigy)
+			if (TrackerMimic && ShoulderBarData)
 			{
 				UpdateTorso();
 			}
-
-			if (Input.GetKeyDown(KeyCode.I))
-			{
-				DetachVisuals();
-				ShouldSetupStomach = false;
-			}
 		}
 
-		public void CreateVisuals()
+		public void CreateVisuals(GameObject TorsoPrefab)
 		{
-			if (BodyPartPrefabs == null)
+			if (TorsoPrefab == null)
 			{
-				Debug.LogError("Body Parts Prefab is null. It is needed to set up " + name + "'s visuals\n", this);
+				Debug.LogError("Torso Prefab is null. It is needed to set up " + name + "'s visuals\n", this);
+				return;
 			}
-			SetupStomach();
+			if (ShouldCreateVisuals)
+			{
+				SetupStomach(TorsoPrefab);
+			}
+			else
+			{
+				Debug.Log("Shouldn't create visuals\n", this);
+			}
 		}
 
 		private void UpdateTorso()
 		{
-			if ((SingleTorsoEffigy == null || !StomachInitialized) && ShouldSetupStomach)
+			if ((SingleTorsoEffigy == null || !StomachInitialized) && ShouldCreateVisuals)
 			{
-				CreateVisuals();
+				//CreateVisuals();
 			}
 			if (SingleTorsoEffigy != null && StomachInitialized)
 			{
@@ -75,7 +76,7 @@ namespace NullSpace.SDK
 				if (TorsoSegments.Count > 0)
 				{
 					//Default Variables
-					var target = ShoulderBarEffigy.transform.rotation * QOffset;
+					var target = ShoulderBarData.transform.rotation * QOffset;
 					Vector3 segmentPosition = Vector3.zero;
 					Vector3 lerpedScale = Vector3.zero;
 					Quaternion segmentLerpedOrientation = Quaternion.identity;
@@ -90,7 +91,7 @@ namespace NullSpace.SDK
 							TorsoSegments[i].transform.localScale = lerpedScale;
 							segmentPosition = Vector3.Lerp(
 								TrackerMimic.transform.position + TrackerOffset,
-								ShoulderBarEffigy.transform.position + ShoulderOffset,
+								ShoulderBarData.transform.position + ShoulderOffset,
 								perc);
 							TorsoSegments[i].transform.position = segmentPosition + Offset;
 							segmentLerpedOrientation = Quaternion.Lerp(TrackerMimic.transform.rotation, target, perc);
@@ -104,9 +105,9 @@ namespace NullSpace.SDK
 		/// <summary>
 		/// Creates a single volume that represents the player's torso
 		/// </summary>
-		public void SetupStomach()
+		public void SetupStomach(GameObject TorsoPrefab)
 		{
-			SingleTorsoEffigy = GameObject.Instantiate<GameObject>(BodyPartPrefabs.TorsoPrefab);
+			SingleTorsoEffigy = GameObject.Instantiate<GameObject>(TorsoPrefab);
 			SingleTorsoEffigy.name = "Torso Effigy";
 			SingleTorsoEffigy.transform.localPosition = Offset;
 			SingleTorsoEffigy.transform.SetParent(transform);
@@ -116,18 +117,18 @@ namespace NullSpace.SDK
 			//DISABLING THIS WHILE TORSO SEGMENTS ARE DEVELOPED
 			SingleTorsoEffigy.SetActive(false);
 
-			SetupTorsoSegments(SegmentCount);
+			SetupTorsoSegments(SegmentCount, TorsoPrefab);
 		}
 
 		/// <summary>
 		/// Creates N segments from the shoulders down to the location of the back tracker.
 		/// </summary>
 		/// <param name="segments"></param>
-		public void SetupTorsoSegments(int segments)
+		public void SetupTorsoSegments(int segments, GameObject TorsoPrefab)
 		{
 			for (int i = 0; i < segments; i++)
 			{
-				var newSegment = GameObject.Instantiate<GameObject>(BodyPartPrefabs.TorsoPrefab);
+				var newSegment = GameObject.Instantiate<GameObject>(TorsoPrefab);
 				newSegment.name = "Torso Segment [" + i + "]";
 				newSegment.transform.localPosition = Offset;
 				newSegment.transform.SetParent(transform);
@@ -135,29 +136,20 @@ namespace NullSpace.SDK
 			}
 		}
 
-		public void DetachVisuals(bool DropInsteadOfDelete = true)
+		/// <summary>
+		/// Does not call disposer.Dispose(). You must call it manually after this function populates it.
+		/// </summary>
+		/// <param name="disposer"></param>
+		public void DisposeVisuals(VisualDisposer disposer)
 		{
-			VisualDisposer disposer = new VisualDisposer();
-
 			disposer.RecordVisual(SingleTorsoEffigy);
 			SingleTorsoEffigy = null;
-			disposer.RecordVisual(ShoulderBarEffigy);
-			ShoulderBarEffigy = null;
 
 			for (int i = TorsoSegments.Count - 1; i >= 0; i--)
 			{
 				disposer.RecordVisual(TorsoSegments[i].gameObject);
 			}
 			TorsoSegments.Clear();
-
-			//Remove the hardlight colliders
-
-			//Leave the visuals alive
-
-			if (DropInsteadOfDelete)
-				disposer.DropRecordedVisuals();
-			else
-				disposer.DeleteRecordedVisuals();
 		}
 	}
 }

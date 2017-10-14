@@ -121,8 +121,12 @@ namespace NullSpace.SDK
 		[SerializeField]
 		public BodyVisualPrefabData DataModelPrefabs;
 
-		public AntiqueArmMimic AntiqueLeftArm;
-		public AntiqueArmMimic AntiqueRightArm;
+		//public AntiqueArmMimic AntiqueLeftArm;
+		//public AntiqueArmMimic AntiqueRightArm;
+
+		public GameObject ShoulderBarVisual;
+
+		public bool ShouldCreateVisuals = true;
 
 		/// <summary>
 		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
@@ -130,6 +134,11 @@ namespace NullSpace.SDK
 		[Header("Exceed this val to force update")]
 		public float SnapUpdateDist = 1.0f;
 		private Vector3 LastRelativePosition;
+
+		[Header("Shoulder Bar Effigy Attributes")]
+		bool ShoulderBarDataInitialized = false;
+		bool StomachInitialized = false;
+		public GameObject ShoulderBarData;
 
 		//[Header("Floor Evaluation")]
 		//public bool UseHeadRaycasting = false;
@@ -366,18 +375,6 @@ namespace NullSpace.SDK
 			updateRate = TargetUpdateRate;
 		}
 
-		private void Update()
-		{
-			if (Input.GetKeyDown(KeyCode.H))
-			{
-				DetachVisuals();
-			}
-			if (Input.GetKeyDown(KeyCode.F))
-			{
-				DetachVisuals(false);
-			}
-		}
-
 		void FixedUpdate()
 		{
 
@@ -567,8 +564,6 @@ namespace NullSpace.SDK
 			//Create an Arm Prefab
 			var newLowerBackTracker = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("VRMimic/Lower Back Tracker Root")).GetComponent<AbsoluteLowerBackTracker>();
 
-			newLowerBackTracker.BodyPartPrefabs = VisualPrefabs;
-
 			newLowerBackTracker.Setup(gameObject, Tracker);
 
 			newLowerBackTracker.name = "Absolute Lower Back Tracker";
@@ -579,20 +574,6 @@ namespace NullSpace.SDK
 			LowerBack = newLowerBackTracker;
 
 			return newLowerBackTracker;
-		}
-
-		public void DetachVisuals(bool DropInsteadOfDelete = true)
-		{
-			if (AbsoluteRightArm != null)
-				AbsoluteRightArm.DetachVisuals(DropInsteadOfDelete);
-			if (AbsoluteLeftArm != null)
-				AbsoluteLeftArm.DetachVisuals(DropInsteadOfDelete);
-			LeftArm = null;
-			RightArm = null;
-			AbsoluteLeftArm = null;
-			AbsoluteRightArm = null;
-			DetachArmBar(DropInsteadOfDelete);
-			(LowerBack as AbsoluteLowerBackTracker).DetachVisuals(DropInsteadOfDelete);
 		}
 
 		#region Arms Functions
@@ -635,7 +616,8 @@ namespace NullSpace.SDK
 			newArm.Initialize(WhichSide, GetShoulder(WhichSide), Tracker, Controller);
 
 			//Keep track of this as our Left/Right arm?
-			AttachArmToOurBody(WhichSide, newArm);
+			Debug.LogError("Did not attach antique arm to body. This function is largely deprecated\n", this);
+			//AttachArmToOurBody(WhichSide, newArm);
 			return newArm;
 		}
 
@@ -656,22 +638,22 @@ namespace NullSpace.SDK
 			}
 		}
 
-		public void AttachArmToOurBody(ArmSide WhichSide, AntiqueArmMimic Arm)
-		{
-			if (WhichSide == ArmSide.Left)
-			{
-				AntiqueLeftArm = Arm;
-				AntiqueLeftArm.transform.SetParent(LeftShoulder.transform);
-				AntiqueLeftArm.transform.localPosition = Arm.transform.right * -.5f;
-				AntiqueLeftArm.MirrorKeyArmElements();
-			}
-			else
-			{
-				AntiqueRightArm = Arm;
-				AntiqueRightArm.transform.SetParent(RightShoulder.transform);
-				AntiqueRightArm.transform.localPosition = Arm.transform.right * .5f;
-			}
-		}
+		//public void AttachArmToOurBody(ArmSide WhichSide, AntiqueArmMimic Arm)
+		//{
+		//	if (WhichSide == ArmSide.Left)
+		//	{
+		//		AntiqueLeftArm = Arm;
+		//		AntiqueLeftArm.transform.SetParent(LeftShoulder.transform);
+		//		AntiqueLeftArm.transform.localPosition = Arm.transform.right * -.5f;
+		//		AntiqueLeftArm.MirrorKeyArmElements();
+		//	}
+		//	else
+		//	{
+		//		AntiqueRightArm = Arm;
+		//		AntiqueRightArm.transform.SetParent(RightShoulder.transform);
+		//		AntiqueRightArm.transform.localPosition = Arm.transform.right * .5f;
+		//	}
+		//}
 
 		public GameObject GetShoulder(ArmSide WhichSide)
 		{
@@ -709,36 +691,29 @@ namespace NullSpace.SDK
 			//throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
 		}
 
-		public AntiqueArmMimic AccessAntiqueArm(ArmSide WhichSide)
-		{
-			if (WhichSide == ArmSide.Left)
-			{
-				if (AntiqueLeftArm != null)
-					return AntiqueLeftArm;
-			}
-			else
-			{
-				if (AntiqueRightArm != null)
-					return AntiqueRightArm;
-			}
-			//If this code has reached you, you can add 
-			//return null;
-			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
-			throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
-		}
+		//public AntiqueArmMimic AccessAntiqueArm(ArmSide WhichSide)
+		//{
+		//	if (WhichSide == ArmSide.Left)
+		//	{
+		//		if (AntiqueLeftArm != null)
+		//			return AntiqueLeftArm;
+		//	}
+		//	else
+		//	{
+		//		if (AntiqueRightArm != null)
+		//			return AntiqueRightArm;
+		//	}
+		//	//If this code has reached you, you can add 
+		//	//return null;
+		//	//And comment the exception out. This shouldn't happen, but we know how code & releases work.
+		//	throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
+		//}
 		#endregion
 
 		#region Shoulder Bar Effigy
-		[Header("Shoulder Bar Effigy Attributes")]
-		bool ShoulderBarInitialized = false;
-		bool StomachInitialized = false;
-		bool ShouldSetupShoulderBar = true;
-		public GameObject ShoulderBarEffigy;
-		public GameObject StomachEffigy;
-
 		void UpdateChest()
 		{
-			if (ShouldSetupShoulderBar && (ShoulderBarEffigy == null || !ShoulderBarInitialized))
+			if (ShoulderBarData == null || !ShoulderBarDataInitialized)
 			{
 				var left = (LeftArm as AbsoluteArmMimic);
 				var right = (RightArm as AbsoluteArmMimic);
@@ -747,26 +722,38 @@ namespace NullSpace.SDK
 					SetupShoulderBar(left, right);
 				}
 			}
-			if (ShoulderBarEffigy != null && ShoulderBarInitialized)
+			if (ShouldCreateVisuals && ShoulderBarDataInitialized && ShoulderBarVisual == null)
 			{
-				Transform shoulder = ShoulderBarEffigy.transform;
-				float distance = CalculateArmAnchorDistance();
-				Vector3 leftToRight = AbsoluteRightArm.ShoulderJoint.transform.position - AbsoluteLeftArm.ShoulderJoint.transform.position;
-				shoulder.position = AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2;
-				Debug.DrawLine(AbsoluteLeftArm.ShoulderJoint.transform.position, AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized, Color.black);
-				Vector3 stretchLocalScale = shoulder.localScale;
-				stretchLocalScale.z = distance * 3.2f;
-				shoulder.localScale = stretchLocalScale;
-
-				//Debug.DrawLine(shoulder.position, shoulder.position + GetForward(), Color.black);
-				//Debug.DrawLine(shoulder.position, shoulder.position + GetUp(), Color.white);
-				//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
-				Vector3 upDir = AverageArmUp();
-
-				shoulder.LookAt(AbsoluteRightArm.ShoulderJoint.transform.position, upDir);
-
-				//UpdateStomach();
+				CreateShoulderBarVisual(VisualPrefabs.ShoulderConnectorPrefab);
 			}
+			if (ShoulderBarDataInitialized && ShoulderBarVisual != null)
+			{
+				AssignLowerBodyVisualNeededInformation(LowerBack);
+				if (LowerBack)
+				{
+					//LowerBack.transform.SetParent(ShoulderBarData.transform);
+
+					float distance = CalculateArmAnchorDistance();
+					Vector3 CenterPosition = CalculateShoulderCenterPosition(distance);
+
+					if (ShouldCreateVisuals)
+					{
+						var back = (LowerBack as AbsoluteLowerBackTracker);
+						back.CreateVisuals(VisualPrefabs.TorsoPrefab);
+						ShouldCreateVisuals = false;
+					}
+				}
+			}
+
+			if (CanPositionShoulderBar())
+			{
+				PositionShoulderBar();
+			}
+		}
+
+		private bool CanPositionShoulderBar()
+		{
+			return ShoulderBarVisual != null && ShoulderBarDataInitialized && AbsoluteLeftArm && AbsoluteRightArm;
 		}
 
 		public void SetupShoulderBar(AbsoluteArmMimic lArm, AbsoluteArmMimic rArm)
@@ -774,36 +761,53 @@ namespace NullSpace.SDK
 			if (lArm == null || rArm == null)
 			{
 				return;
-				//gameObject.SetActive(false);
 			}
-			ShoulderBarEffigy = GameObject.Instantiate<GameObject>(VisualPrefabs.ShoulderConnectorPrefab);
-			//Debug.Log("Setup chest\n", ShoulderBarEffigy);
-			ShoulderBarEffigy.name = "Chest Effigy";
-			ShoulderBarEffigy.transform.SetParent(transform);
+			ShoulderBarData = GameObject.Instantiate<GameObject>(DataModelPrefabs.ShoulderConnectorPrefab);
+			ShoulderBarData.name = "Shoulder Bar Data";
+			ShoulderBarData.transform.SetParent(transform);
 
 			AbsoluteLeftArm = lArm;
 			AbsoluteRightArm = rArm;
-			ShoulderBarInitialized = true;
-
-			if (LowerBack != null)
-			{
-				AttachLowerBackTrackerToOurBody(LowerBack);
-			}
+			ShoulderBarDataInitialized = true;
 		}
-		private void DetachArmBar(bool DropInsteadOfDelete = true)
+
+		public void AssignLowerBodyVisualNeededInformation(AbstractTracker lowerBack)
 		{
-			VisualDisposer disposer = new VisualDisposer();
+			if (LowerBack == null || LowerBack != lowerBack)
+			{
+				LowerBack = lowerBack;
+			}
 
-			disposer.RecordVisual(ShoulderBarEffigy);
-			ShoulderBarEffigy = null;
-			ShoulderBarInitialized = false;
+			var back = (LowerBack as AbsoluteLowerBackTracker);
+			back.ShoulderBarData = ShoulderBarData;
+			LowerBack.transform.SetParent(transform);
+		}
 
-			//Remove the hardlight colliders
+		private void PositionShoulderBar()
+		{
+			Transform shoulder = ShoulderBarData.transform;
+			float distance = CalculateArmAnchorDistance();
+			Vector3 CenterPosition = CalculateShoulderCenterPosition(distance);
+			shoulder.position = CenterPosition;
 
-			if (DropInsteadOfDelete)
-				disposer.DropRecordedVisuals();
-			else
-				disposer.DeleteRecordedVisuals();
+			Debug.DrawLine(AbsoluteLeftArm.ShoulderJoint.transform.position, AbsoluteLeftArm.ShoulderJoint.transform.position + CenterPosition.normalized, Color.black);
+
+			Vector3 stretchLocalScale = shoulder.localScale;
+			stretchLocalScale.z = distance * 3.2f;
+			shoulder.localScale = stretchLocalScale;
+
+			//Debug.DrawLine(shoulder.position, shoulder.position + GetForward(), Color.black);
+			//Debug.DrawLine(shoulder.position, shoulder.position + GetUp(), Color.white);
+			//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
+			Vector3 upDir = AverageArmUp();
+
+			shoulder.LookAt(AbsoluteRightArm.ShoulderJoint.transform.position, upDir);
+		}
+
+		private Vector3 CalculateShoulderCenterPosition(float distance)
+		{
+			Vector3 leftToRight = AbsoluteRightArm.ShoulderJoint.transform.position - AbsoluteLeftArm.ShoulderJoint.transform.position;
+			return AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2;
 		}
 
 		private float CalculateArmAnchorDistance()
@@ -831,17 +835,68 @@ namespace NullSpace.SDK
 		}
 		#endregion
 
-		#region Back Tracker
-		public void AttachLowerBackTrackerToOurBody(AbstractTracker lowerBack)
+		#region Visual Handling
+		public void CreateVisuals(BodyVisualPrefabData prefabs = null, VisualDisposer disposer = null)
 		{
-			LowerBack = lowerBack;
-			var back = (LowerBack as AbsoluteLowerBackTracker);
-			back.ShoulderBarEffigy = ShoulderBarEffigy;
-			back.BodyPartPrefabs = VisualPrefabs;
-			LowerBack.transform.SetParent(transform);
-			//LowerBack.transform.SetParent(transform);
-			//Debug.Log("Attaching Lower Back Tracker: " + back.name + "\n", LowerBack);
-			//Debug.Log("Assigning shoulder bar effigy: " + back.ShoulderBarEffigy.name + "\n", LowerBack);
+			if (prefabs == null)
+				prefabs = VisualPrefabs;
+			if (prefabs == null)
+				return;
+
+			DisposeVisuals(disposer);
+
+			//Request each arm make visuals
+			//Set ShouldCreateVisuals to true?
+			ShouldCreateVisuals = true;
+			if (AbsoluteLeftArm)
+			{
+				AbsoluteLeftArm.SetupArmVisuals(ArmSide.Left, VisualPrefabs);
+			}
+			if (AbsoluteRightArm)
+			{
+				AbsoluteRightArm.SetupArmVisuals(ArmSide.Right, VisualPrefabs);
+			}
+		}
+
+		public void CreateShoulderBarVisual(GameObject shoulderPrefab)
+		{
+			if (shoulderPrefab != null)
+			{
+				ShoulderBarVisual = GameObject.Instantiate<GameObject>(shoulderPrefab);
+				ShoulderBarVisual.name = shoulderPrefab.name + " [c]";
+				ShoulderBarVisual.transform.SetParent(ShoulderBarData.transform);
+				ShoulderBarVisual.transform.localScale = Vector3.one;
+				ShoulderBarVisual.transform.localPosition = Vector3.zero;
+			}
+		}
+
+		/// <summary>
+		/// Calls disposer.Dispose() at the end of this function.
+		/// </summary>
+		/// <param name="disposer"></param>
+		public void DisposeVisuals(VisualDisposer disposer)
+		{
+			if (disposer == null)
+				new VisualDisposer();
+			if (AbsoluteRightArm != null)
+				AbsoluteRightArm.DisposeVisuals(disposer);
+			if (AbsoluteLeftArm != null)
+				AbsoluteLeftArm.DisposeVisuals(disposer);
+			DisposeArmBarVisual(disposer);
+			(LowerBack as AbsoluteLowerBackTracker).DisposeVisuals(disposer);
+			ShoulderBarVisual = null;
+
+			disposer.Dispose();
+		}
+
+		/// <summary>
+		/// Does not call disposer.Dispose(). You must call it manually after this function.
+		/// </summary>
+		/// <param name="disposer"></param>
+		private void DisposeArmBarVisual(VisualDisposer disposer)
+		{
+			disposer.RecordVisual(ShoulderBarVisual);
+			ShoulderBarVisual = null;
 		}
 		#endregion
 

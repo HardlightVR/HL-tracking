@@ -232,11 +232,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2a9197bfbc0b26459eb811273c92447, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RotationAmt: 0
   UpperArmBody: {fileID: 1000012660532220}
   UpperArmVisual: {fileID: 0}
   Elbow: {fileID: 1000013045160240}
-  offset: {x: 0.1, y: -0.1, z: -0.75}
+  TrackerEulerOffset: {x: 0, y: 0, z: 0}
+  rotatedOffset: {x: 0, y: 0, z: -0.1}
+  globalOffset: {x: 0, y: 0, z: 0}
   UpperArmCollider: {fileID: 114000010508305672}
   zRotation: 0
 --- !u!114 &114000014266842522

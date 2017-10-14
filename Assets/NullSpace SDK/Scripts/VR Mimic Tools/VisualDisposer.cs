@@ -2,12 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class VisualDisposer  
+public class VisualDisposer
 {
+	public enum DisposalBehaviors { ImmediateDelete, RigidbodyDrop, RigidbodyScatter, DestructionVector }
+	public DisposalBehaviors DisposalTechnique;
 	public List<GameObject> visualsToDispose;
+	private Vector3 destructionDirection = Vector3.up;
 
-	public VisualDisposer()
+	public VisualDisposer(DisposalBehaviors Technique = DisposalBehaviors.ImmediateDelete)
 	{
+		DisposalTechnique = Technique;
+		visualsToDispose = new List<GameObject>();
+	}
+	public VisualDisposer(Vector3 DestructionVector)
+	{
+		DisposalTechnique = DisposalBehaviors.DestructionVector;
+		destructionDirection = DestructionVector;
 		visualsToDispose = new List<GameObject>();
 	}
 
@@ -19,14 +29,34 @@ public class VisualDisposer
 		}
 	}
 
-	public void DeleteRecordedVisuals()
+	public void Dispose()
+	{
+		if (DisposalTechnique == DisposalBehaviors.ImmediateDelete)
+		{
+			DeleteRecordedVisuals();
+		}
+		else if (DisposalTechnique == DisposalBehaviors.RigidbodyDrop)
+		{
+			DropRecordedVisuals();
+		}
+		else if (DisposalTechnique == DisposalBehaviors.RigidbodyScatter)
+		{
+			DropRecordedVisuals();
+		}
+		else if (DisposalTechnique == DisposalBehaviors.DestructionVector)
+		{
+			DropRecordedVisuals();
+		}
+	}
+
+	private void DeleteRecordedVisuals()
 	{
 		for (int i = visualsToDispose.Count - 1; i >= 0; i--)
 		{
 			GameObject.Destroy(visualsToDispose[i]);
 		}
 	}
-	public void DropRecordedVisuals(bool randomForce = true)
+	private void DropRecordedVisuals()
 	{
 		for (int i = 0; i < visualsToDispose.Count; i++)
 		{
@@ -35,17 +65,26 @@ public class VisualDisposer
 			var rb = visualsToDispose[i].GetComponent<Rigidbody>();
 			if (!rb)
 			{
-				visualsToDispose[i].AddComponent<Rigidbody>();
+				rb = visualsToDispose[i].AddComponent<Rigidbody>();
 			}
 			if (rb)
 			{
 				rb.useGravity = true;
 				rb.isKinematic = false;
-				if (randomForce)
+				if (DisposalTechnique == DisposalBehaviors.RigidbodyScatter || DisposalTechnique == DisposalBehaviors.DestructionVector)
 				{
-					rb.AddForce((Random.onUnitSphere) * Random.Range(5, 15), ForceMode.Impulse);
+					rb.drag = Random.Range(0, 1);
+					var force = GetScatterDirection();
+					rb.AddForce(force, ForceMode.Impulse);
 				}
 			}
 		}
+	}
+	private Vector3 GetScatterDirection()
+	{
+		if (DisposalTechnique == DisposalBehaviors.DestructionVector)
+			return destructionDirection * Random.Range(2, 20);
+		else
+			return (Random.onUnitSphere) * Random.Range(2, 20);
 	}
 }

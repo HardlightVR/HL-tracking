@@ -19,5 +19,5 @@ MonoBehaviour:
     type: 2}
   TorsoPrefab: {fileID: 1000012432368938, guid: e4fda4e7eb232734eae03d26effabd74,
     type: 2}
-  ShoulderConnectorPrefab: {fileID: 1000010286425874, guid: d7934db80de74064ab58896d85b34fc1,
+  ShoulderConnectorPrefab: {fileID: 1000010286425874, guid: 5ae5095192a51a542a1970826eaf283b,
     type: 2}

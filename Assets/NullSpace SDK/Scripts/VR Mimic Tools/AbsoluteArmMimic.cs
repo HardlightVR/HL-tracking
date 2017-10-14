@@ -93,7 +93,7 @@ namespace NullSpace.SDK
 			ValidDataModelArms = true;
 
 		}
-		private void SetupArmVisuals(ArmSide WhichSide, BodyVisualPrefabData visualPrefabs)
+		public void SetupArmVisuals(ArmSide WhichSide, BodyVisualPrefabData visualPrefabs)
 		{
 			AttachUpperArmVisual(WhichSide, visualPrefabs.UpperArmPrefab);
 			AttachForearmVisual(WhichSide, visualPrefabs.ForearmPrefab);
@@ -145,11 +145,8 @@ namespace NullSpace.SDK
 			UpperArmData.UpperArmVisual.name = UpperArmPrefab.name + " [c]";
 			UpperArmData.UpperArmVisual.transform.SetParent(UpperArmData.UpperArmBody.transform);
 			UpperArmData.UpperArmVisual.transform.localPosition = Vector3.zero;
+			UpperArmData.UpperArmVisual.transform.localRotation = Quaternion.identity;
 
-			if (WhichSide == ArmSide.Right)
-			{
-				UpperArmData.UpperArmVisual.transform.Rotate(new Vector3(0, 0, 180));
-			}
 		}
 		private void AttachForearmVisual(ArmSide WhichSide, GameObject ForearmPrefab)
 		{
@@ -158,6 +155,8 @@ namespace NullSpace.SDK
 			ForearmData.ForearmVisual.name = ForearmPrefab.name + " [c]";
 			ForearmData.ForearmVisual.transform.SetParent(ForearmData.ForearmBody.transform);
 			ForearmData.ForearmVisual.transform.localPosition = Vector3.zero;
+			ForearmData.ForearmVisual.transform.localRotation = Quaternion.identity;
+			ForearmData.ForearmVisual.transform.localScale = Vector3.one;
 		}
 		private void AttachWristJoint(VRObjectMimic Controller, GameObject JointPrefab)
 		{
@@ -171,13 +170,16 @@ namespace NullSpace.SDK
 			ShoulderJointVisual.transform.SetParent(ShoulderJoint.transform);
 			ShoulderJointVisual.transform.localPosition = Vector3.zero;
 			ShoulderJointVisual.transform.localScale = Vector3.one;
+			ForearmData.ForearmVisual.transform.localRotation = Quaternion.identity;
 		}
 		#endregion
 
-		#region Visual Detachment
-		public void DetachVisuals(bool DropInsteadOfDelete = true)
+		/// <summary>
+		/// Does not call disposer.Dispose(). You must call it manually after this function adds visuals to the disposer.
+		/// </summary>
+		/// <param name="disposer"></param>
+		public VisualDisposer DisposeVisuals(VisualDisposer disposer)
 		{
-			VisualDisposer disposer = new VisualDisposer();
 			disposer.RecordVisual(UpperArmData.UpperArmVisual);
 			disposer.RecordVisual(ForearmData.ForearmVisual);
 			disposer.RecordVisual(WristObjectVisual);
@@ -187,19 +189,20 @@ namespace NullSpace.SDK
 
 			UpperArmData.UpperArmVisual = null;
 			ForearmData.ForearmVisual = null;
-			WristObjectVisual.transform.SetParent(null);
-			WristObjectVisual = null;
-			ShoulderJointVisual.transform.SetParent(null);
-			ShoulderJointVisual = null;
+			if (WristObjectVisual)
+			{
+				WristObjectVisual.transform.SetParent(null);
+				WristObjectVisual = null;
+			}
+			if (ShoulderJointVisual)
+			{
+				ShoulderJointVisual.transform.SetParent(null);
+				ShoulderJointVisual = null;
+			}
 			//Remove the hardlight colliders
 
-			//Leave the visuals alive
-			if (DropInsteadOfDelete)
-				disposer.DropRecordedVisuals();
-			else
-				disposer.DeleteRecordedVisuals();
+			return disposer;
 		}
-		#endregion
 
 		private void SetArmColliderAreaFlags()
 		{
@@ -218,13 +221,8 @@ namespace NullSpace.SDK
 
 		private void UnsetArmColliderAreaFlags()
 		{
-
-		}
-
-		//Index 
-		void Start()
-		{
-
+			Debug.LogWarning("Arm HardlightColliders are not being disabled even though there are no visual arms.\n\tUncertain if they should be removed\n", this);
+			//throw new NotImplementedException("Currently, the arm colliders are never turned off after they are added.\n");
 		}
 
 		void Update()

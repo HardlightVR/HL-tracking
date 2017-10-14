@@ -10,8 +10,6 @@ namespace NullSpace.SDK
 		public GameObject Tracker;
 		public Vector3 TrackerOffset = new Vector3();
 		public ArmSide MySide = ArmSide.Left;
-		public BodyVisualPrefabData robot;
-		public BodyVisualPrefabData celestial;
 		public BodyVisualPrefabData prefabsToUse;
 		public bool UseNewArmCreation = false;
 
@@ -19,23 +17,6 @@ namespace NullSpace.SDK
 		{
 			RequestArm();
 		}
-
-		void Update()
-		{
-			if (Input.GetKeyDown(KeyCode.Alpha1))
-			{
-				prefabsToUse = robot;
-			}
-			if (Input.GetKeyDown(KeyCode.Alpha2))
-			{
-				prefabsToUse = celestial;
-			}
-			if (Input.GetKeyDown(KeyCode.Space))
-			{
-				RequestArm();
-			}
-		}
-
 
 		private void RequestArm()
 		{
