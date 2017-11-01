@@ -38,28 +38,22 @@ namespace NullSpace.SDK
 		public Vector3 elbowToWrist = Vector3.zero;
 		public float potentialForearmDistance;
 
-		/// <summary>
-		/// Runtime adjustment (for making wrist roll movements)
-		/// </summary>
-		public float RollRotationOfForearm = 0;
-
-		private bool _enableEditing = false;
-		public bool EnableEditing
-		{
-			get { return _enableEditing; }
-			set
-			{
-				//Turn on/off all the VRTK editing objects?
-				_enableEditing = value;
-			}
-		}
+		//private bool _enableEditing = false;
+		//public bool EnableEditing
+		//{
+		//	get { return _enableEditing; }
+		//	set
+		//	{
+		//		//Turn on/off all the VRTK editing objects?
+		//		_enableEditing = value;
+		//	}
+		//}
 
 		public UpperArmMimic UpperArmData;
 		public ForearmMimic ForearmData;
 
-		public Vector3 ControllerOffsetAmount;
-		public Vector3 UpperArmOffsetAmount;
-		public Vector3 shoulderOffsetAmount;
+		public Vector3 shoulderOffsetAmount = new Vector3(0, -.2f, 0);
+		public Vector3 ControllerOffsetAmount = new Vector3(0, 0, -.122f);
 
 		public override void Setup(ArmSide WhichSide, GameObject ShoulderMountConnector, VRObjectMimic Tracker, VRObjectMimic Controller)
 		{
@@ -134,7 +128,7 @@ namespace NullSpace.SDK
 		{
 			ShoulderJoint = Instantiate(JointPrefab);
 			ShoulderJoint.transform.SetParent(UpperArmData.UpperArmBody.transform);
-			ShoulderJoint.transform.localPosition = Vector3.up * -.2f;
+			ShoulderJoint.transform.localPosition = shoulderOffsetAmount;
 			ShoulderJoint.transform.localScale = Vector3.one * .13f;
 		}
 
@@ -150,7 +144,7 @@ namespace NullSpace.SDK
 		}
 		private void AttachForearmVisual(ArmSide WhichSide, GameObject ForearmPrefab)
 		{
-			//Create the upper arm prefab.
+			//Create the forearm prefab.
 			ForearmData.ForearmVisual = GameObject.Instantiate<GameObject>(ForearmPrefab);
 			ForearmData.ForearmVisual.name = ForearmPrefab.name + " [c]";
 			ForearmData.ForearmVisual.transform.SetParent(ForearmData.ForearmBody.transform);
@@ -160,12 +154,14 @@ namespace NullSpace.SDK
 		}
 		private void AttachWristJoint(VRObjectMimic Controller, GameObject JointPrefab)
 		{
+			//Create and position the wrist object (it gets childed to the controller)
 			WristObjectVisual = GameObject.Instantiate<GameObject>(JointPrefab);
 			WristObjectVisual.transform.SetParent(WristObject.transform);
 			WristObjectVisual.transform.localPosition = Vector3.zero;
 		}
 		private void AttachShoulderJoint(GameObject JointPrefab)
 		{
+			//Create and position a joint object (same as wirst) for the shoulder
 			ShoulderJointVisual = GameObject.Instantiate<GameObject>(JointPrefab);
 			ShoulderJointVisual.transform.SetParent(ShoulderJoint.transform);
 			ShoulderJointVisual.transform.localPosition = Vector3.zero;
@@ -173,6 +169,87 @@ namespace NullSpace.SDK
 			ForearmData.ForearmVisual.transform.localRotation = Quaternion.identity;
 		}
 		#endregion
+
+		private void SetArmColliderAreaFlags()
+		{
+			//Set our colliders to use the correct side.
+			ForearmCollider.regionID = WhichArm == ArmSide.Left ? AreaFlag.Forearm_Left : AreaFlag.Forearm_Right;
+			UpperArmCollider.regionID = WhichArm == ArmSide.Left ? AreaFlag.Upper_Arm_Left : AreaFlag.Upper_Arm_Right;
+
+			//Add the arms to the suit themselves
+			bool result = HardlightSuit.Find().ModifyValidRegions(ForearmCollider.regionID, ForearmCollider.gameObject, ForearmCollider);
+			if (!result)
+				Debug.LogError("Unable to modify NullSpaceSuit's valid regions\n");
+			result = HardlightSuit.Find().ModifyValidRegions(UpperArmCollider.regionID, UpperArmCollider.gameObject, UpperArmCollider);
+			if (!result)
+				Debug.LogError("Unable to modify NullSpaceSuit's valid regions\n");
+		}
+
+		private void UnsetArmColliderAreaFlags()
+		{
+			Debug.LogWarning("Arm NullSpaceColliders are not being disabled even though there are no visual arms.\n\tUncertain if they should be removed\n", this);
+			//throw new NotImplementedException("Currently, the arm colliders are never turned off after they are added.\n");
+		}
+
+		void Update()
+		{
+			HandleObjectOffsets();
+
+			PositionUpperArm();
+
+			if (ControllerConnection != null && elbowObject != null && WristObject != null)
+			{
+				if (ForearmData != null && UpperArmData != null)
+				{
+					CalculateAndAssignForearmPosition();
+
+					ScaleForearmSize();
+
+					HandleForearmOrientation();
+				}
+			}
+		}
+
+		private void HandleObjectOffsets()
+		{
+			if (WristObject)
+			{	WristObject.transform.localPosition = ControllerOffsetAmount; }
+			if (ShoulderJoint)
+			{ ShoulderJoint.transform.localPosition = shoulderOffsetAmount; }
+		}
+
+		private void PositionUpperArm()
+		{
+			if (UpperArmData != null && TrackerMount != null)
+			{
+				UpperArmData.transform.position = TrackerMount.transform.position;
+				UpperArmData.transform.rotation = TrackerMount.transform.rotation;
+			}
+		}
+
+		private void CalculateAndAssignForearmPosition()
+		{
+			elbowToWrist = WristObject.transform.position - elbowObject.transform.position;
+			potentialForearmDistance = elbowToWrist.magnitude;
+			float percentage = (potentialForearmDistance) * PercentagePlacement;
+
+			ForearmData.transform.position = elbowObject.transform.position + elbowToWrist.normalized * percentage;
+		}
+
+		private void ScaleForearmSize()
+		{
+			Vector3 newScale = ForearmRepresentation.transform.localScale;
+			newScale.y = potentialForearmDistance * ArmScale;
+			ForearmRepresentation.transform.localScale = newScale;
+		}
+
+		private void HandleForearmOrientation()
+		{
+			//Debug.DrawLine(Vector3.zero, elbowToWrist, Color.black);
+			Vector3 cross = Vector3.Cross(WristObject.transform.right, ControllerConnection.transform.up);
+			Vector3 dir = elbowObject.transform.forward;
+			ForearmData.transform.LookAt(WristObject.transform, dir);
+		}
 
 		/// <summary>
 		/// Does not call disposer.Dispose(). You must call it manually after this function adds visuals to the disposer.
@@ -202,77 +279,6 @@ namespace NullSpace.SDK
 			//Remove the hardlight colliders
 
 			return disposer;
-		}
-
-		private void SetArmColliderAreaFlags()
-		{
-			//Set our colliders to use the correct side.
-			ForearmCollider.regionID = WhichArm == ArmSide.Left ? AreaFlag.Forearm_Left : AreaFlag.Forearm_Right;
-			UpperArmCollider.regionID = WhichArm == ArmSide.Left ? AreaFlag.Upper_Arm_Left : AreaFlag.Upper_Arm_Right;
-
-			//Add the arms to the suit themselves
-			bool result = HardlightSuit.Find().ModifyValidRegions(ForearmCollider.regionID, ForearmCollider.gameObject, ForearmCollider);
-			if (!result)
-				Debug.LogError("Unable to modify HardlightSuit's valid regions\n");
-			result = HardlightSuit.Find().ModifyValidRegions(UpperArmCollider.regionID, UpperArmCollider.gameObject, UpperArmCollider);
-			if (!result)
-				Debug.LogError("Unable to modify HardlightSuit's valid regions\n");
-		}
-
-		private void UnsetArmColliderAreaFlags()
-		{
-			Debug.LogWarning("Arm HardlightColliders are not being disabled even though there are no visual arms.\n\tUncertain if they should be removed\n", this);
-			//throw new NotImplementedException("Currently, the arm colliders are never turned off after they are added.\n");
-		}
-
-		void Update()
-		{
-			PositionUpperArm();
-
-			if (ControllerConnection != null && elbowObject != null && WristObject != null)
-			{
-				if (ForearmData != null && UpperArmData != null)
-				{
-					CalculateAndAssignForearmPosition();
-
-					ScaleForearmSize();
-
-					HandleForearmOrientation();
-				}
-			}
-		}
-
-		private void PositionUpperArm()
-		{
-			if (UpperArmData != null && TrackerMount != null)
-			{
-				UpperArmData.transform.position = TrackerMount.transform.position;// + TrackerMount.transform.rotation * UpperArmVisual.offset * UpperArmVisual.transform.lossyScale;
-				UpperArmData.transform.rotation = TrackerMount.transform.rotation;
-			}
-		}
-
-		private void CalculateAndAssignForearmPosition()
-		{
-			elbowToWrist = WristObject.transform.position - elbowObject.transform.position;
-			potentialForearmDistance = elbowToWrist.magnitude;
-			float percentage = (potentialForearmDistance) * PercentagePlacement;
-
-			ForearmData.transform.position = elbowObject.transform.position + elbowToWrist.normalized * percentage;
-		}
-
-		private void ScaleForearmSize()
-		{
-			Vector3 newScale = ForearmRepresentation.transform.localScale;
-			newScale.y = potentialForearmDistance * ArmScale;
-			ForearmRepresentation.transform.localScale = newScale;
-		}
-
-		private void HandleForearmOrientation()
-		{
-			//Debug.DrawLine(Vector3.zero, elbowToWrist, Color.black);
-			Vector3 cross = Vector3.Cross(WristObject.transform.right, ControllerConnection.transform.up);
-			Vector3 dir = elbowObject.transform.forward;
-			ForearmData.transform.LookAt(WristObject.transform, dir);
 		}
 
 		void OnDrawGizmos()

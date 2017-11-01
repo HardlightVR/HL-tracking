@@ -1559,7 +1559,7 @@ MonoBehaviour:
   AbsoluteLeftArm: {fileID: 0}
   AbsoluteRightArm: {fileID: 0}
   LowerBack: {fileID: 0}
-  VisualPrefabs: {fileID: 11400000, guid: bb1538674f7dcbd468b92a50185a8b4b, type: 2}
+  VisualPrefabs: {fileID: 11400000, guid: 32845dcfa9db4fa459b3e1c4754b8990, type: 2}
   DataModelPrefabs: {fileID: 11400000, guid: c85f8eb55b3bcee4383bb8fcd0668cbf, type: 2}
   ShoulderBarVisual: {fileID: 0}
   ShouldCreateVisuals: 1

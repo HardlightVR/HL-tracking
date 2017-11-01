@@ -57,23 +57,25 @@ MonoBehaviour:
   _shoulderMount: {fileID: 0}
   _trackerMount: {fileID: 0}
   _controllerConnection: {fileID: 0}
-  _forearm: {fileID: 0}
-  _upperArm: {fileID: 0}
+  _forearmCollider: {fileID: 0}
+  _upperArmCollider: {fileID: 0}
   _bodyPartPrefabs: {fileID: 0}
   _nonVisualPrefabs: {fileID: 0}
+  ValidDataModelArms: 0
   elbowObject: {fileID: 0}
   ForearmRepresentation: {fileID: 0}
   WristObject: {fileID: 0}
   ShoulderJoint: {fileID: 0}
+  WristObjectVisual: {fileID: 0}
+  ShoulderJointVisual: {fileID: 0}
   GizmoColor: {r: 0, g: 1, b: 0, a: 1}
   ForearmLength: 0.15
   PercentagePlacement: 0.5
   ArmScale: 0.48
   elbowToWrist: {x: 0, y: 0, z: 0}
   potentialForearmDistance: 0
-  RollRotationOfForearm: 0
   UpperArmData: {fileID: 0}
   ForearmData: {fileID: 0}
   ControllerOffsetAmount: {x: 0, y: 0, z: -0.1220001}
   UpperArmOffsetAmount: {x: 0, y: 0, z: 0}
-  shoulderOffsetAmount: {x: 0, y: 0, z: 0}
+  shoulderOffsetAmount: {x: 0, y: -0.2, z: 0}

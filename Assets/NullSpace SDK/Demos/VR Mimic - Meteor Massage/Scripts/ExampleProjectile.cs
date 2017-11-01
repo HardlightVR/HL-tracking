@@ -102,7 +102,7 @@ namespace NullSpace.SDK.Demos
 				//Debug.DrawLine(transform.position, transform.position + Vector3.up * 100, Color.cyan, 15);
 				bool hapticCollisionOccurred = false;
 
-				//Is what we hit a Hardlight Suit?
+				//Is what we hit a NullSpace Suit?
 				HardlightSuit body = col.gameObject.GetComponent<HardlightSuit>();
 
 				//We make some assumptions about the impact point.
@@ -123,7 +123,7 @@ namespace NullSpace.SDK.Demos
 					{
 						CollideWithBody(HardlightSuit.Find(), col, where);
 
-						//CollideWithHardlightCollider(individualCollider, where);
+						//CollideWithNullSpaceCollider(individualCollider, where);
 						hapticCollisionOccurred = true;
 					}
 				}
@@ -174,9 +174,9 @@ namespace NullSpace.SDK.Demos
 			}
 		}
 
-		//public void CollideWithHardlightCollider(HardlightCollider collider, Vector3 where)
+		//public void CollideWithNullSpaceCollider(NullSpaceCollider collider, Vector3 where)
 		//{
-		//	HardlightSuit.Find().HitNearest(lastPosition, "double_click");
+		//	NullSpaceSuit.Find().HitNearest(lastPosition, "double_click");
 
 		//	//Debug.Log("HIT INDIVIDUAL COLLIDER\n" + collider.name + "     " + where);
 		//}

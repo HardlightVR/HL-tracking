@@ -17,21 +17,24 @@ namespace NullSpace.SDK
 		[Header("Adjust to control arm tracker orientation")]
 		public float zRotation = 0;
 
+		void Update()
+		{
+			PositionAndRotateVisual();
+		}
+
 		public void PositionAndRotateVisual()
 		{
 			if (child)
 			{
 				Quaternion euler = Quaternion.identity;
 				euler.eulerAngles = TrackerEulerOffset;
+
 				Quaternion rot = transform.rotation;
 				var newOffset = euler * rotatedOffset;
+				
+				//Incorporate our ability to offset based on euler angles.
 				child.transform.localPosition = newOffset + globalOffset;
 			}
-		}
-
-		void Update()
-		{
-			PositionAndRotateVisual();
 		}
 
 		public void AssignSide(ArmSide side)

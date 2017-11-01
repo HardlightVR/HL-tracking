@@ -67,32 +67,43 @@ namespace NullSpace.SDK
 			}
 			if (SingleTorsoEffigy != null && StomachInitialized)
 			{
+				//Set the position and scale of a Single Torso Effigy
 				SingleTorsoEffigy.transform.localScale = new Vector3(TorsoWidth, TorsoHeight, TorsoDepth);
 				SingleTorsoEffigy.transform.position = TrackerMimic.transform.position + Offset;
+
+				//Here we add the Euler offset (for if you want it to be oriented differently)
 				Quaternion QOffset = Quaternion.identity;
 				QOffset.eulerAngles = EulerOffset;
 				SingleTorsoEffigy.transform.rotation = TrackerMimic.transform.rotation * QOffset;
 
 				if (TorsoSegments.Count > 0)
 				{
-					//Default Variables
+					#region Default Variables
 					var target = ShoulderBarData.transform.rotation * QOffset;
 					Vector3 segmentPosition = Vector3.zero;
 					Vector3 lerpedScale = Vector3.zero;
-					Quaternion segmentLerpedOrientation = Quaternion.identity;
+					Quaternion segmentLerpedOrientation = Quaternion.identity; 
+					#endregion
 
 					for (int i = 0; i < TorsoSegments.Count; i++)
 					{
 						if (TorsoSegments[i] != null)
 						{
+							//Find the vertical percent that this segment represents
 							float perc = (float)i / ((float)TorsoSegments.Count - 1);
+							
+							//Handle the scale of the segment
 							lerpedScale = Vector3.Lerp(WaistScale, ShoulderScale, perc);
 							lerpedScale.y = (lerpedScale.y / TorsoSegments.Count) * 1.2f;
 							TorsoSegments[i].transform.localScale = lerpedScale;
+
+							//Handle the position of this segment
 							segmentPosition = Vector3.Lerp(
 								TrackerMimic.transform.position + TrackerOffset,
 								ShoulderBarData.transform.position + ShoulderOffset,
 								perc);
+
+							//Each segment orients itself percentage-wise based on the shoulder/back orientation
 							TorsoSegments[i].transform.position = segmentPosition + Offset;
 							segmentLerpedOrientation = Quaternion.Lerp(TrackerMimic.transform.rotation, target, perc);
 							TorsoSegments[i].transform.rotation = segmentLerpedOrientation;
