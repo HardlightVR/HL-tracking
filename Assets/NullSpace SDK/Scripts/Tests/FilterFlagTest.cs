@@ -1,17 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public class FilterFlagTest : MonoBehaviour
 	{
-		[RegionFlag]
+		[RegionFlag("")]
 		public AreaFlag baseFlag;
 
 		[SerializeField]
 		public FilterFlag RemovedFlags;
 
-		[RegionFlag]
+		[RegionFlag("")]
 		public AreaFlag FilteredFlag;
 
 

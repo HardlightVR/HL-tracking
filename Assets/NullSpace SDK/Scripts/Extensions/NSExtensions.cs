@@ -1,6 +1,6 @@
 ﻿/* This code is licensed under the NullSpace Developer Agreement, available here:
 ** ***********************
-** http://nullspacevr.com/?wpdmpro=nullspace-developer-agreement
+** http://www.hardlightvr.com/wp-content/uploads/2017/01/NullSpace-SDK-License-Rev-3-Jan-2016-2.pdf
 ** ***********************
 ** Make sure that you have read, understood, and agreed to the Agreement before using the SDK
 */
@@ -8,7 +8,7 @@
 using System;
 using UnityEngine;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public static class Extensions
     {

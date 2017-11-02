@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
-using NullSpace.SDK;
+using Hardlight.SDK;
 
 public class DemoHaptics : MonoBehaviour {
 
-	HapticSequence heartbeat = new HapticSequence();
+	HapticSequence heartbeat;
 
 	void Start () {
-		heartbeat.LoadFromAsset("Haptics/heartbeat");
+		heartbeat = HapticSequence.LoadFromAsset("Haptics/heartbeat");
 	}
 	
 

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	/// <summary>
 	/// A simple component representing Area information.
@@ -19,7 +19,9 @@ namespace NullSpace.SDK
 		/// Complex Ex1 - AreaFlag.Chest_Right|AreaFlag.Shoulder_Left
 		/// Complex Ex2 - AreaFlag.Left_All
 		/// </summary>
-		[RegionFlag]
+		[RegionFlag("Where")]
 		public AreaFlag Where;
+		//[SerializeField]
+		//public FilterFlag RemovedRegion;
 	}
 }

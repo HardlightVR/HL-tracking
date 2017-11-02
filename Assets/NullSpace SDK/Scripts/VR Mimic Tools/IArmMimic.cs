@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
 

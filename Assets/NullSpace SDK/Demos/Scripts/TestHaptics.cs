@@ -8,10 +8,10 @@
 using UnityEngine;
 
 using System.Collections;
-using NullSpace.SDK;
+using Hardlight.SDK;
 using System;
 
-namespace NullSpace.SDK.Demos
+namespace Hardlight.SDK.Demos
 {
 	public class TestHaptics : MonoBehaviour
 	{
@@ -105,8 +105,8 @@ namespace NullSpace.SDK.Demos
 
 			if (Input.GetKeyDown(KeyCode.T))
 			{
-				var s = new HapticSequence();
-				s.AddEffect(0.0, new HapticEffect(Effect.Click));
+				var s = HapticSequence.CreateNew();
+				s.AddEffect(Effect.Click);
 				s.Play(AreaFlag.Left_All);
 				long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				Debug.Log("Milliseconds: " + milliseconds);
@@ -121,21 +121,21 @@ namespace NullSpace.SDK.Demos
 			if (GUI.Button(new Rect(50, 200, 100, 40), "Jolt Left Body"))
 			{
 				new HapticSequence()
-					.AddEffect(0.0, new HapticEffect(Effect.Click))
+					.AddEffect(Effect.Click)
 					.Play(AreaFlag.Left_All);
 			}
 
 			if (GUI.Button(new Rect(150, 200, 100, 40), "Jolt Full Body"))
 			{
 				new HapticSequence()
-					.AddEffect(0.0, new HapticEffect(Effect.Click))
+					.AddEffect(Effect.Click)
 					.Play(AreaFlag.All_Areas);
 			}
 
 			if (GUI.Button(new Rect(250, 200, 100, 40), "Jolt Right Body"))
 			{
 				new HapticSequence()
-					.AddEffect(0.0, new HapticEffect(Effect.Click))
+					.AddEffect(Effect.Click)
 					.Play(AreaFlag.Right_All);
 			}
 		}

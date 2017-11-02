@@ -9,15 +9,15 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using NullSpace.SDK;
+using Hardlight.SDK;
 
 public class RaycastHaptics : MonoBehaviour
 {
-	HapticSequence five_second_hum;
+	HapticSequence longHum;
 	void Start()
 	{
-		five_second_hum = new HapticSequence();
-		five_second_hum.AddEffect(0.0, new HapticEffect(Effect.Hum, 2.0));
+		longHum = HapticSequence.CreateNew();
+		longHum.AddEffect(new HapticEffect(Effect.Hum, 0, 3));
 	}
 
 
@@ -25,7 +25,7 @@ public class RaycastHaptics : MonoBehaviour
 	{
 		if (GUI.Button(new Rect(10, 10, 120, 40), "Stop Everything!"))
 		{
-			NSManager.Instance.ClearAllEffects();
+			HardlightManager.Instance.ClearAllEffects();
 		}
 	}
 
@@ -63,7 +63,7 @@ public class RaycastHaptics : MonoBehaviour
 					if (haptic != null)
 					{
 						Debug.LogFormat("Starting Haptic: Region ID {0}\n", haptic.regionID);
-						five_second_hum.CreateHandle(haptic.regionID).Play();
+						longHum.CreateHandle(haptic.regionID).Play();
 
 
 						hit.collider.gameObject.GetComponent<MeshRenderer>().material.color = Color.blue;

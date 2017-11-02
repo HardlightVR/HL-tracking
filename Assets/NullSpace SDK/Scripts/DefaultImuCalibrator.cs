@@ -1,6 +1,6 @@
 ﻿/* This code is licensed under the NullSpace Developer Agreement, available here:
 ** ***********************
-** http://nullspacevr.com/?wpdmpro=nullspace-developer-agreement
+** http://www.hardlightvr.com/wp-content/uploads/2017/01/NullSpace-SDK-License-Rev-3-Jan-2016-2.pdf
 ** ***********************
 ** Make sure that you have read, understood, and agreed to the Agreement before using the SDK
 */
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NullSpace.SDK.Tracking {
+namespace Hardlight.SDK.Tracking {
 	using Quaternion = UnityEngine.Quaternion;
 
 	/// <summary>
@@ -27,13 +27,13 @@ namespace NullSpace.SDK.Tracking {
 
 		private IDictionary<Imu, Quaternion> _processedQuaternions;
 
-
 		public void Awake()
 		{
 			_rawQuaternions = new Dictionary<Imu, ImuOrientation>();
 			_processedQuaternions = new Dictionary<Imu, Quaternion>();
 
-			foreach (Imu imu in Enum.GetValues(typeof(Imu))) {
+			foreach (Imu imu in Enum.GetValues(typeof(Imu)))
+			{
 				_processedQuaternions[imu] = new Quaternion();
 				_rawQuaternions[imu] = new ImuOrientation(Quaternion.identity);
 			}
@@ -42,9 +42,9 @@ namespace NullSpace.SDK.Tracking {
 
 		public Quaternion GetOrientation(Imu imu)
 		{
-			return _processedQuaternions[imu];	
+			return _processedQuaternions[imu];
 		}
-		
+
 		public void ReceiveUpdate(TrackingUpdate update)
 		{
 			_rawQuaternions[Imu.Chest].Orientation = update.Chest;

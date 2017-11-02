@@ -7,12 +7,13 @@ namespace NullSpace.SDK
 	public class FilterFlag
 	{
 		[Header("Removed Flags")]
-		[RegionFlag]
+		//[RegionFlag]
 		public AreaFlag InactiveRegions = AreaFlag.None;
 
 		public void DisableArea(AreaFlag AreaToFilterOut)
 		{
-			InactiveRegions.AddFlag(AreaToFilterOut);
+			Debug.LogError("Disabled\n");
+		//	InactiveRegions.AddFlag(AreaToFilterOut);
 		}
 		public void EnableArea(AreaFlag AreaToAllow)
 		{

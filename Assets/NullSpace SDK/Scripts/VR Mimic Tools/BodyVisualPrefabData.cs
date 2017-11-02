@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	[CreateAssetMenu(menuName = "Hardlight/VR Mimic Visual Data")]
 	[System.Serializable]

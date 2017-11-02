@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public class ShoulderVisual : MonoBehaviour
 	{

@@ -8,7 +8,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK.Demos
+namespace Hardlight.SDK.Demos
 {
 	/// <summary>
 	/// Largely Empty SuitDemo
@@ -20,12 +20,14 @@ namespace NullSpace.SDK.Demos
 		public override void ActivateDemo()
 		{
 			HandleRequiredObjects(true);
+			HardlightManager.Instance.EnableTracking();
 		}
 
 		//Turn off my needed things
 		public override void DeactivateDemo()
 		{
 			HandleRequiredObjects(false);
+			HardlightManager.Instance.DisableTracking();
 		}
 
 		public override void OnSuitClicked(HardlightCollider clicked, RaycastHit hit)

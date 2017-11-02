@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK.Demos
+namespace Hardlight.SDK.Demos
 {
 	public class LightningExample : MonoBehaviour
 	{
@@ -10,6 +10,8 @@ namespace NullSpace.SDK.Demos
 
 		//Set to False to disrupt the current shock
 		public bool CurrentlyShocking = true;
+
+		HapticSequence seq;
 
 		//The Shock Impulse we want to make. We save this to only pay the more expensive cost
 		ImpulseGenerator.Impulse shockImpulse;
@@ -43,8 +45,7 @@ namespace NullSpace.SDK.Demos
 
 			if (Input.GetKeyDown(KeyCode.G))
 			{
-				HapticSequence seq = new HapticSequence();
-				seq.LoadFromAsset("Haptics/pulse");
+				seq = HapticSequence.LoadFromAsset("Haptics/pulse");
 				seq.Play(AreaFlag.Left_All);
 			}
 		}

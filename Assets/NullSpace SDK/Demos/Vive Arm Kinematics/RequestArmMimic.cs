@@ -1,24 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
-	public class RequestArmMimic : MonoBehaviour
+	public class RequestArmMimic : RequestTracker
 	{
-		public VRObjectMimic.TypeOfMimickedObject controllerMimicType = VRObjectMimic.TypeOfMimickedObject.ControllerA;
 		public GameObject Controller;
-		public GameObject Tracker;
 		public Vector3 TrackerOffset = new Vector3();
 		public ArmSide MySide = ArmSide.Left;
-		public BodyVisualPrefabData prefabsToUse;
 		public bool UseNewArmCreation = false;
 
-		void Start()
-		{
-			RequestArm();
-		}
-
-		private void RequestArm()
+		protected override VRObjectMimic RequestTrackerMimic()
 		{
 			if (Controller != null && Tracker != null)
 			{
@@ -28,7 +20,6 @@ namespace NullSpace.SDK
 				if (controllerMimic == null)
 				{
 					//Setup controller tracker
-
 				}
 				else
 				{
@@ -55,7 +46,10 @@ namespace NullSpace.SDK
 					var newArm = VRMimic.Instance.ActiveBodyMimic.CreateAntiqueArm(MySide, mimic, controllerMimic);
 					Debug.Log("Created new arm.\n\t[Click to select it]", newArm);
 				}
+
+				return mimic;
 			}
+			return null;
 		}
 
 	}

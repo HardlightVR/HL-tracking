@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public class AbsoluteArmMimic : AbstractArmMimic
 	{
@@ -179,15 +179,15 @@ namespace NullSpace.SDK
 			//Add the arms to the suit themselves
 			bool result = HardlightSuit.Find().ModifyValidRegions(ForearmCollider.regionID, ForearmCollider.gameObject, ForearmCollider);
 			if (!result)
-				Debug.LogError("Unable to modify NullSpaceSuit's valid regions\n");
+				Debug.LogError("Unable to modify HardlightSuit's valid regions\n");
 			result = HardlightSuit.Find().ModifyValidRegions(UpperArmCollider.regionID, UpperArmCollider.gameObject, UpperArmCollider);
 			if (!result)
-				Debug.LogError("Unable to modify NullSpaceSuit's valid regions\n");
+				Debug.LogError("Unable to modify HardlightSuit's valid regions\n");
 		}
 
 		private void UnsetArmColliderAreaFlags()
 		{
-			Debug.LogWarning("Arm NullSpaceColliders are not being disabled even though there are no visual arms.\n\tUncertain if they should be removed\n", this);
+			Debug.LogWarning("Arm HardlightColliders are not being disabled even though there are no visual arms.\n\tUncertain if they should be removed\n", this);
 			//throw new NotImplementedException("Currently, the arm colliders are never turned off after they are added.\n");
 		}
 

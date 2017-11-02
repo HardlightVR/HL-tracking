@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEditor;
-using NullSpace.SDK.FileUtilities;
+using Hardlight.SDK.FileUtilities;
 using UnityEngine;
 using System.Collections;
 using System.Threading;
 
-namespace NullSpace.SDK.Editor
+namespace Hardlight.SDK.UEditor
 {
 	public class PackagingPane : EditorPane
 	{
@@ -141,7 +141,7 @@ namespace NullSpace.SDK.Editor
 			}
 			public void DrawCurrentState()
 			{
-				NSEditorStyles.DrawLabel("Current State: [" + activeState.ToString() + "]");
+				HLEditorStyles.DrawLabel("Current State: [" + activeState.ToString() + "]");
 			}
 			public void DrawFetchingHaptics()
 			{
@@ -453,18 +453,18 @@ namespace NullSpace.SDK.Editor
 				//{
 				//	_pathError = true;
 				//	//The filename was not set. This could be if the registry key was not found
-				//	OutputMessage("Invalid Operation Exception - Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
+				//	OutputMessage("Invalid Operation Exception - Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
 
-				//	Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists." + e.Message);
-				//	return new KeyValuePair<string, string>("NSVR_NO_HAT", "NSVR_FAILED");
+				//	Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists." + e.Message);
+				//	return new KeyValuePair<string, string>("HLVR_NO_HAT", "HLVR_FAILED");
 				//}
 				//catch (System.ComponentModel.Win32Exception e)
 				//{
 				//	_pathError = true;
 				//	OutputMessage("Win32Exception - Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?)", MessageType.Error);
 
-				//	Debug.LogError("[NSVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
-				//	return new KeyValuePair<string, string>("NSVR_NO_OPEN", "NSVR_FAILED");
+				//	Debug.LogError("[HLVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
+				//	return new KeyValuePair<string, string>("HLVR_NO_OPEN", "HLVR_FAILED");
 				//} 
 				#endregion
 
@@ -472,7 +472,7 @@ namespace NullSpace.SDK.Editor
 				if (json.Length < 1)
 				{
 					//_pathError = true;
-					Debug.LogWarning("[NSVR] Unable to load path [" + path + "] it's probably malformed\n");
+					Debug.LogWarning("[HLVR] Unable to load path [" + path + "] it's probably malformed\n");
 
 					MyPane.OutputMessage("Empty json result - likely a failure to load from\n\tpath [" + path + "]", MessageType.Error);
 
@@ -504,7 +504,7 @@ namespace NullSpace.SDK.Editor
 					//If the asset tool succeeded in running, but returned nothing, it's an error
 					if (json.Length < 1)
 					{
-						Debug.LogWarning("[NSVR] Unable to load " + path + " it's probably malformed");
+						Debug.LogWarning("[HLVR] Unable to load " + path + " it's probably malformed");
 						MyPane.OutputMessage("Unable to load path [" + path + "] - it is probably malformed", MessageType.Warning);
 						continue;
 					}
@@ -532,12 +532,12 @@ namespace NullSpace.SDK.Editor
 				catch (InvalidOperationException e)
 				{
 					//The filename was not set. This could be if the registry key was not found
-					Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists." + e.Message);
+					Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists." + e.Message);
 					continueInstead = true;
 				}
 				catch (System.ComponentModel.Win32Exception e)
 				{
-					Debug.LogError("[NSVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
+					Debug.LogError("[HLVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
 					continueInstead = true;
 				}
 				catch (HapticsAssetException e)
@@ -546,7 +546,7 @@ namespace NullSpace.SDK.Editor
 					//var thing = AssetDatabase.LoadAssetAtPath(path, typeof(UnityEngine.Object));
 					//if (thing != null)
 					//{
-					Debug.LogError("[NSVR] Haptics Asset Exception loading item at path [" + path + "]: " + e.Message);
+					Debug.LogError("[HLVR] Haptics Asset Exception loading item at path [" + path + "]: " + e.Message);
 					//}
 
 					continueInstead = true;
@@ -673,23 +673,23 @@ namespace NullSpace.SDK.Editor
 			catch (System.ComponentModel.Win32Exception)
 			{
 				//TODO: Win32Exception communicating with HapticAssetTools.
-				Debug.LogError("[NSVR] Problem communicating with HapticAssetTools.exe\n");
+				Debug.LogError("[HLVR] Problem communicating with HapticAssetTools.exe\n");
 				_status = new HelpMessage("Problem communicating with HapticAssetTools.exe", MessageType.Error);
 			}
 			catch (InvalidOperationException)
 			{
 				//TODO: Invalid Operation Exception finding HapticAssetTools.exe (service version problem?
 				//The filename was not set. This could be if the registry key was not found
-				Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists.\n");
-				_status = new HelpMessage("Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
+				Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists.\n");
+				_status = new HelpMessage("Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
 				return;
 			}
 			catch (HapticsAssetException e)
 			{
 				//TODO: Invalid Operation Exception finding HapticAssetTools.exe (service version problem?
 				//The filename was not set. This could be if the registry key was not found
-				Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists.\n" + e.Message);
-				_status = new HelpMessage("Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed.\nTry reinstalling if the problem persists.", MessageType.Error);
+				Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists.\n" + e.Message);
+				_status = new HelpMessage("Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed.\nTry reinstalling if the problem persists.", MessageType.Error);
 				return;
 			}
 		}
@@ -714,6 +714,8 @@ namespace NullSpace.SDK.Editor
 
 			var newAssetPath = "Assets/Resources/Haptics/" + newAssetName;
 			asset.name = newAssetName;
+
+			EditorUtility.SetDirty(asset);
 
 			var old = AssetDatabase.LoadAssetAtPath(newAssetPath, typeof(JsonAsset));
 			if (old != null)
@@ -751,12 +753,12 @@ namespace NullSpace.SDK.Editor
 			catch (InvalidOperationException e)
 			{
 				//The filename was not set. This could be if the registry key was not found
-				Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists." + e.Message);
+				Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists." + e.Message);
 				return;
 			}
 			catch (System.ComponentModel.Win32Exception e)
 			{
-				Debug.LogError("[NSVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
+				Debug.LogError("[HLVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
 				return;
 			}
 
@@ -764,7 +766,7 @@ namespace NullSpace.SDK.Editor
 			//If the asset tool succeeded in running, but returned nothing, it's an error
 			if (json == "")
 			{
-				Debug.LogError("[NSVR] Unable to communicate with HapticAssetTools.exe");
+				Debug.LogError("[HLVR] Unable to communicate with HapticAssetTools.exe");
 				return;
 			}
 
@@ -849,7 +851,7 @@ namespace NullSpace.SDK.Editor
 				//Don't draw a divider if we're idle.
 				if (!CurrentImport.Idle)
 				{
-					NSEditorStyles.DrawSliderDivider();
+					HLEditorStyles.DrawSliderDivider();
 				}
 				if (HardlightEditor.myWindow.DebugHardlightEditor)
 				{
@@ -871,14 +873,14 @@ namespace NullSpace.SDK.Editor
 			#endregion
 
 			#region Draw Each Package
-			NSEditorStyles.DrawSliderDivider();
+			HLEditorStyles.DrawSliderDivider();
 			DrawPackages();
 			#endregion
 
 			#region Draw Status
-			NSEditorStyles.OpenHorizontal(_status.messageType, true);
-			NSEditorStyles.DrawLabel(_status.message);
-			NSEditorStyles.CloseHorizontal();
+			HLEditorStyles.OpenHorizontal(_status.messageType, true);
+			HLEditorStyles.DrawLabel(_status.message);
+			HLEditorStyles.CloseHorizontal();
 			#endregion
 			EditorGUILayout.EndScrollView();
 		}
@@ -887,7 +889,7 @@ namespace NullSpace.SDK.Editor
 		{
 			IsTutorialStep(0, () =>
 			{
-				NSEditorStyles.DrawLabel("Welcome to the Haptic Package Tool-torial!\n" +
+				HLEditorStyles.DrawLabel("Welcome to the Haptic Package Tool-torial!\n" +
 					"We will go over how to import JSON Haptic Assets into Unity-specific assets\n" +
 					"As well as the benefits for doing so."
 					, 105, 14);
@@ -898,11 +900,11 @@ namespace NullSpace.SDK.Editor
 				EditorGUILayout.BeginHorizontal();
 				EditorGUILayout.BeginVertical();
 				GUILayout.Space(8);
-				NSEditorStyles.DrawLabel("Haptic Package Directory");
+				HLEditorStyles.DrawLabel("Haptic Package Directory");
 				EditorGUILayout.EndVertical();
-				NSEditorStyles.OpenHorizontal(_pathError ? ColorBoxType.Error : ColorBoxType.Normal);
-				NSEditorStyles.DrawLabel(_path);
-				NSEditorStyles.CloseHorizontal();
+				HLEditorStyles.OpenHorizontal(_pathError ? ColorBoxType.Error : ColorBoxType.Normal);
+				HLEditorStyles.DrawLabel(_path);
+				HLEditorStyles.CloseHorizontal();
 				EditorGUILayout.EndHorizontal();
 				GUILayout.Space(2);
 			});
@@ -910,7 +912,7 @@ namespace NullSpace.SDK.Editor
 
 			IsTutorialStep(1, () =>
 			{
-				NSEditorStyles.DrawLabel("This is the selected haptic directory\n" +
+				HLEditorStyles.DrawLabel("This is the selected haptic directory\n" +
 					"This can be located anywhere on your computer."
 					, 105, 14);
 			});
@@ -959,12 +961,12 @@ namespace NullSpace.SDK.Editor
 
 				IsTutorialStep(1, packageCounter == 0, () =>
 				{
-					NSEditorStyles.DrawLabel("This is a detected haptic package."
+					HLEditorStyles.DrawLabel("This is a detected haptic package."
 						, 105, 14);
 
 					using (new EditorGUI.DisabledGroupScope(true))
 					{
-						NSEditorStyles.TextField("Haptic Package Location", pList.Value[0].path);
+						HLEditorStyles.TextField("Haptic Package Location", pList.Value[0].path);
 					}
 					//Ideally we'd want a button that opens directly to that directory. Unity does not make this easy.
 					//if (NSEditorStyles.OperationToolbarButton(false, new GUIContent("Open Directory")))
@@ -997,33 +999,33 @@ namespace NullSpace.SDK.Editor
 			//If we have 0 companies, or 0 packages amongst those companies (unsure how that could happen)
 			if (_uniqueCompanies.Count < 1 || packageCounter < 1)
 			{
-				NSEditorStyles.OpenVertical(MessageType.Error);
+				HLEditorStyles.OpenVertical(MessageType.Error);
 
 				//Draw the helper content for finding no packages.
-				NSEditorStyles.DrawLabel("Detected 0 haptic packages\n" +
+				HLEditorStyles.DrawLabel("Detected 0 haptic packages\n" +
 					"Did you select the wrong directory? The default directory is \"StreamingAssets/Haptics\""
 					, 105, 14);
 
-				NSEditorStyles.DrawLabel("It's possible the haptic content is missing."
+				HLEditorStyles.DrawLabel("It's possible the haptic content is missing."
 									, 105, 0);
 
-				if (NSEditorStyles.DrawButton("Click here to revert to the default haptic directory."))
+				if (HLEditorStyles.DrawButton("Click here to revert to the default haptic directory."))
 				{
 					_path = Application.streamingAssetsPath + "/Haptics";
 					SavedPath = _path;
 					RescanPackages();
 				}
 
-				if (NSEditorStyles.DrawButton("Click here to download a zipped archive of haptics."))
+				if (HLEditorStyles.DrawButton("Click here to download a zipped archive of haptics."))
 				{
 					Application.OpenURL(HardlightEditor.myWindow.HapticZipLink);
 				}
 
 				GUILayout.Space(14);
-				NSEditorStyles.DrawLabel("It is also possible you have a malformed config.json file.\nCheck the Console window to see if there is an NSVR error and then follow the path to the malformed file (and fix the json structural problems with it.)", 105, 4);
+				HLEditorStyles.DrawLabel("It is also possible you have a malformed config.json file.\nCheck the Console window to see if there is an HLVR error and then follow the path to the malformed file (and fix the json structural problems with it.)", 105, 4);
 
 
-				NSEditorStyles.CloseVertical();
+				HLEditorStyles.CloseVertical();
 
 			}
 		}
@@ -1035,7 +1037,7 @@ namespace NullSpace.SDK.Editor
 			var selectedPackage = packages[_packageSelectionIndices[companyName]];
 			var packagesByThisCompany = new string[0];
 			packagesByThisCompany = packages.Select(package => package.@namespace).ToArray();
-			
+
 			#region Package Selection
 			TutorialHighlight(2, packageIndex == 0, () =>
 			{
@@ -1049,14 +1051,14 @@ namespace NullSpace.SDK.Editor
 
 			IsTutorialStep(2, packageIndex == 0, () =>
 			{
-				NSEditorStyles.DrawLabel("This dropdown lets you select which of this company's haptic packages you want to import.\n" +
+				HLEditorStyles.DrawLabel("This dropdown lets you select which of this company's haptic packages you want to import.\n" +
 					"NullSpace provides several packages with different objectives"
 						, 105, 14);
 			});
 			#endregion
 
 			#region Package Description
-			NSEditorStyles.DrawLabel("Description: " + selectedPackage.description);
+			HLEditorStyles.DrawLabel("Description: " + selectedPackage.description);
 
 			#endregion
 
@@ -1173,31 +1175,31 @@ namespace NullSpace.SDK.Editor
 			#region Import Tutorial Content
 			IsTutorialStep(3, packageIndex == 0, () =>
 				{
-					NSEditorStyles.DrawLabel("These buttons will queue up importing multiple haptics at once.\n" +
+					HLEditorStyles.DrawLabel("These buttons will queue up importing multiple haptics at once.\n" +
 						"It is recommended to choose this option when creating a new project or adding a new package to a project."
 							, 105, 14);
 				});
 			IsTutorialStep(4, packageIndex == 0, () =>
 			{
-				NSEditorStyles.DrawLabel("Sequences are the smallest user component.\nThey contain no location information, merely time, effect and strength.\nA sequence can be played if you give it Area information using AreaFlags.\n\n" +
+				HLEditorStyles.DrawLabel("Sequences are the smallest user component.\nThey contain no location information, merely time, effect and strength.\nA sequence can be played if you give it Area information using AreaFlags.\n\n" +
 					"This option is recommended if you have a single new asset or if you want to reimport a damaged haptic file."
 						, 105, 14);
 			});
 			IsTutorialStep(5, packageIndex == 0, () =>
 			{
-				NSEditorStyles.DrawLabel("A pattern is the most usable user component.\nPatterns are made up of sequences with time offset and Area information. This means you can reuse common small components but give them novel location information.\n\nA pattern can represent a small to large haptic animation.\n\n" +
+				HLEditorStyles.DrawLabel("A pattern is the most usable user component.\nPatterns are made up of sequences with time offset and Area information. This means you can reuse common small components but give them novel location information.\n\nA pattern can represent a small to large haptic animation.\n\n" +
 					"This option is recommended if you have a single new asset or if you want to reimport a damaged haptic file."
 						, 105, 14);
 			});
 			IsTutorialStep(6, packageIndex == 0, () =>
 			{
-				NSEditorStyles.DrawLabel("Experiences are a complex haptic construct made up of multiple patterns with additional time offset information.\nExperiences are best described as cutscene haptics. Best used for when you have many patterns you want to execute with timing information.\n\n" +
+				HLEditorStyles.DrawLabel("Experiences are a complex haptic construct made up of multiple patterns with additional time offset information.\nExperiences are best described as cutscene haptics. Best used for when you have many patterns you want to execute with timing information.\n\n" +
 					"This option is recommended if you have a single new asset or if you want to reimport a damaged haptic file."
 						, 105, 14);
 			});
 			#endregion
 
-			NSEditorStyles.DrawSliderDivider();
+			HLEditorStyles.DrawSliderDivider();
 		}
 
 		private void OpenFileDialogAndMakeAsset(string path, string hapticType)
@@ -1213,7 +1215,7 @@ namespace NullSpace.SDK.Editor
 				}
 				else
 				{
-					OutputMessage("NSVR Failed to create the asset for [" + hapticType + "] at path\n\t[" + path + "].", MessageType.Error);
+					OutputMessage("HLVR Failed to create the asset for [" + hapticType + "] at path\n\t[" + path + "].", MessageType.Error);
 				}
 			}
 		}
@@ -1369,9 +1371,9 @@ namespace NullSpace.SDK.Editor
 		//	//{
 		//	//	_pathError = true;
 		//	//	//The filename was not set. This could be if the registry key was not found
-		//	//	OutputMessage("Invalid Operation Exception - Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
+		//	//	OutputMessage("Invalid Operation Exception - Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists.", MessageType.Error);
 
-		//	//	Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists." + e.Message);
+		//	//	Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists." + e.Message);
 		//	//	return new KeyValuePair<string, string>("NSVR_NO_HAT", "NSVR_FAILED");
 		//	//}
 		//	//catch (System.ComponentModel.Win32Exception e)
@@ -1379,7 +1381,7 @@ namespace NullSpace.SDK.Editor
 		//	//	_pathError = true;
 		//	//	OutputMessage("Win32Exception - Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?)", MessageType.Error);
 
-		//	//	Debug.LogError("[NSVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
+		//	//	Debug.LogError("[HLVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
 		//	//	return new KeyValuePair<string, string>("NSVR_NO_OPEN", "NSVR_FAILED");
 		//	//} 
 		//	#endregion
@@ -1388,7 +1390,7 @@ namespace NullSpace.SDK.Editor
 		//	if (json.Length < 1)
 		//	{
 		//		_pathError = true;
-		//		Debug.LogWarning("[NSVR] Unable to load path [" + path + "] it's probably malformed\n");
+		//		Debug.LogWarning("[HLVR] Unable to load path [" + path + "] it's probably malformed\n");
 
 		//		OutputMessage("Empty json result - likely a failure to load from\n\tpath [" + path + "]", MessageType.Error);
 
@@ -1420,7 +1422,7 @@ namespace NullSpace.SDK.Editor
 		//		//If the asset tool succeeded in running, but returned nothing, it's an error
 		//		if (json.Length < 1)
 		//		{
-		//			Debug.LogWarning("[NSVR] Unable to load " + path + " it's probably malformed");
+		//			Debug.LogWarning("[HLVR] Unable to load " + path + " it's probably malformed");
 		//			OutputMessage("Unable to load path [" + path + "] - it is probably malformed", MessageType.Warning);
 		//			continue;
 		//		}
@@ -1448,17 +1450,17 @@ namespace NullSpace.SDK.Editor
 		//	catch (InvalidOperationException e)
 		//	{
 		//		//The filename was not set. This could be if the registry key was not found
-		//		Debug.LogError("[NSVR] Could not locate the HapticAssetTools.exe program, make sure the NSVR Service was installed. Try reinstalling if the problem persists." + e.Message);
+		//		Debug.LogError("[HLVR] Could not locate the HapticAssetTools.exe program, make sure the HLVR Service was installed. Try reinstalling if the problem persists." + e.Message);
 		//		continueInstead = true;
 		//	}
 		//	catch (System.ComponentModel.Win32Exception e)
 		//	{
-		//		Debug.LogError("[NSVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
+		//		Debug.LogError("[HLVR] Could not open the HapticAssetTools.exe program (was it renamed? Does it exist within the service install directory?): " + e.Message);
 		//		continueInstead = true;
 		//	}
 		//	catch (HapticsAssetException e)
 		//	{
-		//		Debug.LogError("[NSVR] Haptics Asset Exception loading item at path [" + path + "]: " + e.Message);
+		//		Debug.LogError("[HLVR] Haptics Asset Exception loading item at path [" + path + "]: " + e.Message);
 		//		continueInstead = true;
 		//	}
 		//	return json;

@@ -12,7 +12,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
     public class SuitIndicator : MonoBehaviour
     {
@@ -26,8 +26,8 @@ namespace NullSpace.SDK
 		}
 		public void Start()
 		{
-			NSManager.Instance.SuitConnected += HandleSuitConnect;
-			NSManager.Instance.SuitDisconnected += HandleSuitDisconnect;
+			HardlightManager.Instance.SuitConnected += HandleSuitConnect;
+			HardlightManager.Instance.SuitDisconnected += HandleSuitDisconnect;
 		}
         void HandleSuitConnect(object sender, SuitConnectionArgs s)
         {

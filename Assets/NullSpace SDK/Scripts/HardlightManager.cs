@@ -9,20 +9,22 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using NullSpace.SDK.Tracking;
+using Hardlight.SDK.Tracking;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 
 	/// <summary>
-	/// NSManager provides access to a essential suit functions, 
+	/// HardlightManager provides access to a essential suit functions, 
 	/// including enabling/disabling tracking, monitoring suit connection status, 
 	/// globally pausing and playing effects, and clearing all playing effects.
 	/// 
 	/// If you prefer to interact directly with the plugin, you may instantiate and destroy your own
-	/// NSVR_Plugin and remove NSManager.
+	/// HLVR_Plugin and remove HardlightManager.
 	/// </summary>
-	public sealed class NSManager : MonoBehaviour
+
+	[ExecuteInEditMode]
+	public sealed class HardlightManager : MonoBehaviour
 	{
 		public const int HAPTIC_LAYER = 31;
 
@@ -70,31 +72,31 @@ namespace NullSpace.SDK
 
 
 		/// <summary>
-		/// Use the Instance variable to access the NSManager object. There should only be one NSManager in a scene.
+		/// Use the Instance variable to access the HardlightManager object. There should only be one HardlightManager in a scene.
 		/// in the scene. 
 		/// </summary>
 
-		private static NSManager instance;
-		public static NSManager Instance
+		private static HardlightManager instance;
+		public static HardlightManager Instance
 		{
 			get
 			{
 				if (instance == null)
 				{
-					instance = FindObjectOfType<NSManager>();
+					instance = FindObjectOfType<HardlightManager>();
 
-					if (FindObjectsOfType<NSManager>().Length > 1)
+					if (FindObjectsOfType<HardlightManager>().Length > 1)
 					{
-						Debug.LogError("[NSManager] There is more than one NSManager Singleton\n" +
-							"There shouldn't be multiple NSManager objects");
+						Debug.LogError("[HardlightManager] There is more than one HardlightManager Singleton\n" +
+							"There shouldn't be multiple HardlightManager objects");
 						return instance;
 					}
 
 					if (instance == null)
 					{
 						GameObject singleton = new GameObject();
-						instance = singleton.AddComponent<NSManager>();
-						singleton.name = "NSManager [Runtime Singleton]";
+						instance = singleton.AddComponent<HardlightManager>();
+						singleton.name = "HardlightManager [Runtime Singleton]";
 					}
 					else
 					{
@@ -128,7 +130,7 @@ namespace NullSpace.SDK
 		private DeviceConnectionStatus _DeviceConnectionStatus;
 		private ServiceConnectionStatus _ServiceConnectionStatus;
 
-		private NSVR.NSVR_Plugin _plugin;
+		private HLVR.HLVR_Plugin _plugin;
 
 		/// <summary>
 		/// Enable experimental tracking on the suit
@@ -155,13 +157,24 @@ namespace NullSpace.SDK
 			_plugin.DisableTracking();
 		}
 
+		public TrackingUpdate PollTracking()
+		{
+			if (_plugin != null)
+			{
+				return _plugin.PollTracking();
+			}
+			return new TrackingUpdate();
+		}
+
 		public static VersionInfo GetPluginVersionInfo()
 		{
-			return NSVR.NSVR_Plugin.GetPluginVersion();
+			return HLVR.HLVR_Plugin.GetPluginVersion();
 		}
 		public Dictionary<AreaFlag, EffectSampleInfo> SamplePlayingStatus()
 		{
-			return _plugin.SampleCurrentlyPlayingEffects();
+			throw new NotImplementedException("There is a big problem.\n\tSample Playing Status has not been reimplemented.\n");
+			//return _plugin.PollBodyView();
+			//return _plugin.SampleCurrentlyPlayingEffects();
 			//return _plugin.SampleStrengths();
 		}
 		/// <summary>
@@ -229,8 +242,8 @@ namespace NullSpace.SDK
 			}
 			else if (Instance != this)
 			{
-				Debug.LogError("There should only be one NSManager! Make sure there is only one NSManager prefab in the scene\n" +
-					"If there is no NSManager, one will be created for you!");
+				Debug.LogError("There should only be one HardlightManager! Make sure there is only one HardlightManager prefab in the scene\n" +
+					"If there is no HardlightManager, one will be created for you if you call any HardlightManager.Instance function.");
 			}
 
 			_trackingUpdateLoop = UpdateTracking();
@@ -238,12 +251,16 @@ namespace NullSpace.SDK
 
 			_imuCalibrator = new CalibratorWrapper(new MockImuCalibrator());
 
-			InitPlugin();
+			InitPluginIfNull();
 		}
-		private void InitPlugin()
+		public void InitPluginIfNull()
 		{
 			//The plugin needs to load resources from your app's Streaming Assets folder
-			_plugin = new NSVR.NSVR_Plugin();
+			if (_plugin == null)
+			{
+				//Debug.Log("Plugin has been initialized\n", this);
+				_plugin = new HLVR.HLVR_Plugin();
+			}
 		}
 		private void DoDelayedAction(float delay, Action action)
 		{
@@ -325,10 +342,7 @@ namespace NullSpace.SDK
 		/// </summary>
 		public void ClearAllEffects()
 		{
-			if (_plugin != null)
-			{
-				_plugin.ClearAll();
-			}
+			_plugin.ClearAll();
 		}
 
 
@@ -342,7 +356,7 @@ namespace NullSpace.SDK
 		{
 			while (true)
 			{
-				_imuCalibrator.ReceiveUpdate(_plugin.PollTracking());
+				//_imuCalibrator.ReceiveUpdate(_plugin.PollTracking());
 				yield return null;
 			}
 		}
@@ -351,7 +365,7 @@ namespace NullSpace.SDK
 		{
 			while (true)
 			{
-				ServiceConnectionStatus status = _plugin.TestServiceConnection();
+				ServiceConnectionStatus status = _plugin.IsConnectedToService();
 				if (status != _ServiceConnectionStatus)
 				{
 					_ServiceConnectionStatus = ChangeServiceConnectionStatus(status);
@@ -360,12 +374,13 @@ namespace NullSpace.SDK
 				if (status == ServiceConnectionStatus.Connected)
 				{
 
-					var suitConnection = _plugin.TestDeviceConnection();
-					if (suitConnection != _DeviceConnectionStatus)
-					{
-
-						_DeviceConnectionStatus = ChangeDeviceConnectionStatus(suitConnection);
-					}
+					var suitConnection = _plugin.IsConnectedToService();
+					Debug.Log("Suit/Device connection status is not yet implemented\n");
+					//throw new NotImplementedException("Suit/Device connection status is not yet implemented\n");
+					//if (suitConnection != _DeviceConnectionStatus)
+					//{
+					//	_DeviceConnectionStatus = ChangeDeviceConnectionStatus(suitConnection);
+					//}
 				}
 				else
 				{
@@ -379,7 +394,6 @@ namespace NullSpace.SDK
 				yield return new WaitForSeconds(0.5f);
 			}
 		}
-
 
 		void Update()
 		{
@@ -400,7 +414,11 @@ namespace NullSpace.SDK
 
 		public void Shutdown()
 		{
-			_plugin.Dispose();
+			if (_plugin != null)
+			{
+				_plugin.Dispose();
+			}
+			_plugin = null;
 		}
 
 		void OnApplicationQuit()

@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
-	public class RequestTorsoTracker : MonoBehaviour
+	public class RequestTorsoTracker : RequestTracker
 	{
-		public GameObject Tracker;
-
-		void Start()
+		protected override VRObjectMimic RequestTrackerMimic()
 		{
 			if (Tracker != null)
 			{
@@ -23,7 +21,9 @@ namespace NullSpace.SDK
 
 				var newArm = VRMimic.Instance.ActiveBodyMimic.BindLowerBackTracker(mimic);
 				Debug.Log("Created new ITorsoTracker.\n\t[Click to select it]", newArm);
+				return mimic;
 			}
+			return null;
 		}
 	}
 }

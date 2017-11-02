@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NullSpace.SDK.Demos
+namespace Hardlight.SDK.Demos
 {
 	/// <summary>
 	/// Note: These do not all necessarily work.
@@ -148,7 +148,7 @@ namespace NullSpace.SDK.Demos
 		{
 			//RegionFlag is a special type of attribute which gives better inspector assignment behavior to a HapticLocation. 
 			//For more info look at Scripts/RegionFlawDrawer.cs
-			[RegionFlag]
+			[RegionFlag("My Location")]
 			public AreaFlag MyLocation;
 		}
 
@@ -222,15 +222,12 @@ namespace NullSpace.SDK.Demos
 		public static ImpulseGenerator.Impulse DesertOfDangerRecoil(AreaFlag StartLocation = AreaFlag.Forearm_Left, AreaFlag EndLocation = AreaFlag.Upper_Arm_Left)
 		{
 			//A simple code sequence
-			HapticSequence seq = new HapticSequence();
+			HapticSequence seq = HapticSequence.CreateNew();
 
-			//The elements we will add
-			HapticEffect eff = new HapticEffect(Effect.Buzz, 0.00f);
-			HapticEffect eff2 = new HapticEffect(Effect.Buzz, 0.15f);
 
 			//The time stamps of the different effects.
-			seq.AddEffect(0, 1.0, eff);
-			seq.AddEffect(.1, 0.5, eff2);
+			seq.AddEffect(Effect.Buzz, 0.0f, 0, 1.0f);
+			seq.AddEffect(Effect.Buzz, 0.1f, .1f, .5f);
 
 			//In Desert of Danger, we used a duration of .1 seconds. This means the recoil effect took .1 seconds to hit ALL pads it aimed to. If you hand in different pads, it'll likely want a longer duration.
 			//Since we only used the forearm and the upper arm, .1s is more than sufficient.
@@ -247,16 +244,15 @@ namespace NullSpace.SDK.Demos
 		/// <returns>Don't forget to call .Play() on the returned Impulse to create an instance of the haptic effect it defines.</returns>
 		public static ImpulseGenerator.Impulse DesertOfDangerShot(AreaFlag ShotWhere = AreaFlag.Chest_Right)
 		{
-			HapticSequence seq = new HapticSequence();
+			HapticSequence seq = HapticSequence.CreateNew();
 
 			//This will be slightly different then the default Effect.Buzz effect Impulse. If you ask for an effect with a duration of 0, it'll play the natural duration.
 			//Natural durations range from .05s (click, buzz, etc) to .25s (the multiple click families)
 			//So by providing a duration of .1, this will be slightly different than the line:
-			//		HapticEffect eff = new HapticEffect(Effect.Buzz, 0.00f, 1.0f);
 
-			HapticEffect eff = new HapticEffect(Effect.Buzz, 0.10f);
-			
-			seq.AddEffect(0, eff);
+			HapticEffect eff = new HapticEffect(Effect.Buzz, 0, 0.10f);
+
+			seq.AddEffect(eff);
 
 			//The Desert of Danger demo set the entire impulse duration to .25s, 
 			//this means that it emanated out from where the playerwas hit.
@@ -264,7 +260,7 @@ namespace NullSpace.SDK.Demos
 				.WithEffect(seq)
 				.WithDuration(.25f);
 		}
-		
+
 		/// <summary>
 		/// Desert of Danger - when the player is hit.
 		/// This is not the best way to implement the following. We're still learning the best way to make reusable haptics.
@@ -309,7 +305,7 @@ namespace NullSpace.SDK.Demos
 			Debug.LogError("This function does not ACTUALLY work in your game. It is provided sample code to give you the gist of what you should do.\nA better sample is coming soon - this was shipped early to help a particular partner hit one of their deadlines. Hopefully you never see this line.\n");
 
 			PlayerTorso torso = new PlayerTorso();
-	
+
 			//Maybe get a list of nearby regions?
 			GameObject closest = torso.TorsoHit(source);
 

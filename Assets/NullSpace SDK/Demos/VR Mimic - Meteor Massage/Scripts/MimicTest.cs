@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace NullSpace.SDK
+namespace Hardlight.SDK
 {
 	public class MimicTest : MonoBehaviour
 	{
@@ -71,7 +71,7 @@ namespace NullSpace.SDK
 			#endregion
 
 			//Useful for explosive projectiles
-			suit.FindAllFlagsWithinRange(randPos, sphereRadius);
+			suit.GetAreasWithinRange(randPos, sphereRadius);
 		}
 		private void ExampleRequestRandomLocation()
 		{

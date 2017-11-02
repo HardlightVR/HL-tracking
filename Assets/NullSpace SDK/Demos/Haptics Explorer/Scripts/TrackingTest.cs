@@ -6,33 +6,33 @@
 */
 
 using UnityEngine;
-using NullSpace.SDK;
-using NullSpace.SDK.Tracking;
+using Hardlight.SDK;
+using Hardlight.SDK.Tracking;
 
-namespace NullSpace.SDK.Demos
+namespace Hardlight.SDK.Tracking
 {
 	public class TrackingTest : MonoBehaviour
 	{
 		private IImuCalibrator imus;
-		public GameObject TrackedObject;
+		public GameObject TrackedRepresentation;
 		public GameObject ParentObject;
+		public Imu whichIMU = Imu.Chest;
 		public bool DisableObject = true;
 		public bool ShowOnGUI = false;
+		public bool AutoEnableTracking = false;
 
 		void Start()
 		{
-			imus = NSManager.Instance.GetImuCalibrator();
-			NSManager.Instance.SetImuCalibrator(GetComponent<DefaultImuCalibrator>());
+			imus = GetComponent<DefaultImuCalibrator>();
+			HardlightManager.Instance.SetImuCalibrator(GetComponent<DefaultImuCalibrator>());
 
 			if (ParentObject != null)
 			{
 				ParentObject.SetActive(!DisableObject);
 			}
-		}
 
-		void OnGUI()
-		{
-		
+			if (AutoEnableTracking)
+				EnableTracking();
 		}
 
 		public void EnableTracking()
@@ -41,7 +41,7 @@ namespace NullSpace.SDK.Demos
 			{
 				ParentObject.SetActive(true);
 			}
-			NSManager.Instance.EnableTracking();
+			HardlightManager.Instance.EnableTracking();
 		}
 
 		public void DisableTracking()
@@ -50,14 +50,30 @@ namespace NullSpace.SDK.Demos
 			{
 				ParentObject.SetActive(false);
 			}
-			NSManager.Instance.DisableTracking();
+			HardlightManager.Instance.DisableTracking();
 		}
 
 		void Update()
 		{
-			if (TrackedObject != null)
+			if (TrackedRepresentation != null)
 			{
-				TrackedObject.transform.rotation = imus.GetOrientation(Imu.Chest);
+				var tracking = HardlightManager.Instance.PollTracking();
+				//Debug.Log(tracking.Chest + "\n" + imus.GetType().ToString());
+				Quaternion assign = Quaternion.identity;
+				if (whichIMU == Imu.Chest)
+				{
+					assign = tracking.Chest;
+				}
+				else if (whichIMU == Imu.Left_Upper_Arm)
+				{
+					assign = tracking.LeftUpperArm;
+				}
+				else if (whichIMU == Imu.Right_Upper_Arm)
+				{
+					assign = tracking.RightUpperArm;
+				}
+
+				TrackedRepresentation.transform.rotation = assign;// imus.GetOrientation(MyIMU);
 			}
 		}
 	}
