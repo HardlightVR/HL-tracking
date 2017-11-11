@@ -38,15 +38,14 @@ namespace Hardlight.SDK
 		/// </summary>
 		public event EventHandler<SuitConnectionArgs> SuitConnected;
 		/// <summary>
-		/// Raised when the plugin establishes connection with the NullSpace VR Runtime
+		/// Raised when the plugin establishes connection with the Hardlight VR Runtime
 		/// </summary>
 		public event EventHandler<ServiceConnectionArgs> ServiceConnected;
 		/// <summary>
-		/// Raised when the plugin loses connection to the NullSpace VR Runtime
+		/// Raised when the plugin loses connection to the Hardlight VR Runtime
 		/// </summary>
 		public event EventHandler<ServiceConnectionArgs> ServiceDisconnected;
 		#endregion
-
 
 		/// <summary>
 		/// Returns DeviceConnectionStatus.Connected if a suit is connected, else returns DeviceConnectionStatus.Disconnected
@@ -60,7 +59,7 @@ namespace Hardlight.SDK
 		}
 
 		/// <summary>
-		/// Returns ServiceConnectionStatus.Connected if the plugin is connected to the NullSpace VR Runtime service, else returns ServiceConnectionStatus.Disconnected
+		/// Returns ServiceConnectionStatus.Connected if the plugin is connected to the Hardlight VR Runtime service, else returns ServiceConnectionStatus.Disconnected
 		/// </summary>
 		public bool IsServiceConnected
 		{
@@ -70,12 +69,10 @@ namespace Hardlight.SDK
 			}
 		}
 
-
 		/// <summary>
 		/// Use the Instance variable to access the HardlightManager object. There should only be one HardlightManager in a scene.
 		/// in the scene. 
 		/// </summary>
-
 		private static HardlightManager instance;
 		public static HardlightManager Instance
 		{
@@ -126,6 +123,7 @@ namespace Hardlight.SDK
 		private IImuCalibrator _imuCalibrator;
 		private IEnumerator _trackingUpdateLoop;
 		private IEnumerator _ServiceConnectionStatusLoop;
+		private IEnumerator _DeviceConnectionStatusLoop;
 
 		private DeviceConnectionStatus _DeviceConnectionStatus;
 		private ServiceConnectionStatus _ServiceConnectionStatus;
@@ -133,7 +131,7 @@ namespace Hardlight.SDK
 		private HLVR.HLVR_Plugin _plugin;
 
 		/// <summary>
-		/// Enable experimental tracking on the suit
+		/// Enable SDK tracking management loop.
 		/// </summary>
 		public void EnableTracking()
 		{
@@ -143,18 +141,16 @@ namespace Hardlight.SDK
 				StartCoroutine(_trackingUpdateLoop);
 				_isTrackingCoroutineRunning = true;
 			}
-			_plugin.EnableTracking();
 		}
 
 		/// <summary>
-		/// Disable experimental tracking on the suit
+		/// Disable SDK tracking management loop.
 		/// </summary>
 		public void DisableTracking()
 		{
 			EnableSuitTracking = false;
 			StopCoroutine(_trackingUpdateLoop);
 			_isTrackingCoroutineRunning = false;
-			_plugin.DisableTracking();
 		}
 
 		public TrackingUpdate PollTracking()
@@ -248,6 +244,7 @@ namespace Hardlight.SDK
 
 			_trackingUpdateLoop = UpdateTracking();
 			_ServiceConnectionStatusLoop = CheckServiceConnection();
+			_DeviceConnectionStatusLoop = CheckHardlightSuitConnection();
 
 			_imuCalibrator = new CalibratorWrapper(new MockImuCalibrator());
 
@@ -312,6 +309,10 @@ namespace Hardlight.SDK
 			{
 				StartCoroutine(_ServiceConnectionStatusLoop);
 			});
+			DoDelayedAction(1.0f, delegate ()
+			{
+				StartCoroutine(_DeviceConnectionStatusLoop);
+			});
 		}
 		/// <summary>
 		/// For use in application pause routine. Pauses currently executing haptic effects and is a no-op if called more than once. 
@@ -345,12 +346,10 @@ namespace Hardlight.SDK
 			_plugin.ClearAll();
 		}
 
-
 		private void ActivateImus(object sender, SuitConnectionArgs e)
 		{
 			this.EnableTracking();
 		}
-
 
 		private IEnumerator UpdateTracking()
 		{
@@ -358,6 +357,31 @@ namespace Hardlight.SDK
 			{
 				//_imuCalibrator.ReceiveUpdate(_plugin.PollTracking());
 				yield return null;
+			}
+		}
+
+		private IEnumerator CheckHardlightSuitConnection()
+		{
+			while (true)
+			{
+				if(true)
+				{
+					var devices = _plugin.GetKnownDevices();
+					bool hasSuit = false;
+					for (int i = 0; i < devices.Count; i++)
+					{
+						hasSuit = devices[0].Connected && devices[0].Name.Contains("Hardlight");
+					}
+
+					var deviceConnected = hasSuit ? DeviceConnectionStatus.Connected : DeviceConnectionStatus.Disconnected;
+					if (deviceConnected != _DeviceConnectionStatus)
+					{
+						_DeviceConnectionStatus = ChangeDeviceConnectionStatus(deviceConnected);
+					}
+
+					_DeviceConnectionStatus = deviceConnected;
+				}
+				yield return new WaitForSeconds(0.5f);
 			}
 		}
 
@@ -373,9 +397,11 @@ namespace Hardlight.SDK
 
 				if (status == ServiceConnectionStatus.Connected)
 				{
-
+					//_plugin.GetKnownDevices().Count > 0;
 					var suitConnection = _plugin.IsConnectedToService();
-					Debug.Log("Suit/Device connection status is not yet implemented\n");
+
+					_ServiceConnectionStatus = suitConnection;
+					//Debug.Log("Suit/Device connection status is not yet implemented\n");
 					//throw new NotImplementedException("Suit/Device connection status is not yet implemented\n");
 					//if (suitConnection != _DeviceConnectionStatus)
 					//{
@@ -423,11 +449,6 @@ namespace Hardlight.SDK
 
 		void OnApplicationQuit()
 		{
-			if (_plugin != null)
-			{
-				_plugin.DisableTracking();
-			}
-
 			ClearAllEffects();
 			System.Threading.Thread.Sleep(100);
 		}

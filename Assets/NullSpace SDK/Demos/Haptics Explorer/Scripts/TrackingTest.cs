@@ -19,6 +19,7 @@ namespace Hardlight.SDK.Tracking
 		public Imu whichIMU = Imu.Chest;
 		public bool DisableObject = true;
 		public bool ShowOnGUI = false;
+		public bool VisibleIdentity = false;
 		public bool AutoEnableTracking = false;
 
 		void Start()
@@ -60,6 +61,7 @@ namespace Hardlight.SDK.Tracking
 				var tracking = HardlightManager.Instance.PollTracking();
 				//Debug.Log(tracking.Chest + "\n" + imus.GetType().ToString());
 				Quaternion assign = Quaternion.identity;
+
 				if (whichIMU == Imu.Chest)
 				{
 					assign = tracking.Chest;
@@ -72,6 +74,7 @@ namespace Hardlight.SDK.Tracking
 				{
 					assign = tracking.RightUpperArm;
 				}
+				VisibleIdentity = assign != Quaternion.identity;
 
 				TrackedRepresentation.transform.rotation = assign;// imus.GetOrientation(MyIMU);
 			}

@@ -43,6 +43,8 @@ namespace Hardlight.SDK.UEditor
 		private enum ImportState { Idle, Fetching, Importing }
 		private PackageImport CurrentImport;
 
+		public ScriptableObjectHaptic JustCreated;
+
 		private class PackageImport
 		{
 			private class ImportStatus
@@ -119,7 +121,7 @@ namespace Hardlight.SDK.UEditor
 			float totalProgress = 0f;
 			float currentProgress = -1f;
 			bool ShouldRepaint = false;
-			public JsonAsset lastCreatedAsset;
+			public ScriptableObjectHaptic lastCreatedAsset;
 
 			Queue<KeyValuePair<string, string>> _workQueue = new Queue<KeyValuePair<string, string>>();
 			Queue<string> _fetchQueue = new Queue<string>();
@@ -214,6 +216,7 @@ namespace Hardlight.SDK.UEditor
 				{
 					ImportPackage(_packageQueue.Dequeue());
 				}
+				AssetDatabase.SaveAssets();
 
 				MyPane.Repaint();
 			}
@@ -376,9 +379,9 @@ namespace Hardlight.SDK.UEditor
 			{
 				AssetTool.PackageInfo package = (AssetTool.PackageInfo)(state);
 
-				var allHapticFiles = GetFilesWithExtension(package.path + "/sequences/", ".sequence");
+				var allHapticFiles = GetFilesWithExtension(package.path + "/experiences/", ".experience");
 				allHapticFiles.AddRange(GetFilesWithExtension(package.path + "/patterns/", ".pattern"));
-				allHapticFiles.AddRange(GetFilesWithExtension(package.path + "/experiences/", ".experience"));
+				allHapticFiles.AddRange(GetFilesWithExtension(package.path + "/sequences/", ".sequence"));
 				currentProgress = 0f;
 				totalProgress = allHapticFiles.Count;
 				_lastImport.Total = allHapticFiles.Count;
@@ -698,41 +701,64 @@ namespace Hardlight.SDK.UEditor
 
 		}
 
-		protected JsonAsset CreateHapticAsset(string oldPath, string json, int undoGroup = 0)
+		protected ScriptableObjectHaptic CreateHapticAsset(string oldPath, string json, int undoGroup = 0)
 		{
 			//Create our simple json holder. Later, this could be a complex object
-			var asset = CreateInstance<JsonAsset>();
-			asset.SetJson(json);
+			var assetPath = "Assets/Resources/Haptics/";
+			//var asset = CreateInstance<JsonAsset>();
+			//asset.SetJson(json);
 
 			var fileName = System.IO.Path.GetFileNameWithoutExtension(oldPath);
 
-			//If we don't replace . with _, then Unity has serious trouble locating the file
-			var newAssetName = fileName.Replace('.', '_') + ".asset";
+			////If we don't replace . with _, then Unity has serious trouble locating the file
+			//var newAssetName = fileName.Replace('.', '_') + ".asset";
+			//var newAssetName = fileName.Replace('.', '_') + ".asset";
+			//ScriptableObjectHaptic Scrob = null;
 
-			//This is where we'd want to change the default location of new haptic assets
-			CreateAssetFolderIfNotExists();
+			bool isSeq = oldPath.Contains(".sequence");
+			bool isPat = oldPath.Contains(".pattern");
+			bool isExp = oldPath.Contains(".experience");
+			//Debug.Log("Attemtping haptic asset import: " + oldPath + " " + isSeq + "\n" + newAssetName + "\n\n" + json + "\n", this);
 
-			var newAssetPath = "Assets/Resources/Haptics/" + newAssetName;
-			asset.name = newAssetName;
-
-			EditorUtility.SetDirty(asset);
-
-			var old = AssetDatabase.LoadAssetAtPath(newAssetPath, typeof(JsonAsset));
-			if (old != null)
+			if (isSeq)
 			{
-				//Previous file exists
-				//Debug.LogError("Overwriting " + newAssetPath + "\n");
-				Undo.RecordObject(old, "Reimport " + asset.name);
+				JustCreated = HapticSequence.LoadFromJson(oldPath);
+				HapticSequence.SaveAsset(fileName, (HapticSequence)JustCreated);
+			}
+			else if (isPat)
+			{
+				JustCreated = HapticPattern.LoadFromJson(oldPath);
+				HapticPattern.SaveAsset(fileName, (HapticPattern)JustCreated);
+			}
+			else if (isExp)
+			{
+				JustCreated = HapticExperience.LoadFromJson(oldPath);
+				HapticExperience.SaveAsset(fileName, (HapticExperience)JustCreated);
 			}
 
-			AssetDatabase.CreateAsset(asset, newAssetPath);
-			if (old == null)
-			{
-				//Previous file did not exist
-				Undo.RegisterCreatedObjectUndo(asset, "Import " + asset.name);
-			}
+			////This is where we'd want to change the default location of new haptic assets
+			//CreateAssetFolderIfNotExists();
 
-			return asset;
+			//var newAssetPath = "Assets/Resources/Haptics/" + newAssetName;
+			//asset.name = newAssetName;
+			//EditorUtility.SetDirty(asset);
+
+			//var old = AssetDatabase.LoadAssetAtPath(newAssetPath, typeof(JsonAsset));
+			//if (old != null)
+			//{
+			//	//Previous file exists
+			//	//Debug.LogError("Overwriting " + newAssetPath + "\n");
+			//	Undo.RecordObject(old, "Reimport " + asset.name);
+			//}
+
+			//AssetDatabase.CreateAsset(asset, newAssetPath);
+			//if (old == null)
+			//{
+			//	//Previous file did not exist
+			//	Undo.RegisterCreatedObjectUndo(asset, "Import " + asset.name);
+			//}
+
+			return JustCreated;
 
 		}
 		private void CreateHapticAsset(string path)
@@ -890,7 +916,7 @@ namespace Hardlight.SDK.UEditor
 			IsTutorialStep(0, () =>
 			{
 				HLEditorStyles.DrawLabel("Welcome to the Haptic Package Tool-torial!\n" +
-					"We will go over how to import JSON Haptic Assets into Unity-specific assets\n" +
+					"We will go over how to import JSON Haptic Assets into Unity Scriptable Object assets\n" +
 					"As well as the benefits for doing so."
 					, 105, 14);
 			});
@@ -1181,7 +1207,7 @@ namespace Hardlight.SDK.UEditor
 				});
 			IsTutorialStep(4, packageIndex == 0, () =>
 			{
-				HLEditorStyles.DrawLabel("Sequences are the smallest user component.\nThey contain no location information, merely time, effect and strength.\nA sequence can be played if you give it Area information using AreaFlags.\n\n" +
+				HLEditorStyles.DrawLabel("Sequences are the smallest user component.\nThey contain no location information, merely time, duration, effect and strength.\nA sequence can be played if you give it Area information using AreaFlags.\n\n" +
 					"This option is recommended if you have a single new asset or if you want to reimport a damaged haptic file."
 						, 105, 14);
 			});
@@ -1212,6 +1238,7 @@ namespace Hardlight.SDK.UEditor
 				if (json.Value != "NSVR_FAILED")
 				{
 					this.CreateHapticAsset(json.Key, json.Value);
+					AssetDatabase.SaveAssets();
 				}
 				else
 				{

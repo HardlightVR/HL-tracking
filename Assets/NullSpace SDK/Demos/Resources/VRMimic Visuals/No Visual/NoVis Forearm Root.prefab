@@ -218,8 +218,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d1a7a39bebda15498a023b0e222a94e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myCollider: {fileID: 136000012965559172}
+  size: 0.05
+  myCollider: {fileID: 0}
   TryFindCollider: 0
+  DefaultLocationSize: 0.025
+  AddColliderBubble: 1
+  BubbleCollisionPoints: []
 --- !u!114 &114000012887986914
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -245,7 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ForearmBody: {fileID: 1000013128757506}
-  ForearmVisual: {fileID: 0}
+  ForearmVisual: {fileID: 1000011753546796}
   ForearmCollider: {fileID: 114000012086443466}
 --- !u!136 &136000011536148430
 CapsuleCollider:

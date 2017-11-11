@@ -25,7 +25,7 @@ namespace Hardlight.SDK
 		{
 			if (!initialized)
 			{
-				Debug.Log("Initializing Request Tracker " + name + "\n");
+				//Debug.Log("Initializing Request Tracker " + name + "\n");
 				if (Tracker != null)
 				{
 					requestedMimic = RequestTrackerMimic();

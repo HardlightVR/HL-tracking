@@ -219,8 +219,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d1a7a39bebda15498a023b0e222a94e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myCollider: {fileID: 136000011336235684}
+  size: 0.05
+  myCollider: {fileID: 0}
   TryFindCollider: 0
+  DefaultLocationSize: 0.025
+  AddColliderBubble: 1
+  BubbleCollisionPoints: []
 --- !u!114 &114000011566716546
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -233,7 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UpperArmBody: {fileID: 1000012660532220}
-  UpperArmVisual: {fileID: 0}
+  UpperArmVisual: {fileID: 1000013045160240}
   Elbow: {fileID: 1000013045160240}
   TrackerEulerOffset: {x: 0, y: 0, z: 0}
   rotatedOffset: {x: 0, y: 0, z: -0.1}
