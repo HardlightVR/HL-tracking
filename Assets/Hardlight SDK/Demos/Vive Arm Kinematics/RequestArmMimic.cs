@@ -6,7 +6,6 @@ namespace Hardlight.SDK
 	public class RequestArmMimic : RequestTracker
 	{
 		public GameObject Controller;
-		public Vector3 TrackerOffset = new Vector3();
 		public ArmSide MySide = ArmSide.Left;
 		public bool UseNewArmCreation = false;
 
@@ -33,7 +32,7 @@ namespace Hardlight.SDK
 				}
 				else
 				{
-					mimic.Init(Tracker, TrackerOffset);
+					mimic.Init(Tracker);
 				}
 
 				if (UseNewArmCreation)

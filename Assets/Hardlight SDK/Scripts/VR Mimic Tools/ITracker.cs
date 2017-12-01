@@ -29,7 +29,7 @@ namespace Hardlight.SDK
 
 	public abstract class AbstractTracker : MonoBehaviour, ITracker
 	{
-		[Header("Arm Torso Attributes")]
+		[Header("Abstract Tracker Attributes")]
 		[SerializeField]
 		protected bool _mimicEnabled = true;
 		public bool MimicEnabled

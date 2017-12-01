@@ -4,7 +4,7 @@ using System;
 
 namespace Hardlight.SDK
 {
-	public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled }
+	public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled, ImuUpperArms }
 
 	public enum ArmSide { Right, Left }
 

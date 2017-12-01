@@ -14,15 +14,30 @@ namespace Hardlight.SDK
 		public enum DetectionState { Active, Idle }
 		public enum TypeOfMimickedObject { Camera, ControllerA, ControllerB, CameraRig, TrackedObject }
 		public TypeOfMimickedObject MimickedObjectType;
-
-		public Vector3 ScaleMultiplier;
-		public Vector3 PositionOffset;
-		public Vector3 EulerOffset;
-
 		private bool initialized = false;
 
-		public void Init(GameObject NewMimicTarget, Vector3 rotationOffset = default(Vector3))
+		[SerializeField]
+		private MimickingOptions _mimicOptions;
+		public MimickingOptions Options
 		{
+			get
+			{
+				if (_mimicOptions == null)
+					_mimicOptions = new MimickingOptions();
+				return _mimicOptions;
+			}
+
+			set
+			{
+				if (_mimicOptions == null && value == null)
+					_mimicOptions = new MimickingOptions();
+				_mimicOptions = value;
+			}
+		}
+
+		public void Init(GameObject NewMimicTarget)
+		{
+			//Debug.Log("Initializing: " + NewMimicTarget + "\n", NewMimicTarget);
 			if (!initialized)
 			{
 				if (ObjectToMimic == null || NewMimicTarget != null)
@@ -35,11 +50,12 @@ namespace Hardlight.SDK
 					Debug.Log(name + " - New mimic target is null\n");
 				}
 
-				EulerOffset = rotationOffset;
-
-				transform.position = ObjectToMimic.transform.position + PositionOffset;
-				transform.rotation = ObjectToMimic.transform.rotation * CalculateOffsetQuaternion();
-				transform.localScale = ObjectToMimic.transform.localScale + ScaleMultiplier;
+				if (Options.MimicPosition)
+					transform.position = ObjectToMimic.transform.position + Options.PositionOffset;
+				if (Options.MimicRotation)
+					transform.rotation = ObjectToMimic.transform.rotation * CalculateOffsetQuaternion();
+				if (Options.MimicScale)
+					transform.localScale = ObjectToMimic.transform.localScale + Options.ScaleMultiplier;
 				initialized = true;
 
 				WatchedByMimic watching = NewMimicTarget.GetComponent<WatchedByMimic>();
@@ -53,21 +69,20 @@ namespace Hardlight.SDK
 			}
 		}
 
-		void Start()
-		{
-		}
-
 		void Update()
 		{
-			transform.position = ObjectToMimic.transform.position + PositionOffset;
-			transform.rotation =  ObjectToMimic.transform.rotation * CalculateOffsetQuaternion();
-			transform.localScale = ObjectToMimic.transform.localScale + ScaleMultiplier;
+			if (Options.MimicPosition)
+				transform.position = ObjectToMimic.transform.position + Options.PositionOffset;
+			if (Options.MimicRotation)
+				transform.rotation = ObjectToMimic.transform.rotation * CalculateOffsetQuaternion();
+			if (Options.MimicScale)
+				transform.localScale = ObjectToMimic.transform.localScale + Options.ScaleMultiplier;
 		}
 
 		private Quaternion CalculateOffsetQuaternion()
 		{
 			Quaternion offset = Quaternion.identity;
-			offset.eulerAngles = EulerOffset;
+			offset.eulerAngles = Options.EulerOffset;
 			return offset;
 		}
 

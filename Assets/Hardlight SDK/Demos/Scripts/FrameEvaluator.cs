@@ -11,6 +11,8 @@ namespace Hardlight.SDK
 		public Transform IMUObject;
 		public GameObject prefab;
 
+		public GameObject visualParent;
+
 		public float aboveAmt = .6f;
 
 		[Header("Runtime calculated")]
@@ -18,6 +20,8 @@ namespace Hardlight.SDK
 
 		public FrameOfReferenceDisplay absolute;
 		public FrameOfReferenceDisplay IMU;
+		public FrameOfReferenceDisplay Headset;
+		public FrameOfReferenceDisplay offsetFromHeadset;
 		public FrameOfReferenceDisplay CalibratedIMU;
 		public FrameOfReferenceDisplay IMU2;
 		#region Junk Frame of Reference Displays
@@ -37,11 +41,12 @@ namespace Hardlight.SDK
 		//public Vector3 difference;
 		#endregion
 
-		public FrameOfReferenceDisplay OffsetDisplay;
+		public FrameOfReferenceDisplay calculatedOffsetDisplay;
 		public FrameOfReferenceDisplay appliedOffsetDisplay;
 
 		public FrameOfReferenceDisplay imuToAbsolute;
 		public FrameOfReferenceDisplay absoluteToIMU;
+		public FrameOfReferenceDisplay ViveSpaceOffset;
 
 		[System.Serializable]
 		public class FrameOfReferenceDisplay
@@ -88,31 +93,53 @@ namespace Hardlight.SDK
 				Debug.DrawLine(myRight, rightGoal, Color.red);
 				Debug.DrawLine(myFwd, fwdGoal, Color.blue);
 			}
-
 		}
 
 		void Start()
 		{
-			IMU = new FrameOfReferenceDisplay(prefab, "Display IMU", transform, aboveAmt + 1.0f, AbsoluteObject);
-			CalibratedIMU = new FrameOfReferenceDisplay(prefab, "Calibrated IMU", transform, aboveAmt + .5f, AbsoluteObject);
-			IMU2 = new FrameOfReferenceDisplay(prefab, "Display IMU2", transform, aboveAmt + 2.5f, AbsoluteObject);
-			absolute = new FrameOfReferenceDisplay(prefab, "Display Absolute", transform, aboveAmt + 1.5f, AbsoluteObject);
-			//DisplayA = new FrameOfReferenceDisplay(prefab, "Display A = (Abs)^-1 * IMU", transform, aboveAmt + 0.7f, AbsoluteObject);
-			//DisplayB = new FrameOfReferenceDisplay(prefab, "Display B = (IMU)^-1 * Abs", transform, aboveAmt + 1.05f, AbsoluteObject);
-			//DisplayB = new FrameOfReferenceDisplay(prefab, "Display B = Euler subtraction", transform, aboveAmt + 1.5f, AbsoluteObject);
-			//DisplayC = new FrameOfReferenceDisplay(prefab, "Display C = Vector3 Conversion", transform, aboveAmt + 2.0f, AbsoluteObject);
-			//DisplayD = new FrameOfReferenceDisplay(prefab, "Display D = Calibrated IMU", transform, aboveAmt + 2.5f, AbsoluteObject);
-			//DisplayEulerSwizzle = new FrameOfReferenceDisplay(prefab, "Display E = Euler Swizzle", transform, aboveAmt + 1.0f, AbsoluteObject);
-			//DisplayF = new FrameOfReferenceDisplay(prefab, "Display F = ChiralReverse(EulerSwizzle(IMU))", transform, aboveAmt + 1.5f, AbsoluteObject);
-			////DisplayG = new FrameOfReferenceDisplay(prefab, "Display G = Subtract(ChiralReverse(EulerSwizzle(IMU)))", transform, aboveAmt + 2.0f, AbsoluteObject);
-			//DisplayH = new FrameOfReferenceDisplay(prefab, "Display H = Subtract(EulerSwizzle(ChiralReverse(IMU)))", transform, aboveAmt + 2.0f, AbsoluteObject);
-			//DisplayReverseChiral = new FrameOfReferenceDisplay(prefab, "Display Chir = ChiralReverse(IMU)", transform, aboveAmt + 2.5f, AbsoluteObject);
-			//AxisReorg = new FrameOfReferenceDisplay(prefab, "IMU Data Axis Reorg", transform, aboveAmt + 4.0f, AbsoluteObject);
-			imuToAbsolute = new FrameOfReferenceDisplay(prefab, "IMU to Absolute", transform, aboveAmt + 2.0f, AbsoluteObject);
-			absoluteToIMU = new FrameOfReferenceDisplay(prefab, "Absolute to IMU", transform, aboveAmt + 3.0f, AbsoluteObject);
+			visualParent = new GameObject("Visual Parent [" + name + "]");
+			var tr = visualParent.transform;
+			//CalibratedIMU = new FrameOfReferenceDisplay(prefab,
+			//	"Calibrated IMU", tr, 0.5f,						AbsoluteObject);
 
-			OffsetDisplay = new FrameOfReferenceDisplay(prefab, "Calculated Offset", transform, aboveAmt + 3.5f, AbsoluteObject);
-			appliedOffsetDisplay = new FrameOfReferenceDisplay(prefab, "Applied Offset", transform, aboveAmt + 4.0f, AbsoluteObject);
+			Headset = new FrameOfReferenceDisplay(prefab,
+				"Headset", tr, 0.0f, VRMimic.Instance.VRCamera.transform);
+			IMU = new FrameOfReferenceDisplay(prefab,
+				"Display IMU", tr, aboveAmt + 1.0f,				AbsoluteObject);
+			absolute = new FrameOfReferenceDisplay(prefab,
+				"Display Absolute", tr, aboveAmt + 1.5f,		AbsoluteObject);
+			imuToAbsolute = new FrameOfReferenceDisplay(prefab,
+				"IMU to Absolute", tr, aboveAmt + 2.0f,			AbsoluteObject);
+			IMU2 = new FrameOfReferenceDisplay(prefab,
+				"Display IMU2", tr, 0.5f,						AbsoluteObject);
+			offsetFromHeadset = new FrameOfReferenceDisplay(prefab,
+				"Headset Based", tr, 0.1f,						AbsoluteObject);
+			absoluteToIMU = new FrameOfReferenceDisplay(prefab,
+				"Absolute to IMU", tr, aboveAmt + 3.0f,			AbsoluteObject);
+			calculatedOffsetDisplay = new FrameOfReferenceDisplay(prefab,
+				"Calculated Offset", tr, aboveAmt + 3.5f,		AbsoluteObject);
+			appliedOffsetDisplay = new FrameOfReferenceDisplay(prefab,
+				"Applied Offset", tr, aboveAmt + 4.0f,			AbsoluteObject);
+			ViveSpaceOffset = new FrameOfReferenceDisplay(prefab,
+				"Vive to IMU", tr, aboveAmt + 5.0f,				AbsoluteObject);
+
+			#region Old Display Frames
+			//DisplayA = new FrameOfReferenceDisplay(prefab, "Display A = (Abs)^-1 * IMU", visuals.transform, aboveAmt + 0.7f, AbsoluteObject);
+			//DisplayB = new FrameOfReferenceDisplay(prefab, "Display B = (IMU)^-1 * Abs", visuals.transform, aboveAmt + 1.05f, AbsoluteObject);
+			//DisplayB = new FrameOfReferenceDisplay(prefab, "Display B = Euler subtraction", visuals.transform, aboveAmt + 1.5f, AbsoluteObject);
+			//DisplayC = new FrameOfReferenceDisplay(prefab, "Display C = Vector3 Conversion", visuals.transform, aboveAmt + 2.0f, AbsoluteObject);
+			//DisplayD = new FrameOfReferenceDisplay(prefab, "Display D = Calibrated IMU", visuals.transform, aboveAmt + 2.5f, AbsoluteObject);
+			//DisplayEulerSwizzle = new FrameOfReferenceDisplay(prefab, "Display E = Euler Swizzle", visuals.transform, aboveAmt + 1.0f, AbsoluteObject);
+			//DisplayF = new FrameOfReferenceDisplay(prefab, "Display F = ChiralReverse(EulerSwizzle(IMU))", visuals.transform, aboveAmt + 1.5f, AbsoluteObject);
+			////DisplayG = new FrameOfReferenceDisplay(prefab, "Display G = Subtract(ChiralReverse(EulerSwizzle(IMU)))", visuals.transform, aboveAmt + 2.0f, AbsoluteObject);
+			//DisplayH = new FrameOfReferenceDisplay(prefab, "Display H = Subtract(EulerSwizzle(ChiralReverse(IMU)))", visuals.transform, aboveAmt + 2.0f, AbsoluteObject);
+			//DisplayReverseChiral = new FrameOfReferenceDisplay(prefab, "Display Chir = ChiralReverse(IMU)", visuals.transform, aboveAmt + 2.5f, AbsoluteObject);
+			//AxisReorg = new FrameOfReferenceDisplay(prefab, "IMU Data Axis Reorg", visuals.transform, aboveAmt + 4.0f, AbsoluteObject); 
+			#endregion
+
+			Result = Quaternion.identity;
+			OffsetFromRight = Quaternion.identity;
+			OffsetFromUp = Quaternion.identity;
 
 			#region SteamVR Absolute Frame (not helpful, requires Matrix usage)
 			//[StructLayout(LayoutKind.Sequential)]
@@ -148,15 +175,28 @@ namespace Hardlight.SDK
 			//newMat. 
 			#endregion
 		}
+		[Header("Manual Offset")]
+		public Vector3 angleRots = new Vector3(-90, -45, 180);
 
+		public bool reverseX = false;
+		public bool reverseY = false;
+		public bool reverseZ = false;
+		public bool reverseW = false;
+		public bool inverse = false;
 
+		public Quaternion SimpleQuatOffset = Quaternion.identity;
 
 		void Update()
 		{
 			if (AbsoluteObject && IMUObject)
 			{
+				Headset.Update(VRMimic.Instance.VRCamera.transform.rotation);
+				north = IMUObject.transform.up;
+				rotateToNorth = Vector3.Angle(north, Vector3.forward);
+
 				var visualAlignmentOffset = Quaternion.AngleAxis(65, Vector3.up) * Quaternion.AngleAxis(90, Vector3.right);
 				var movementAlignmentOffset = Quaternion.AngleAxis(180 + 45, Vector3.up) * Quaternion.AngleAxis(90, Vector3.right);
+				toNorth = Quaternion.AngleAxis(rotateToNorth, Vector3.up);
 				//A Raw IMU rotation
 				IMU.Update(IMUObject.rotation);
 				//A Raw IMU rotation
@@ -180,58 +220,101 @@ namespace Hardlight.SDK
 
 				//[GOLDEN CASE] CHIRALITY SWITCH IN PLUGIN
 				//var chiralityOffset = Quaternion.AngleAxis(-315, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
-				var chiralityOffset = Quaternion.AngleAxis(-315, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
-				imuToAbsolute.Update(chiralityOffset * IMUObject.rotation);
+				var handAssignedChiraltyOffset = Quaternion.AngleAxis(-315, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
+				var xRot = Quaternion.AngleAxis(angleRots.x, Vector3.right);
+				var yRot = Quaternion.AngleAxis(angleRots.y, Vector3.up);
+				var zRot = Quaternion.AngleAxis(angleRots.z, Vector3.forward);
 
-				#region Input
-				if (Input.GetKeyDown(KeyCode.R))
-				{
-					RightQuaternion = IMUObject.rotation;
-					OffsetFromRight = Quaternion.identity;
-					OffsetFromRight = Subtract(OffsetFromRight, RightQuaternion);
-				}
-				if (Input.GetKeyDown(KeyCode.Y))
-				{
-					UpQuaternion = IMUObject.rotation;
-					OffsetFromUp = Quaternion.identity;
-					OffsetFromUp = Subtract(OffsetFromUp, UpQuaternion);
-				}
-				#endregion
+				//var offsetQuat = zRot * yRot * xRot;
+				var offsetQuat = SimpleQuatOffset;
+				//var offsetQuat = SimpleQuatOffset * IMUObject.rotation;
+				if (reverseX)
+					offsetQuat = ReverseChiralityX(offsetQuat);
+				if (reverseY)
+					offsetQuat = ReverseChiralityY(offsetQuat);
+				if (reverseZ)
+					offsetQuat = ReverseChiralityZ(offsetQuat);
+				if (reverseW)
+					offsetQuat = ReverseChiralityW(offsetQuat);
+				if (inverse)
+					offsetQuat = Quaternion.Inverse(offsetQuat);
 
-				#region QuatDraw
-				if (RightQuaternion != Quaternion.identity)
-				{
-					DrawThingy(IMU.pos + Vector3.right * .5f, RightQuaternion);
-				}
-				if (RightQuaternion != Quaternion.identity)
-				{
-					DrawThingy(IMU.pos + Vector3.right * .85f, OffsetFromRight);
-				}
-				if (OffsetFromUp != Quaternion.identity)
-				{
-					DrawThingy(IMU.pos + Vector3.forward * .5f, UpQuaternion);
-				}
-				if (OffsetFromRight != Quaternion.identity)
-				{
-					DrawThingy(IMU.pos + Vector3.forward * .85f, OffsetFromUp);
-				}
+				Thing();
+				//imuToAbsolute.Update(ReverseChiralityXZ(zRot * yRot * xRot) * IMUObject.rotation);
+				var headsetQuat = SimpleQuatOffset;
+				var imuRotForHeadsetDisplay = IMUObject.rotation;
+				headsetQuat = invertHeadsetOffset ? Quaternion.Inverse(SimpleQuatOffset) : headsetQuat;
+				imuRotForHeadsetDisplay = reverseChiralityOfHeadsetOffset ? ReverseChiralityXZ(imuRotForHeadsetDisplay) : imuRotForHeadsetDisplay;
+				offsetFromHeadset.Update(headsetQuat * imuRotForHeadsetDisplay);
+				//imuToAbsolute.Update(ReverseChiralityXZ(zRot * yRot * xRot) * IMUObject.rotation);
+
+				//Debug.Log("RevChirXZ(ZYX)   : " + ReverseChiralityXZ(zRot * yRot * xRot) + "\t\t\tRevChirXZ(ZYX)^-1: " + Quaternion.Inverse(ReverseChiralityXZ(zRot * yRot * xRot)) + "\n" +
+				//	"RevChirXZ(XYZ)   : " + ReverseChiralityXZ(xRot * yRot * zRot) + "\t\t\tRevChirXZ(XYZ)^-1: " + Quaternion.Inverse(ReverseChiralityXZ(xRot * yRot * zRot)) + "\n");
+
+				//imuToAbsolute.Update(offsetQuat * IMUObject.rotation);
+
+
+
+				//ViveSpaceOffset.Update(IMUObject.rotation);
+				//imuToAbsolute.Update(IMUObject.rotation * offsetQuat);
+				//imuToAbsolute.Update(offsetQuat);
+				//imuToAbsolute.Update(ReverseChiralityXZ(handAssignedChiraltyOffset * yHalfRotation * IMUObject.rotation));
+				//imuToAbsolute.Update(ReverseChiralityXZ(handAssignedChiraltyOffset * yHalfRotation * IMUObject.rotation));
+
+				//ManualCalibration();
 
 				Result = OffsetFromRight * OffsetFromUp;
-				
-				CalibratedIMU.Update(Subtract(Quaternion.identity, Result) * IMUObject.transform.rotation);
-				DrawThingy(IMU.pos + Vector3.right * .65f + Vector3.forward * .65f, Result);
-				absoluteToIMU.Update(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
+
+				//calibratedQuat = IMUObject.rotation;
+				//var thing = Subtract(Quaternion.Inverse(handAssignedChiraltyOffset) * AbsoluteObject.rotation, IMUObject.rotation);
+				//CalibratedIMU.Update(thing * IMUObject.rotation);
+
+				//CalibratedIMU.Update(Quaternion.Inverse(calibratedQuat * IMUObject.rotation));
+				//DrawThingy(IMU.pos + Vector3.right * .65f + Vector3.forward * .65f, Result);
+				//absoluteToIMU.Update(Quaternion.Inverse(handAssignedChiraltyOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
+
+				//absoluteToIMU.Update(Quaternion.Inverse(handAssignedChiraltyOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
+
+				//Old golden case for watching the calculated offset
+				//var calculatedOffset = Subtract(Quaternion.Inverse(handAssignedChiraltyOffset) * ReverseChiralityXZ(AbsoluteObject.rotation), IMUObject.rotation);
+				var handOffset = Quaternion.AngleAxis(-315, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
+				//var otherHandOffset = Quaternion.AngleAxis(315, Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
+				//var thingy = Quaternion.AngleAxis(-315, -Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
+				//var thingTwo = Quaternion.AngleAxis(135, -Vector3.up) * Quaternion.AngleAxis(-90, Vector3.right);
+
+				//				float angle  Vector3 vector 
+				//Quaternion.AngleAxis(-angle, -vector) == Quaternion.AngleAxis(angle, vector)
+
+				//PrintInverse(handOffset);
+				//PrintInverse(handAssignedChiraltyOffset);
+				//PrintInverse(otherHandOffset);
+				//PrintInverse(thingy);
+				//PrintInverse(thingTwo);
+
+
+				var calculatedOffset = Subtract(Quaternion.Inverse(handOffset) * ReverseChiralityXZ(AbsoluteObject.rotation), IMUObject.rotation);
+
+				#region Old pre-chiralty removal
+				////calibratedQuat = IMUObject.rotation;
+				//var thing = Subtract(Quaternion.Inverse(chiralityOffset) * AbsoluteObject.rotation, IMUObject.rotation);
+				//CalibratedIMU.Update(Result * IMUObject.rotation);
+
+				////CalibratedIMU.Update(Quaternion.Inverse(calibratedQuat * IMUObject.rotation));
+				//DrawThingy(IMU.pos + Vector3.right * .65f + Vector3.forward * .65f, Result);
+				//absoluteToIMU.Update(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
+
+				////imuToAbsolute.Update(ReverseChiralityXZ(IMUObject.rotation));
+				//absoluteToIMU.Update(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
+
+				////Old golden case for watching the calculated offset
+				//var calculatedOffset = Subtract(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation), IMUObject.rotation);
+
+				//var calculatedOffset = Subtract(Quaternion.Inverse(chiralityOffset) * (AbsoluteObject.rotation), IMUObject.rotation); 
 				#endregion
-
-				//imuToAbsolute.Update(ReverseChiralityXZ(IMUObject.rotation));
-				absoluteToIMU.Update(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation));
-
-				var calculatedOffset = Subtract(Quaternion.Inverse(chiralityOffset) * ReverseChiralityXZ(AbsoluteObject.rotation), IMUObject.rotation);
-				OffsetDisplay.Update(calculatedOffset);
+				calculatedOffsetDisplay.Update(calculatedOffset);
 				appliedOffsetDisplay.Update(calculatedOffset * IMUObject.rotation);
 
 				absolute.Update(AbsoluteObject.rotation);
-
 
 				#region Junk Cases
 				//eulerAbsolute = AbsoluteObject.rotation.eulerAngles;
@@ -279,6 +362,104 @@ namespace Hardlight.SDK
 			}
 		}
 
+		[Header("IMU Space to Vive Space Offset")]
+		public Vector3 north;
+		public float rotateToNorth;
+		public Quaternion toNorth;
+
+		[Header("Headset IMU Calibration Parameters")]
+		public bool invertHeadsetOffset;
+		public bool reverseChiralityOfHeadsetOffset;
+
+		private void Thing()
+		{
+			if (Input.GetKeyDown(KeyCode.R))
+			{
+				SimpleQuatOffset = Subtract(IMUObject.rotation, VRMimic.Instance.VRCamera.transform.rotation);
+				Debug.Log("Quat Sub: " + IMUObject.rotation.ToString() + "  from " + VRMimic.Instance.VRCamera.transform.rotation + "\n\tResult: " + SimpleQuatOffset);
+			}
+		}
+
+		private void PrintInverse(Quaternion quat)
+		{
+			Debug.Log("Base Quat: " + quat.ToString() + "\n" + "Invs Quat: " + Quaternion.Inverse(quat).ToString() + "\n\n");
+		}
+
+		//[Header("Saved Calibration Vectors")]
+		//public Vector3 ForwardCase;
+		//public Vector3 UpCase;
+		//public Vector3 RightCase;
+
+		public Quaternion CreateQuatFromVectors(Vector3 v1, Vector3 v2)
+		{
+			Quaternion quat;
+			var cross = Vector3.Cross(v1, v2);
+			quat.x = cross.x;
+			quat.y = cross.y;
+			quat.z = cross.z;
+			quat.w = Mathf.Sqrt((v1.magnitude * v1.magnitude) * (v2.magnitude * v2.magnitude)) + Vector3.Dot(v1, v2);
+			quat = quat.Normalize();
+			return quat;
+		}
+
+		public bool CalcCalibrated = true;
+		void ManualCalibration()
+		{
+			#region Input
+			Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.right * .1f, Color.red);
+			Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.up * .1f, Color.green);
+			Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.forward * .1f, Color.blue);
+			//if (Input.GetKeyDown(KeyCode.R))
+			//{
+			//	RightQuaternion = IMUObject.rotation;
+			//	//OffsetFromRight = Quaternion.identity;
+			//	//OffsetFromRight = Subtract(OffsetFromRight, RightQuaternion);
+			//	OffsetFromRight = Subtract(RightQuaternion, VRMimic.Instance.VRCamera.transform.rotation);
+
+			//	RightCase = IMUObject.transform.right;
+			//	Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.right * .1f, Color.red, 1000);
+			//}
+			//if (Input.GetKeyDown(KeyCode.Y))
+			//{
+			//	UpQuaternion = IMUObject.rotation;
+			//	//OffsetFromUp = Quaternion.identity;
+			//	//OffsetFromUp = Subtract(OffsetFromUp, UpQuaternion);
+			//	OffsetFromUp = Subtract(UpQuaternion, VRMimic.Instance.VRCamera.transform.rotation);
+			//	UpCase = IMUObject.transform.up;
+			//	Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.up * .1f, Color.green, 1000);
+			//}
+			//if (Input.GetKeyDown(KeyCode.F))
+			//{
+			//	ForwardCase = IMUObject.transform.forward;
+			//	Debug.DrawLine(AbsoluteObject.transform.position, AbsoluteObject.transform.position + IMUObject.transform.forward * .1f, Color.blue, 1000);
+			//}
+			//if (RightCase != Vector3.zero && UpCase != Vector3.zero && ForwardCase != Vector3.zero && CalcCalibrated)
+			//{
+			//	CalcCalibrated = false;
+			//	calibratedQuat = CreateQuatFromVectors(RightCase, UpCase);
+			//}
+			#endregion
+
+			#region QuatDraw
+			if (RightQuaternion != Quaternion.identity)
+			{
+				DrawThingy(IMU.pos + Vector3.right * .5f, RightQuaternion);
+			}
+			if (RightQuaternion != Quaternion.identity)
+			{
+				DrawThingy(IMU.pos + Vector3.right * .85f, OffsetFromRight);
+			}
+			if (OffsetFromUp != Quaternion.identity)
+			{
+				DrawThingy(IMU.pos + Vector3.forward * .5f, UpQuaternion);
+			}
+			if (OffsetFromRight != Quaternion.identity)
+			{
+				DrawThingy(IMU.pos + Vector3.forward * .85f, OffsetFromUp);
+			}
+			#endregion
+		}
+
 		void DrawThingy(Vector3 position, Quaternion draw)
 		{
 			float Offset = 1.0f;
@@ -305,6 +486,7 @@ namespace Hardlight.SDK
 		public Quaternion OffsetFromRight;
 		public Quaternion OffsetFromUp;
 		public Quaternion Result;
+		public Quaternion calibratedQuat;
 
 		private KeyValuePair<Vector3, Quaternion> RightKVP;
 		private KeyValuePair<Vector3, Quaternion> UpKVP;
@@ -382,6 +564,12 @@ namespace Hardlight.SDK
 		{
 			var q = quat;
 			q.z = -q.z;
+			return q;
+		}
+		private Quaternion ReverseChiralityW(Quaternion quat)
+		{
+			var q = quat;
+			q.w = -q.w;
 			return q;
 		}
 

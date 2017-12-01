@@ -12,10 +12,10 @@ namespace Hardlight.SDK.Tracking
 
 		public void Start()
 		{
-			Debug.Log("Suit Absolute Comparer\n");
-			var go = new GameObject("Frame Evaluator - " + ArmSetup.controllerMimicType.ToString());
+			var go = new GameObject(ArmSetup.controllerMimicType.ToString() + " - Frame Evaluator");
 			representation = go.AddComponent<FrameEvaluator>();
 			representation.prefab = Resources.Load("Rotation Visualizer") as GameObject;
+			Debug.Log("Suit Absolute Comparer\n\t[Click to Select]", go);
 
 			representation.IMUObject = suitObjSetup.TrackedRepresentation.transform;
 			representation.AbsoluteObject = ArmSetup.RequestedMimic.transform;

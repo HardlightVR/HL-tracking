@@ -10,6 +10,7 @@ namespace Hardlight.SDK
 		public GameObject LowerBodyVisual;
 		bool ShouldCreateVisuals = true;
 		bool StomachInitialized = false;
+		public bool UseTrackerPosition = true;
 		public GameObject SingleTorsoEffigy;
 		public List<GameObject> TorsoSegments = new List<GameObject>();
 
@@ -20,8 +21,11 @@ namespace Hardlight.SDK
 		[Range(.1f, .5f)]
 		public float TorsoDepth = .3f;
 
+		[SerializeField]
+		internal BodyMimic.CalculatedPose CurrentIntendedPose;
 		public GameObject UpperBodyAnchor;
 
+		public Vector3 SegmentEulerOffset;
 		public Vector3 EulerOffset;
 
 		[Header("Segmented Torso Approach")]
@@ -59,6 +63,40 @@ namespace Hardlight.SDK
 			}
 		}
 
+		private Vector3 GetShoulderPosition()
+		{
+			if (UseTrackerPosition)
+				return TrackerMimic.transform.position + ShoulderOffset;
+			else
+				return ShoulderBarData.transform.position + ShoulderOffset;
+		}
+		private Vector3 GetTorsoPosition()
+		{
+			if (UseTrackerPosition)
+				return TrackerMimic.transform.position + Offset;
+			else
+			{
+				Quaternion QOffset = Quaternion.identity;
+				QOffset.eulerAngles = EulerOffset;
+
+				Vector3 up = QOffset * ShoulderBarData.transform.up;
+				Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + up, Color.green);
+				return ShoulderBarData.transform.position + TrackerOffset;
+			}
+		}
+		private Quaternion GetTorsoRotation()
+		{
+			Quaternion QOffset = Quaternion.identity;
+			QOffset.eulerAngles = SegmentEulerOffset;
+			if (UseTrackerPosition)
+				return TrackerMimic.transform.rotation * QOffset;
+			else
+			{
+				//Vector3 up = QOffset * ShoulderBarData.transform.up;
+				return ShoulderBarData.transform.rotation * QOffset;
+			}
+		}
+
 		private void UpdateTorso()
 		{
 			if ((SingleTorsoEffigy == null || !StomachInitialized) && ShouldCreateVisuals)
@@ -69,20 +107,22 @@ namespace Hardlight.SDK
 			{
 				//Set the position and scale of a Single Torso Effigy
 				SingleTorsoEffigy.transform.localScale = new Vector3(TorsoWidth, TorsoHeight, TorsoDepth);
-				SingleTorsoEffigy.transform.position = TrackerMimic.transform.position + Offset;
+				SingleTorsoEffigy.transform.position = GetShoulderPosition();
 
 				//Here we add the Euler offset (for if you want it to be oriented differently)
-				Quaternion QOffset = Quaternion.identity;
-				QOffset.eulerAngles = EulerOffset;
-				SingleTorsoEffigy.transform.rotation = TrackerMimic.transform.rotation * QOffset;
+
+				SingleTorsoEffigy.transform.rotation = GetTorsoRotation();
 
 				if (TorsoSegments.Count > 0)
 				{
 					#region Default Variables
+					Quaternion QOffset = Quaternion.identity;
+					QOffset.eulerAngles = SegmentEulerOffset;
+
 					var target = ShoulderBarData.transform.rotation * QOffset;
 					Vector3 segmentPosition = Vector3.zero;
 					Vector3 lerpedScale = Vector3.zero;
-					Quaternion segmentLerpedOrientation = Quaternion.identity; 
+					Quaternion segmentLerpedOrientation = Quaternion.identity;
 					#endregion
 
 					for (int i = 0; i < TorsoSegments.Count; i++)
@@ -90,8 +130,8 @@ namespace Hardlight.SDK
 						if (TorsoSegments[i] != null)
 						{
 							//Find the vertical percent that this segment represents
-							float perc = (float)i / ((float)TorsoSegments.Count - 1);
-							
+							float perc = i / ((float)TorsoSegments.Count - 1);
+
 							//Handle the scale of the segment
 							lerpedScale = Vector3.Lerp(WaistScale, ShoulderScale, perc);
 							lerpedScale.y = (lerpedScale.y / TorsoSegments.Count) * 1.2f;
@@ -99,13 +139,13 @@ namespace Hardlight.SDK
 
 							//Handle the position of this segment
 							segmentPosition = Vector3.Lerp(
-								TrackerMimic.transform.position + TrackerOffset,
-								ShoulderBarData.transform.position + ShoulderOffset,
+								GetTorsoPosition(),
+								GetShoulderPosition(),
 								perc);
 
 							//Each segment orients itself percentage-wise based on the shoulder/back orientation
 							TorsoSegments[i].transform.position = segmentPosition + Offset;
-							segmentLerpedOrientation = Quaternion.Lerp(TrackerMimic.transform.rotation, target, perc);
+							segmentLerpedOrientation = Quaternion.Lerp(GetTorsoRotation(), target, perc);
 							TorsoSegments[i].transform.rotation = segmentLerpedOrientation;
 						}
 					}

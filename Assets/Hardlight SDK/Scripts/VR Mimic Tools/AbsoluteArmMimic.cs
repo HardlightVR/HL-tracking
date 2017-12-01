@@ -27,7 +27,7 @@ namespace Hardlight.SDK
 		public GameObject ShoulderJointVisual;
 
 		public Color GizmoColor = Color.green;
-		public float ForearmLength = .5f;
+		public float ForearmLength = .15f;
 
 		[Range(0, 1)]
 		public float PercentagePlacement = .5f;
@@ -104,7 +104,8 @@ namespace Hardlight.SDK
 			UpperArmCollider = UpperArmData.UpperArmCollider;
 			if (WhichSide == ArmSide.Right)
 			{
-				UpperArmData.Mirror();
+				Debug.LogError("Disabled mirroring of right arm.\n", UpperArmData);
+				//UpperArmData.Mirror();
 			}
 			elbowObject = UpperArmData.Elbow;
 		}
@@ -213,7 +214,7 @@ namespace Hardlight.SDK
 		private void HandleObjectOffsets()
 		{
 			if (WristObject)
-			{	WristObject.transform.localPosition = ControllerOffsetAmount; }
+			{ WristObject.transform.localPosition = ControllerOffsetAmount; }
 			if (ShoulderJoint)
 			{ ShoulderJoint.transform.localPosition = shoulderOffsetAmount; }
 		}
@@ -222,8 +223,19 @@ namespace Hardlight.SDK
 		{
 			if (UpperArmData != null && TrackerMount != null)
 			{
-				UpperArmData.transform.position = TrackerMount.transform.position;
-				UpperArmData.transform.rotation = TrackerMount.transform.rotation;
+				if (TrackerMount.Options.MimicPosition)
+				{
+					UpperArmData.transform.position = TrackerMount.transform.position;
+				}
+				else
+				{
+					Debug.DrawLine(ShoulderMount.transform.position, ShoulderMount.transform.position + Vector3.up * .1f, Color.cyan, .15f);
+					UpperArmData.transform.position = ShoulderMount.transform.position + TrackerMount.transform.rotation * (Vector3.up * ArmScale / 2);
+				}
+				if (TrackerMount.Options.MimicRotation)
+				{
+					UpperArmData.transform.rotation = TrackerMount.transform.rotation;
+				}
 			}
 		}
 
