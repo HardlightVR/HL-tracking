@@ -827,8 +827,8 @@ namespace Hardlight.SDK
 			stretchLocalScale.z = distance * 3.2f;
 			shoulder.localScale = stretchLocalScale;
 
-			//Debug.DrawLine(shoulder.position, shoulder.position + GetForward(), Color.black);
-			//Debug.DrawLine(shoulder.position, shoulder.position + GetUp(), Color.white);
+			Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Forward, Color.black);
+			Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Up, Color.white);
 			//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
 			Vector3 upDir = TargetPose.Up;
 			//Vector3 upDir = AverageArmUp();

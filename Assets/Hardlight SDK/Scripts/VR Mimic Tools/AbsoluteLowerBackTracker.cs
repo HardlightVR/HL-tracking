@@ -79,9 +79,9 @@ namespace Hardlight.SDK
 				Quaternion QOffset = Quaternion.identity;
 				//QOffset.eulerAngles = Vector3.zero;
 
-				Vector3 up = QOffset * ShoulderBarData.transform.up;
-				Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + up, Color.green);
-				return ShoulderBarData.transform.position + TrackerOffset;
+				Vector3 torsoUp = QOffset * ShoulderBarData.transform.right;
+				Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + torsoUp, Color.magenta);
+				return ShoulderBarData.transform.position + TrackerOffset + torsoUp.normalized * TorsoHeight;
 			}
 		}
 		private Quaternion GetTorsoRotation()
