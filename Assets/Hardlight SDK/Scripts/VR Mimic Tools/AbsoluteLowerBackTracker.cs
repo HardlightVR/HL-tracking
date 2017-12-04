@@ -21,6 +21,13 @@ namespace Hardlight.SDK
 		[Range(.1f, .5f)]
 		public float TorsoDepth = .3f;
 
+		[Range(.1f, .5f)]
+		public float ShoulderWidth = .3f;
+		[Range(.1f, .5f)]
+		public float ShoulderHeight = .3f;
+		[Range(.1f, .5f)]
+		public float ShoulderDepth = .3f;
+
 		[SerializeField]
 		internal BodyMimic.CalculatedPose CurrentIntendedPose;
 		public GameObject UpperBodyAnchor;
@@ -31,8 +38,13 @@ namespace Hardlight.SDK
 		[Header("Segmented Torso Approach")]
 		[Range(2, 15)]
 		public int SegmentCount = 15;
+		//public Vector3 ShoulderScale = new Vector3(.4f, .5f, .2f);
 		public Vector3 ShoulderScale = new Vector3(.4f, .5f, .2f);
-		public Vector3 WaistScale = new Vector3(.4f, .5f, .2f);
+		//public Vector3 WaistScale = new Vector3(.4f, .5f, .2f);
+		public Vector3 WaistScale
+		{
+			get { return new Vector3(TorsoWidth, TorsoHeight, TorsoDepth); }
+		}
 		public Vector3 TrackerOffset;
 		public Vector3 ShoulderOffset;
 

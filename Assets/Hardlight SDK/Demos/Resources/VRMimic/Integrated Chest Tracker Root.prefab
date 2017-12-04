@@ -76,6 +76,9 @@ MonoBehaviour:
   TorsoWidth: 0.4
   TorsoHeight: 0.3
   TorsoDepth: 0.2
+  ShoulderWidth: 0.3
+  ShoulderHeight: 0.3
+  ShoulderDepth: 0.3
   CurrentIntendedPose:
     Name: 
     _rootPosition: {x: 0, y: 0, z: 0}
@@ -87,6 +90,5 @@ MonoBehaviour:
   SegmentEulerOffset: {x: 0, y: 90, z: 0}
   SegmentCount: 6
   ShoulderScale: {x: 0.35, y: 0.5, z: 0.1}
-  WaistScale: {x: 0.2, y: 0.5, z: 0.15}
   TrackerOffset: {x: 0, y: 0, z: 0}
   ShoulderOffset: {x: 0, y: -0.025, z: 0}
