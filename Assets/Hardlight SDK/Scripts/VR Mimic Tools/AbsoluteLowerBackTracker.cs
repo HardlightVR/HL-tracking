@@ -26,7 +26,7 @@ namespace Hardlight.SDK
 		public GameObject UpperBodyAnchor;
 
 		public Vector3 SegmentEulerOffset;
-		public Vector3 EulerOffset;
+		//public Vector3 EulerOffset;
 
 		[Header("Segmented Torso Approach")]
 		[Range(2, 15)]
@@ -77,7 +77,7 @@ namespace Hardlight.SDK
 			else
 			{
 				Quaternion QOffset = Quaternion.identity;
-				QOffset.eulerAngles = EulerOffset;
+				//QOffset.eulerAngles = Vector3.zero;
 
 				Vector3 up = QOffset * ShoulderBarData.transform.up;
 				Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + up, Color.green);

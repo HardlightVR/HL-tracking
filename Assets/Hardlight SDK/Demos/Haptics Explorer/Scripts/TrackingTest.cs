@@ -35,6 +35,8 @@ namespace Hardlight.SDK.Tracking
 		[Header("Use Offset")]
 		public bool UseOffset = true;
 		public Vector3 Offset;
+		public Vector3 SecondOffset = Vector3.zero;
+
 		public bool reverseOffsetXZ = true;
 		public bool reverseOrder = false;
 
@@ -92,6 +94,7 @@ namespace Hardlight.SDK.Tracking
 				else if (whichIMU == Imu.Left_Upper_Arm)
 				{
 					assign = tracking.LeftUpperArm;
+					//Debug.Log("Left Upper Arm: " + tracking.LeftUpperArm
 				}
 				else if (whichIMU == Imu.Right_Upper_Arm)
 				{
@@ -124,6 +127,10 @@ namespace Hardlight.SDK.Tracking
 					quat = Quaternion.AngleAxis(Offset.y, Vector3.up) * quat;
 					quat = Quaternion.AngleAxis(Offset.x, Vector3.right) * quat;
 					quat = reverseOffsetXZ ? ReverseChiralityXZ(quat) : quat;
+					
+					//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
+					//quat = Quaternion.AngleAxis(SecondOffset.y, Vector3.up) * quat;
+					//quat = Quaternion.AngleAxis(SecondOffset.x, Vector3.right) * quat;
 				}
 
 				var myQuat = reverseOrder ? assign * quat : quat * assign;

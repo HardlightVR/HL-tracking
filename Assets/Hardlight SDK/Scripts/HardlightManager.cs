@@ -157,7 +157,10 @@ namespace Hardlight.SDK
 		{
 			if (_plugin != null)
 			{
-				return _plugin.PollTracking();
+				var update = _plugin.PollTracking();
+
+				//Debug.Log(update.ChestNorth.normalized.ToString() + "  " + update.LeftUpperArmNorth.normalized.ToString() + "    " + update.RightUpperArmNorth.normalized.ToString());
+				return update;
 			}
 			return new TrackingUpdate();
 		}

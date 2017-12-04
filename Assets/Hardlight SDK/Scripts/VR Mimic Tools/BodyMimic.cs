@@ -745,7 +745,6 @@ namespace Hardlight.SDK
 			if (LowerBack != null)
 			{
 				var back = (LowerBack as AbsoluteLowerBackTracker);
-				Debug.Log("Assigned post to lower back tracker\n");
 				back.CurrentIntendedPose = TargetPose;
 			}
 
@@ -798,7 +797,7 @@ namespace Hardlight.SDK
 		private Vector3 CalculateShoulderCenterPosition(float distance)
 		{
 			Vector3 leftToRight = AbsoluteRightArm.ShoulderJoint.transform.position - AbsoluteLeftArm.ShoulderJoint.transform.position;
-			return AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2 ;
+			return AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2;
 		}
 
 		/// <summary>
@@ -964,7 +963,8 @@ namespace Hardlight.SDK
 			Gizmos.DrawSphere(pose.TorsoPosition, .01f);
 			Gizmos.DrawSphere(pose.RootPosition, .035f);
 			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Up.normalized * .25f);
-			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Forward.normalized * .1f);
+			Gizmos.DrawLine(pose.RootPosition + Vector3.up * .02f, pose.RootPosition + pose.Forward.normalized * .2f + Vector3.up * .02f );
+			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Forward.normalized * .2f);
 		}
 
 		/// <summary>
