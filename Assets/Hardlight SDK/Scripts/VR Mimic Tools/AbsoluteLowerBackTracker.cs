@@ -14,33 +14,40 @@ namespace Hardlight.SDK
 		public GameObject SingleTorsoEffigy;
 		public List<GameObject> TorsoSegments = new List<GameObject>();
 
+		[Header("Shoulder Dimensions")]
+		[Range(.1f, .75f)]
+		public float ShoulderWidth = .35f;
+		[Range(.1f, .75f)]
+		public float ShoulderHeight = .4f;
+		[Range(.05f, .35f)]
+		public float ShoulderDepth = .1f;
+
+		[Header("Torso Dimensions")]
 		[Range(.1f, .5f)]
 		public float TorsoWidth = .3f;
 		[Range(.1f, .5f)]
 		public float TorsoHeight = .3f;
-		[Range(.1f, .5f)]
+		[Range(.05f, .35f)]
 		public float TorsoDepth = .3f;
 
-		[Range(.1f, .5f)]
-		public float ShoulderWidth = .3f;
-		[Range(.1f, .5f)]
-		public float ShoulderHeight = .3f;
-		[Range(.1f, .5f)]
-		public float ShoulderDepth = .3f;
-
+		[Header("Body Mimic Pose")]
 		[SerializeField]
 		internal BodyMimic.CalculatedPose CurrentIntendedPose;
+
+		[Header("Anchor")]
 		public GameObject UpperBodyAnchor;
 
 		public Vector3 SegmentEulerOffset;
-		//public Vector3 EulerOffset;
+		public Vector3 TargetObjectOffset;
+		public Quaternion targetOffsetQuat;
 
 		[Header("Segmented Torso Approach")]
 		[Range(2, 15)]
 		public int SegmentCount = 15;
-		//public Vector3 ShoulderScale = new Vector3(.4f, .5f, .2f);
-		public Vector3 ShoulderScale = new Vector3(.4f, .5f, .2f);
-		//public Vector3 WaistScale = new Vector3(.4f, .5f, .2f);
+		public Vector3 ShoulderScale
+		{
+			get { return new Vector3(ShoulderWidth, ShoulderHeight, ShoulderDepth); }
+		}
 		public Vector3 WaistScale
 		{
 			get { return new Vector3(TorsoWidth, TorsoHeight, TorsoDepth); }
@@ -50,6 +57,9 @@ namespace Hardlight.SDK
 
 		void Update()
 		{
+			targetOffsetQuat = Quaternion.identity;
+			targetOffsetQuat.eulerAngles = TargetObjectOffset;
+
 			transform.localPosition = Vector3.zero;
 			transform.rotation = Quaternion.identity;
 			if (TrackerMimic && ShoulderBarData)
