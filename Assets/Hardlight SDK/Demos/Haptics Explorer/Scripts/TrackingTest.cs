@@ -27,21 +27,21 @@ namespace Hardlight.SDK.Tracking
 		public float PercentOfNewData = .95f;
 
 		[Header("Chirality Reversal Control")]
-		public bool reverseX = false;
-		public bool reverseY = false;
-		public bool reverseZ = false;
-		public bool reverseW = true;
+		private bool reverseX = false;
+		private bool reverseY = false;
+		private bool reverseZ = false;
+		private bool reverseW = true;
 
 		[Header("Use Offset")]
-		public bool UseOffset = true;
-		public bool UsePreOffset = true;
+		//public bool UseOffset = true;
+		//public bool UsePreOffset = true;
 		public Vector3 Offset;
 		public Vector3 preChiralOffset = Vector3.zero;
-		public bool reverseOffsetXZ = true;
-		public bool reverseOrder = false;
+		//public bool reverseOffsetXZ = true;
+		//public bool reverseOrder = false;
 
-		[Header("Calibrating")]
-		public Vector3 baseVector;
+		//[Header("Calibrating")]
+		//public Vector3 baseVector;
 
 		void Start()
 		{
@@ -119,31 +119,24 @@ namespace Hardlight.SDK.Tracking
 				//{
 
 				Quaternion preChirQuad = Quaternion.identity;
-				if (UsePreOffset)
-				{
-					preChirQuad = Quaternion.AngleAxis(preChiralOffset.z, Vector3.forward) * preChirQuad;
-					preChirQuad = Quaternion.AngleAxis(preChiralOffset.y, Vector3.up) * preChirQuad;
-					preChirQuad = Quaternion.AngleAxis(preChiralOffset.x, Vector3.right) * preChirQuad;
-					//preChirQuad = preChirQuad;
-					//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
-				}
+
+				preChirQuad = Quaternion.AngleAxis(preChiralOffset.z, Vector3.forward) * preChirQuad;
+				preChirQuad = Quaternion.AngleAxis(preChiralOffset.y, Vector3.up) * preChirQuad;
+				preChirQuad = Quaternion.AngleAxis(preChiralOffset.x, Vector3.right) * preChirQuad;
+				//preChirQuad = preChirQuad;
+				//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
 
 				assign = ReverseChirality(assign * preChirQuad);
 				VisibleIdentity = assign != Quaternion.identity;
 
 				Quaternion quat = Quaternion.identity;
-				if (UseOffset)
-				{
-					quat = Quaternion.AngleAxis(Offset.z, Vector3.forward) * quat;
-					quat = Quaternion.AngleAxis(Offset.y, Vector3.up) * quat;
-					quat = Quaternion.AngleAxis(Offset.x, Vector3.right) * quat;
-					quat = reverseOffsetXZ ? ReverseChiralityXZ(quat) : quat;
-					//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
-				}
+				quat = Quaternion.AngleAxis(Offset.z, Vector3.forward) * quat;
+				quat = Quaternion.AngleAxis(Offset.y, Vector3.up) * quat;
+				quat = Quaternion.AngleAxis(Offset.x, Vector3.right) * quat;
+				quat = ReverseChiralityXZ(quat);
+				//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
 
-				
-
-				var myQuat = reverseOrder ? assign * quat : quat * assign;
+				var myQuat = quat * assign;
 				TrackedRepresentation.transform.rotation = Quaternion.Lerp(TrackedRepresentation.transform.rotation, myQuat, PercentOfNewData);
 
 				if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -159,19 +152,19 @@ namespace Hardlight.SDK.Tracking
 					SaveZ(myQuat);
 				}
 
-				Vector3 saveVector = myQuat * baseVector;
-				Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + saveVector, Color.white);
+				//Vector3 saveVector = myQuat * baseVector;
+				//Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + saveVector, Color.white);
 
-				if (xQuat != Quaternion.identity || yQuat != Quaternion.identity || zQuat != Quaternion.identity)
-				{
-					Vector3 xRight = xQuat * baseVector;
-					Vector3 yUp = yQuat * baseVector;
-					Vector3 zFwd = zQuat * baseVector;
+				//if (xQuat != Quaternion.identity || yQuat != Quaternion.identity || zQuat != Quaternion.identity)
+				//{
+				//	Vector3 xRight = xQuat * baseVector;
+				//	Vector3 yUp = yQuat * baseVector;
+				//	Vector3 zFwd = zQuat * baseVector;
 
-					Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + xRight, Color.red);
-					Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + yUp, Color.green);
-					Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + zFwd, Color.blue);
-				}
+				//	Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + xRight, Color.red);
+				//	Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + yUp, Color.green);
+				//	Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + zFwd, Color.blue);
+				//}
 			}
 		}
 
