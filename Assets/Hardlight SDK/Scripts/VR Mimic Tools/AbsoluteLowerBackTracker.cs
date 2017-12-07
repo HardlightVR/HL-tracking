@@ -14,22 +14,6 @@ namespace Hardlight.SDK
 		public GameObject SingleTorsoEffigy;
 		public List<GameObject> TorsoSegments = new List<GameObject>();
 
-		[Header("Shoulder Dimensions")]
-		[Range(.1f, .75f)]
-		public float ShoulderWidth = .35f;
-		[Range(.1f, .75f)]
-		public float ShoulderHeight = .4f;
-		[Range(.05f, .35f)]
-		public float ShoulderDepth = .1f;
-
-		[Header("Torso Dimensions")]
-		[Range(.1f, .5f)]
-		public float TorsoWidth = .3f;
-		[Range(.1f, .5f)]
-		public float TorsoHeight = .3f;
-		[Range(.05f, .35f)]
-		public float TorsoDepth = .3f;
-
 		[Header("Body Mimic Pose")]
 		[SerializeField]
 		internal BodyMimic.CalculatedPose CurrentIntendedPose;
@@ -44,13 +28,17 @@ namespace Hardlight.SDK
 		[Header("Segmented Torso Approach")]
 		[Range(2, 15)]
 		public int SegmentCount = 15;
-		public Vector3 ShoulderScale
+		public Vector3 UpperTorsoScale
 		{
-			get { return new Vector3(ShoulderWidth, ShoulderHeight, ShoulderDepth); }
+			get { return VRMimic.Instance.ActiveBodyMimic.BodyDimensions.UpperTorsoDimensions; }
 		}
-		public Vector3 WaistScale
+		public Vector3 LowerTorsoScale
 		{
-			get { return new Vector3(TorsoWidth, TorsoHeight, TorsoDepth); }
+			get { return VRMimic.Instance.ActiveBodyMimic.BodyDimensions.LowerTorsoDimensions; }
+		}
+		public float TorsoHeight
+		{
+			get { return VRMimic.Instance.ActiveBodyMimic.BodyDimensions.TorsoHeight; }
 		}
 		public Vector3 TrackerOffset;
 		public Vector3 ShoulderOffset;
@@ -128,7 +116,7 @@ namespace Hardlight.SDK
 			if (SingleTorsoEffigy != null && StomachInitialized)
 			{
 				//Set the position and scale of a Single Torso Effigy
-				SingleTorsoEffigy.transform.localScale = new Vector3(TorsoWidth, TorsoHeight, TorsoDepth);
+				SingleTorsoEffigy.transform.localScale = UpperTorsoScale;
 				SingleTorsoEffigy.transform.position = GetShoulderPosition();
 
 				//Here we add the Euler offset (for if you want it to be oriented differently)
@@ -155,8 +143,8 @@ namespace Hardlight.SDK
 							float perc = i / ((float)TorsoSegments.Count - 1);
 
 							//Handle the scale of the segment
-							lerpedScale = Vector3.Lerp(WaistScale, ShoulderScale, perc);
-							lerpedScale.y = (lerpedScale.y / TorsoSegments.Count) * 1.2f;
+							lerpedScale = Vector3.Lerp(LowerTorsoScale, UpperTorsoScale, perc);
+							lerpedScale.z = (lerpedScale.z / TorsoSegments.Count) * 1.2f;
 							TorsoSegments[i].transform.localScale = lerpedScale;
 
 							//Handle the position of this segment

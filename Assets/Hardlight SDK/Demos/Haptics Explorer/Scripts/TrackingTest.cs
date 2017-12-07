@@ -34,8 +34,9 @@ namespace Hardlight.SDK.Tracking
 
 		[Header("Use Offset")]
 		public bool UseOffset = true;
+		public bool UsePreOffset = true;
 		public Vector3 Offset;
-		public Vector3 SecondOffset = Vector3.zero;
+		public Vector3 preChiralOffset = Vector3.zero;
 		public bool reverseOffsetXZ = true;
 		public bool reverseOrder = false;
 
@@ -116,7 +117,18 @@ namespace Hardlight.SDK.Tracking
 				//}
 				//if (false)
 				//{
-				assign = ReverseChirality(assign);
+
+				Quaternion preChirQuad = Quaternion.identity;
+				if (UsePreOffset)
+				{
+					preChirQuad = Quaternion.AngleAxis(preChiralOffset.z, Vector3.forward) * preChirQuad;
+					preChirQuad = Quaternion.AngleAxis(preChiralOffset.y, Vector3.up) * preChirQuad;
+					preChirQuad = Quaternion.AngleAxis(preChiralOffset.x, Vector3.right) * preChirQuad;
+					//preChirQuad = preChirQuad;
+					//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
+				}
+
+				assign = ReverseChirality(assign * preChirQuad);
 				VisibleIdentity = assign != Quaternion.identity;
 
 				Quaternion quat = Quaternion.identity;
@@ -128,6 +140,8 @@ namespace Hardlight.SDK.Tracking
 					quat = reverseOffsetXZ ? ReverseChiralityXZ(quat) : quat;
 					//quat = Quaternion.AngleAxis(SecondOffset.z, Vector3.forward) * quat;
 				}
+
+				
 
 				var myQuat = reverseOrder ? assign * quat : quat * assign;
 				TrackedRepresentation.transform.rotation = Quaternion.Lerp(TrackedRepresentation.transform.rotation, myQuat, PercentOfNewData);
