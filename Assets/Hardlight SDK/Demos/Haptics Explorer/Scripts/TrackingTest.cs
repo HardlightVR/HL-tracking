@@ -90,6 +90,7 @@ namespace Hardlight.SDK.Tracking
 				if (whichIMU == Imu.Chest)
 				{
 					assign = tracking.Chest;
+					DrawTrackingUpdate(assign, tracking.ChestNorth, tracking.ChestUp);
 				}
 				else if (whichIMU == Imu.Left_Upper_Arm)
 				{
@@ -166,6 +167,30 @@ namespace Hardlight.SDK.Tracking
 				//	Debug.DrawLine(TrackedRepresentation.transform.position, TrackedRepresentation.transform.position + zFwd, Color.blue);
 				//}
 			}
+		}
+
+		private void DrawTrackingUpdate(Quaternion assign, Vector3 north, Vector3 imuUp)
+		{
+			#region TrackingUpdate North/Up vectors
+			Vector3 up = Vector3.up;
+			Debug.DrawLine(up * 3, up * 3 + north.normalized, Color.red);
+			Debug.DrawLine(up * 3, up * 3 + assign * north.normalized, Color.magenta);
+			Debug.DrawLine(up * 3, up * 3 + Quaternion.Inverse(assign) * north.normalized, Color.black);
+
+			Debug.DrawLine(up * 5, up * 5 + imuUp.normalized, Color.green);
+			Debug.DrawLine(up * 5, up * 5 + assign * imuUp.normalized, Color.cyan);
+			Debug.DrawLine(up * 5, up * 5 + Quaternion.Inverse(assign) * imuUp.normalized, Color.white);
+
+			Vector3 chestRight = Vector3.Cross(imuUp.normalized, north.normalized);
+			Debug.DrawLine(up * 4, up * 4 + chestRight.normalized, Color.blue);
+			Debug.DrawLine(up * 4, up * 4 + assign * chestRight.normalized, Color.yellow);
+			Debug.DrawLine(up * 4, up * 4 + Quaternion.Inverse(assign) * chestRight.normalized, Color.grey);
+
+			Debug.Log("Chest North: " + north.normalized + "  Red \t\tMagenta: " + assign * north.normalized +
+				"\n\t\tBlack: " + (Quaternion.Inverse(assign) * north.normalized).normalized);
+			Debug.Log("Chest Up:    " + imuUp.normalized + "  Green \t\tCyan:    " + assign * imuUp.normalized +
+				"\n\t\tWhite: " + (Quaternion.Inverse(assign) * imuUp.normalized).normalized);
+			#endregion
 		}
 
 		Quaternion xQuat;

@@ -6,7 +6,7 @@
 
 using UnityEngine;
 using Valve.VR;
-using NullSpace.SDK;
+using Hardlight.SDK;
 using System.Collections;
 
 public class SteamVR_TrackedObjectWithOffset : MonoBehaviour
