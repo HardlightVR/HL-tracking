@@ -90,7 +90,7 @@ namespace Hardlight.SDK.Tracking
 				if (whichIMU == Imu.Chest)
 				{
 					assign = tracking.Chest;
-					DrawTrackingUpdate(assign, tracking.ChestNorth, tracking.ChestUp);
+					//DrawTrackingUpdate(assign, tracking.ChestNorth, tracking.ChestUp);
 				}
 				else if (whichIMU == Imu.Left_Upper_Arm)
 				{
@@ -101,6 +101,10 @@ namespace Hardlight.SDK.Tracking
 				{
 					assign = tracking.RightUpperArm;
 				}
+
+				Debug.Log(whichIMU + "     " + assign + "\n");
+
+
 				lastQuat = assign;
 				Quaternion rawQuat = assign;
 
