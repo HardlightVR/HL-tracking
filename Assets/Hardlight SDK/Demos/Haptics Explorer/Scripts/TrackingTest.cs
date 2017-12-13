@@ -102,8 +102,9 @@ namespace Hardlight.SDK.Tracking
 					assign = tracking.RightUpperArm;
 				}
 
-				Debug.Log(whichIMU + "     " + assign + "\n");
+				//Debug.Log(whichIMU + "     " + assign + "\n");
 
+				assign.y = -assign.y;
 
 				lastQuat = assign;
 				Quaternion rawQuat = assign;
