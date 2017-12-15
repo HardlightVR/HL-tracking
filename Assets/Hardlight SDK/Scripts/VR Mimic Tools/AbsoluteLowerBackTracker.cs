@@ -42,6 +42,7 @@ namespace Hardlight.SDK
 		}
 		public Vector3 TrackerOffset;
 		public Vector3 ShoulderOffset;
+		public bool DrawDebug = false;
 
 		void Update()
 		{
@@ -90,7 +91,11 @@ namespace Hardlight.SDK
 				//QOffset.eulerAngles = Vector3.zero;
 
 				Vector3 torsoUp = QOffset * ShoulderBarData.transform.right;
-				Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + torsoUp, Color.magenta);
+				if (DrawDebug)
+				{
+					Debug.DrawLine(ShoulderBarData.transform.position, ShoulderBarData.transform.position + torsoUp, Color.magenta);
+				}
+
 				return ShoulderBarData.transform.position + TrackerOffset + torsoUp.normalized * TorsoHeight;
 			}
 		}

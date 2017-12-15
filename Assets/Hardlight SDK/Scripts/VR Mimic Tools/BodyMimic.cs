@@ -154,6 +154,7 @@ namespace Hardlight.SDK
 		public Vector3 ShoulderBarEulerOffset;
 
 		public bool ShouldCreateVisuals = true;
+		public bool DrawDebug = false;
 
 		/// <summary>
 		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
@@ -403,12 +404,18 @@ namespace Hardlight.SDK
 					Vector3 avgPos = HMDPose.TorsoPosition;
 					//Debug.DrawLine(lowerBack.transform.position, avgPos, new Color(.6f, .3f, .9f));
 					Vector3 up = LowerBack.TrackerMimic.transform.up;
-					Debug.DrawLine(avgPos, avgPos + up * .25f, Color.green);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + up * .25f, Color.green);
+					}
 
 					Vector3 hmdForward = CalculateHMDForward();
 					Vector3 forward = Vector3.Cross(up, LowerBack.TrackerMimic.transform.right);
-					Debug.DrawLine(avgPos, avgPos + forward, Color.blue);
-					Debug.DrawLine(avgPos, avgPos + LowerBack.TrackerMimic.transform.right, Color.red);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + forward, Color.blue);
+						Debug.DrawLine(avgPos, avgPos + LowerBack.TrackerMimic.transform.right, Color.red);
+					}
 
 					//Set this as the target position (with the shoulder hang offset)
 					var targetPosition = HMDPose.TorsoPosition;// avgPos + up * (.25f + NeckVerticalAnchor) + forward * (.25f + NeckFwdAnchor);
@@ -435,10 +442,16 @@ namespace Hardlight.SDK
 					Vector3 avgPos = LowerBack.TrackerMimic.transform.position;
 					//Debug.DrawLine(lowerBack.transform.position, avgPos, new Color(.6f, .3f, .9f));
 					Vector3 up = LowerBack.TrackerMimic.transform.up;
-					Debug.DrawLine(avgPos, avgPos + up * .25f, Color.yellow);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + up * .25f, Color.yellow);
+					}
 
 					Vector3 forward = Vector3.Cross(up, LowerBack.TrackerMimic.transform.right);
-					Debug.DrawLine(avgPos, avgPos + forward, Color.red);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + forward, Color.red);
+					}
 
 					//Set this as the target position (with the shoulder hang offset)
 					var targetPosition = avgPos + up * (.25f + NeckVerticalAnchor) + forward * (.25f + NeckFwdAnchor);
@@ -453,12 +466,17 @@ namespace Hardlight.SDK
 
 		private CalculatedPose CreateHybridPose(CalculatedPose firstPose, float firstWeight, CalculatedPose secondPose, float secondWeight)
 		{
-			firstPose.Draw(Color.cyan);
-			secondPose.Draw(Color.green);
-
+			if (DrawDebug)
+			{
+				firstPose.Draw(Color.cyan);
+				secondPose.Draw(Color.green);
+			}
 			var mergedPose = new CalculatedPose(firstPose, firstWeight, secondPose, secondWeight);
 
-			mergedPose.Draw(Color.white);
+			if (DrawDebug)
+			{
+				mergedPose.Draw(Color.white);
+			}
 
 			return mergedPose;
 		}
@@ -509,7 +527,10 @@ namespace Hardlight.SDK
 			Quaternion quat = Quaternion.identity;
 			quat.eulerAngles = PoseEulerOffset;
 
-			Debug.DrawLine(transform.position, TargetPose.TorsoPosition);
+			if (DrawDebug)
+			{
+				Debug.DrawLine(transform.position, TargetPose.TorsoPosition);
+			}
 			//We adjust our transform based on where we ARE & how our pose should orient itself.
 			transform.LookAt(transform.position + quat * TargetPose.Forward * 5, quat * TargetPose.Up);
 		}
@@ -820,8 +841,11 @@ namespace Hardlight.SDK
 			stretchLocalScale.z = distance * 3.2f;
 			shoulder.localScale = stretchLocalScale;
 
-			Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Forward, Color.black);
-			Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Up, Color.white);
+			if (DrawDebug)
+			{
+				Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Forward, Color.black);
+				Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Up, Color.white);
+			}
 			//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
 			Vector3 upDir = TargetPose.Up;
 			//Vector3 upDir = AverageArmUp();
