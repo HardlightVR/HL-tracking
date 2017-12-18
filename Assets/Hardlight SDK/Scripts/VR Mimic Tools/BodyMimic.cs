@@ -16,29 +16,34 @@ namespace Hardlight.SDK
 		public PositionEvaluationTechnique PositionTechnique = PositionEvaluationTechnique.PureHmd;
 
 		/// <summary>
-		/// [Not currently in use]
-		/// This is stub code for future tracking improvements that allow the body to tilt with the HMD (left/right, forward/backward)
-		/// For more information, look into CalculateHMDTilt()
-		/// </summary>
-		//[Range(0, .35f)]
-		//public float TiltAmtWithHMD = 0.0f;
-
-		/// <summary>
 		/// Big surprise, your body is below your head and neck. 
 		/// This lets you adjust the body position. You might want to configure this as a game option/calibration step
 		/// for players of different body distributions (long neck vs young with shorter neck vs giraffes)
 		/// </summary>
-		[Header("How far down the body is from HMD")]
-		[Range(-2, 2)]
-		public float NeckVerticalAnchor = .25f;
+		//[Header("How far down the body is from HMD")]
+		//[Range(-2, 2)]
+		//public float NeckVerticalAnchor = .25f;
 
 		/// <summary>
 		/// The body is locked a bit back from where the HMD's position will be. 
 		/// This controls how far forward or backward.
 		/// </summary>
-		[Header("How far fwd or back the body is")]
-		[Range(-2, 2)]
-		public float NeckFwdAnchor = 0;
+		//[Header("How far fwd or back the body is")]
+		//[Range(-2, 2)]
+		//public float NeckFwdAnchor = 0;
+
+		////[Range(-2, 2)]
+		public float NeckVerticalAnchor
+		{
+			get { return BodyDimensions.NeckSize; }
+		}
+
+		////[Header("How far fwd or back the body is")]
+		////[Range(-2, 2)]
+		public float NeckFwdAnchor
+		{
+			get { return BodyDimensions.ForwardAmount; }
+		}
 
 		[Header("Weight of the HMD's pose in hybrid modes")]
 		[Range(0, 3)]
@@ -91,6 +96,8 @@ namespace Hardlight.SDK
 			}
 		}
 
+		public Vector3 PoseEulerOffset;
+
 		/// <summary>
 		/// The internal control of updateRate
 		/// This could be temporarily increased/decreased based on context.
@@ -104,6 +111,8 @@ namespace Hardlight.SDK
 
 		private float UpdateDuration = .75f;
 		private float UpdateCounter = .2f;
+
+		public GameObject CollisionTorso;
 
 		public GameObject LeftShoulder;
 		public GameObject RightShoulder;
@@ -123,12 +132,37 @@ namespace Hardlight.SDK
 		[SerializeField]
 		public BodyVisualPrefabData DataModelPrefabs;
 		[SerializeField]
-		public VRBodyDimensions BodyDimensions;
+		private VRBodyDimensions _bodyDimensions;
+		public VRBodyDimensions BodyDimensions
+		{
+			get
+			{
+				if (_bodyDimensions == null)
+				{
+					_bodyDimensions = Resources.Load<VRBodyDimensions>("Default Body Dimensions");
+				}
+				if (_bodyDimensions == null)
+					_bodyDimensions = ScriptableObject.CreateInstance<VRBodyDimensions>();
+				return _bodyDimensions;
+			}
+
+			set
+			{
+				if (_bodyDimensions == null)
+				{
+					_bodyDimensions = Resources.Load<VRBodyDimensions>("Default Body Dimensions");
+				}
+				if (_bodyDimensions == null)
+					_bodyDimensions = ScriptableObject.CreateInstance<VRBodyDimensions>();
+				_bodyDimensions = value;
+			}
+		}
 
 		public GameObject ShoulderBarVisual;
 		public Vector3 ShoulderBarEulerOffset;
 
 		public bool ShouldCreateVisuals = true;
+		public bool DrawDebug = false;
 
 		/// <summary>
 		/// When this distance is exceeded, it will force an update (for teleporting/very fast motion)
@@ -378,12 +412,18 @@ namespace Hardlight.SDK
 					Vector3 avgPos = HMDPose.TorsoPosition;
 					//Debug.DrawLine(lowerBack.transform.position, avgPos, new Color(.6f, .3f, .9f));
 					Vector3 up = LowerBack.TrackerMimic.transform.up;
-					Debug.DrawLine(avgPos, avgPos + up * .25f, Color.green);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + up * .25f, Color.green);
+					}
 
 					Vector3 hmdForward = CalculateHMDForward();
 					Vector3 forward = Vector3.Cross(up, LowerBack.TrackerMimic.transform.right);
-					Debug.DrawLine(avgPos, avgPos + forward, Color.blue);
-					Debug.DrawLine(avgPos, avgPos + LowerBack.TrackerMimic.transform.right, Color.red);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + forward, Color.blue);
+						Debug.DrawLine(avgPos, avgPos + LowerBack.TrackerMimic.transform.right, Color.red);
+					}
 
 					//Set this as the target position (with the shoulder hang offset)
 					var targetPosition = HMDPose.TorsoPosition;// avgPos + up * (.25f + NeckVerticalAnchor) + forward * (.25f + NeckFwdAnchor);
@@ -410,10 +450,16 @@ namespace Hardlight.SDK
 					Vector3 avgPos = LowerBack.TrackerMimic.transform.position;
 					//Debug.DrawLine(lowerBack.transform.position, avgPos, new Color(.6f, .3f, .9f));
 					Vector3 up = LowerBack.TrackerMimic.transform.up;
-					Debug.DrawLine(avgPos, avgPos + up * .25f, Color.yellow);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + up * .25f, Color.yellow);
+					}
 
 					Vector3 forward = Vector3.Cross(up, LowerBack.TrackerMimic.transform.right);
-					Debug.DrawLine(avgPos, avgPos + forward, Color.red);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(avgPos, avgPos + forward, Color.red);
+					}
 
 					//Set this as the target position (with the shoulder hang offset)
 					var targetPosition = avgPos + up * (.25f + NeckVerticalAnchor) + forward * (.25f + NeckFwdAnchor);
@@ -428,12 +474,17 @@ namespace Hardlight.SDK
 
 		private CalculatedPose CreateHybridPose(CalculatedPose firstPose, float firstWeight, CalculatedPose secondPose, float secondWeight)
 		{
-			firstPose.Draw(Color.cyan);
-			secondPose.Draw(Color.green);
-
+			if (DrawDebug)
+			{
+				firstPose.Draw(Color.cyan);
+				secondPose.Draw(Color.green);
+			}
 			var mergedPose = new CalculatedPose(firstPose, firstWeight, secondPose, secondWeight);
 
-			mergedPose.Draw(Color.white);
+			if (DrawDebug)
+			{
+				mergedPose.Draw(Color.white);
+			}
 
 			return mergedPose;
 		}
@@ -481,9 +532,15 @@ namespace Hardlight.SDK
 
 			AssignBodyMimicPosition();
 
-			Debug.DrawLine(transform.position, TargetPose.TorsoPosition);
+			Quaternion quat = Quaternion.identity;
+			quat.eulerAngles = PoseEulerOffset;
+
+			if (DrawDebug)
+			{
+				Debug.DrawLine(transform.position, TargetPose.TorsoPosition);
+			}
 			//We adjust our transform based on where we ARE & how our pose should orient itself.
-			transform.LookAt(transform.position + TargetPose.Forward * 5, TargetPose.Up);
+			transform.LookAt(transform.position + quat * TargetPose.Forward * 5, quat * TargetPose.Up);
 		}
 
 		private void HandleSnapTeleportDistanceCheck()
@@ -644,68 +701,6 @@ namespace Hardlight.SDK
 			//And comment the exception out. This shouldn't happen, but we know how code & releases work.
 			//throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
 		}
-
-		#region Antique Arm Mimic
-		/// <summary>
-		/// This is an old technique which used a Kinematic Arm (AntiqueArmMimic)
-		/// It is largely obsolete and should be stripped from the public release
-		/// </summary>
-		/// <param name="WhichSide"></param>
-		/// <param name="Tracker"></param>
-		/// <param name="Controller"></param>
-		/// <returns></returns>
-		public AntiqueArmMimic CreateAntiqueArm(ArmSide WhichSide, VRObjectMimic Tracker, VRObjectMimic Controller)
-		{
-			//Create an Arm Prefab
-			AntiqueArmMimic newArm = GameObject.Instantiate<GameObject>(Resources.Load<GameObject>("Arm Mimic Prefab")).GetComponent<AntiqueArmMimic>();
-
-			newArm.transform.SetParent(transform);
-
-			//Initialize the arm prefab (handing in the side and connector points)
-			newArm.Initialize(WhichSide, GetShoulder(WhichSide), Tracker, Controller);
-
-			//Keep track of this as our Left/Right arm?
-			Debug.LogError("Did not attach antique arm to body. This function is largely deprecated\n", this);
-			//AttachArmToOurBody(WhichSide, newArm);
-			return newArm;
-		}
-
-		//public void AttachArmToOurBody(ArmSide WhichSide, AntiqueArmMimic Arm)
-		//{
-		//	if (WhichSide == ArmSide.Left)
-		//	{
-		//		AntiqueLeftArm = Arm;
-		//		AntiqueLeftArm.transform.SetParent(LeftShoulder.transform);
-		//		AntiqueLeftArm.transform.localPosition = Arm.transform.right * -.5f;
-		//		AntiqueLeftArm.MirrorKeyArmElements();
-		//	}
-		//	else
-		//	{
-		//		AntiqueRightArm = Arm;
-		//		AntiqueRightArm.transform.SetParent(RightShoulder.transform);
-		//		AntiqueRightArm.transform.localPosition = Arm.transform.right * .5f;
-		//	}
-		//}
-
-
-		//public AntiqueArmMimic AccessAntiqueArm(ArmSide WhichSide)
-		//{
-		//	if (WhichSide == ArmSide.Left)
-		//	{
-		//		if (AntiqueLeftArm != null)
-		//			return AntiqueLeftArm;
-		//	}
-		//	else
-		//	{
-		//		if (AntiqueRightArm != null)
-		//			return AntiqueRightArm;
-		//	}
-		//	//If this code has reached you, you can add 
-		//	//return null;
-		//	//And comment the exception out. This shouldn't happen, but we know how code & releases work.
-		//	throw new System.Exception("Arm Requested [" + WhichSide.ToString() + "] was not added or configured according to the BodyMimic\nThis behavior will attempt an autosetup on the requested arm in the future");
-		//} 
-		#endregion
 		#endregion
 
 		#region Update Body Elements
@@ -745,12 +740,12 @@ namespace Hardlight.SDK
 			if (LowerBack != null)
 			{
 				var back = (LowerBack as AbsoluteLowerBackTracker);
-				Debug.Log("Assigned post to lower back tracker\n");
 				back.CurrentIntendedPose = TargetPose;
 			}
 
 			if (CanPositionShoulderBar())
 			{
+				PositionShoulderPoints();
 				PositionShoulderBar();
 			}
 		}
@@ -795,10 +790,24 @@ namespace Hardlight.SDK
 			LowerBack.transform.SetParent(transform);
 		}
 
+		private GameObject GetShoulderObject(ArmSide side)
+		{
+			if (side == ArmSide.Left)
+				return LeftShoulder;
+			else
+				return RightShoulder;
+
+			//If using absolute trackers
+			if (side == ArmSide.Left)
+				return AbsoluteLeftArm.ShoulderJoint;
+			else
+				return AbsoluteRightArm.ShoulderJoint;
+		}
+
 		private Vector3 CalculateShoulderCenterPosition(float distance)
 		{
-			Vector3 leftToRight = AbsoluteRightArm.ShoulderJoint.transform.position - AbsoluteLeftArm.ShoulderJoint.transform.position;
-			return AbsoluteLeftArm.ShoulderJoint.transform.position + leftToRight.normalized * distance / 2 ;
+			Vector3 leftToRight = GetShoulderObject(ArmSide.Right).transform.position - GetShoulderObject(ArmSide.Left).transform.position;
+			return GetShoulderObject(ArmSide.Left).transform.position + leftToRight.normalized * distance / 2;
 		}
 
 		/// <summary>
@@ -815,6 +824,18 @@ namespace Hardlight.SDK
 			return ShoulderBarVisual != null && ShoulderBarDataInitialized && AbsoluteLeftArm && AbsoluteRightArm;
 		}
 
+		private void PositionShoulderPoints()
+		{
+			var leftPoint = LeftShoulder.transform.localPosition;
+			var rightPoint = RightShoulder.transform.localPosition;
+
+			leftPoint.x = -BodyDimensions.ShoulderWidth;
+			rightPoint.x = BodyDimensions.ShoulderWidth;
+
+			LeftShoulder.transform.localPosition = leftPoint;
+			RightShoulder.transform.localPosition = rightPoint;
+		}
+
 		private void PositionShoulderBar()
 		{
 			Transform shoulder = ShoulderBarData.transform;
@@ -828,13 +849,16 @@ namespace Hardlight.SDK
 			stretchLocalScale.z = distance * 3.2f;
 			shoulder.localScale = stretchLocalScale;
 
-			//Debug.DrawLine(shoulder.position, shoulder.position + GetForward(), Color.black);
-			//Debug.DrawLine(shoulder.position, shoulder.position + GetUp(), Color.white);
+			if (DrawDebug)
+			{
+				Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Forward, Color.black);
+				Debug.DrawLine(shoulder.position, shoulder.position + TargetPose.Up, Color.white);
+			}
 			//Debug.DrawLine(shoulder.position, shoulder.position + GetRight(), Color.grey);
 			Vector3 upDir = TargetPose.Up;
 			//Vector3 upDir = AverageArmUp();
 
-			shoulder.LookAt(AbsoluteRightArm.ShoulderJoint.transform.position, upDir);
+			shoulder.LookAt(GetShoulderObject(ArmSide.Right).transform.position, upDir);
 		}
 
 		/// <summary>
@@ -961,10 +985,14 @@ namespace Hardlight.SDK
 		void DrawPoseGizmos(CalculatedPose pose, Color col)
 		{
 			Gizmos.color = col;
-			Gizmos.DrawSphere(pose.TorsoPosition, .01f);
-			Gizmos.DrawSphere(pose.RootPosition, .035f);
-			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Up.normalized * .25f);
-			Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Forward.normalized * .1f);
+			if (pose != null)
+			{
+				Gizmos.DrawSphere(pose.TorsoPosition, .01f);
+				Gizmos.DrawSphere(pose.RootPosition, .035f);
+				Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Up.normalized * .25f);
+				Gizmos.DrawLine(pose.RootPosition + Vector3.up * .02f, pose.RootPosition + pose.Forward.normalized * .2f + Vector3.up * .02f);
+				Gizmos.DrawLine(pose.RootPosition, pose.RootPosition + pose.Forward.normalized * .2f);
+			}
 		}
 
 		/// <summary>

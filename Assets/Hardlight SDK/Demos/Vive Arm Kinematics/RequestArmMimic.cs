@@ -35,21 +35,12 @@ namespace Hardlight.SDK
 					mimic.Init(Tracker);
 				}
 
-				if (UseNewArmCreation)
-				{
-					var newArm = VRMimic.Instance.ActiveBodyMimic.CreateArm(MySide, mimic, controllerMimic, prefabsToUse);
-					Debug.Log("Created new IArm.\n\t[Click to select it]", newArm);
-				}
-				else
-				{
-					var newArm = VRMimic.Instance.ActiveBodyMimic.CreateAntiqueArm(MySide, mimic, controllerMimic);
-					Debug.Log("Created new arm.\n\t[Click to select it]", newArm);
-				}
+				var newArm = VRMimic.Instance.ActiveBodyMimic.CreateArm(MySide, mimic, controllerMimic, prefabsToUse);
+				Debug.Log("Created new IArm.\n\t[Click to select it]", newArm);
 
 				return mimic;
 			}
 			return null;
 		}
-
 	}
 }

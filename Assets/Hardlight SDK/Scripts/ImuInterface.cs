@@ -14,7 +14,7 @@ namespace Hardlight.SDK.Tracking
 	using System;
 	using Quaternion = UnityEngine.Quaternion;
 
-	public enum Imu { Chest, Left_Forearm, Left_Upper_Arm, Right_Forearm, Right_Upper_Arm };
+	public enum Imu { Chest, Left_Upper_Arm, Right_Upper_Arm };
 
 	/// <summary>
 	/// If you implement this interface and add your calibration script to the HardlightManager prefab object, 

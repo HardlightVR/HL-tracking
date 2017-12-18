@@ -157,7 +157,8 @@ namespace Hardlight.SDK
 		{
 			if (_plugin != null)
 			{
-				return _plugin.PollTracking();
+				var update = _plugin.PollTracking();
+				return update;
 			}
 			return new TrackingUpdate();
 		}

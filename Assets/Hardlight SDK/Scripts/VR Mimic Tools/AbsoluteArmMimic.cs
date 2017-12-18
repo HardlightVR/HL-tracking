@@ -33,6 +33,10 @@ namespace Hardlight.SDK
 		public float PercentagePlacement = .5f;
 		[Range(0, 4)]
 		public float ArmScale = .5f;
+		public float UpperArmScale
+		{
+			get { return VRMimic.Instance.ActiveBodyMimic.BodyDimensions.VerticalShoulderOffset; }
+		}
 
 		[Header("Modified each Update")]
 		public Vector3 elbowToWrist = Vector3.zero;
@@ -54,6 +58,7 @@ namespace Hardlight.SDK
 
 		public Vector3 shoulderOffsetAmount = new Vector3(0, -.2f, 0);
 		public Vector3 ControllerOffsetAmount = new Vector3(0, 0, -.122f);
+		public bool DrawDebug = false;
 
 		public override void Setup(ArmSide WhichSide, GameObject ShoulderMountConnector, VRObjectMimic Tracker, VRObjectMimic Controller)
 		{
@@ -229,8 +234,12 @@ namespace Hardlight.SDK
 				}
 				else
 				{
-					Debug.DrawLine(ShoulderMount.transform.position, ShoulderMount.transform.position + Vector3.up * .1f, Color.cyan, .15f);
-					UpperArmData.transform.position = ShoulderMount.transform.position + TrackerMount.transform.rotation * (Vector3.up * ArmScale / 2);
+					if (DrawDebug)
+					{
+						Debug.DrawLine(ShoulderMount.transform.position, ShoulderMount.transform.position + Vector3.up * .1f, Color.cyan, .15f);
+					}
+
+					UpperArmData.transform.position = ShoulderMount.transform.position + TrackerMount.transform.rotation * (Vector3.up * UpperArmScale / 2);
 				}
 				if (TrackerMount.Options.MimicRotation)
 				{
