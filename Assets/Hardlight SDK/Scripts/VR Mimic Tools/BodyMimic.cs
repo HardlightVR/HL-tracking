@@ -138,12 +138,20 @@ namespace Hardlight.SDK
 			get
 			{
 				if (_bodyDimensions == null)
+				{
+					_bodyDimensions = Resources.Load<VRBodyDimensions>("Default Body Dimensions");
+				}
+				if (_bodyDimensions == null)
 					_bodyDimensions = ScriptableObject.CreateInstance<VRBodyDimensions>();
 				return _bodyDimensions;
 			}
 
 			set
 			{
+				if (_bodyDimensions == null)
+				{
+					_bodyDimensions = Resources.Load<VRBodyDimensions>("Default Body Dimensions");
+				}
 				if (_bodyDimensions == null)
 					_bodyDimensions = ScriptableObject.CreateInstance<VRBodyDimensions>();
 				_bodyDimensions = value;

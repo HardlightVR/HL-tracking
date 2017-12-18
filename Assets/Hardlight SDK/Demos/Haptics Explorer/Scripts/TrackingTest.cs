@@ -41,6 +41,7 @@ namespace Hardlight.SDK.Tracking
 		public Vector3 Offset = new Vector3(-270, 0, 90);
 
 		public float BaseZOffsetAmount = 90;
+		[SerializeField]
 		private float additionalZOffsetAmount = 40;
 
 		public float AdditionalZOffsetAmount

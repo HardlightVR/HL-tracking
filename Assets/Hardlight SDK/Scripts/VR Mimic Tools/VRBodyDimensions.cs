@@ -6,39 +6,50 @@ public class VRBodyDimensions : ScriptableObject
 {
 	public bool UpdateEveryFrame;
 	[Header("Head Offset")]
+	[SerializeField]
 	[Range(-2, 2)]
-	public float NeckSize = .1f;
+	private float neckSize = .1f;
+	[SerializeField]
 	[Range(-2, 2)]
-	public float ForwardAmount = -.4f;
+	private float forwardAmount = -.4f;
 
 	[Header("Arm Dimensions")]
+	[SerializeField]
 	[Range(.2f, .65f)]
-	public float ShoulderWidth = .25f;
+	private float shoulderWidth = .25f;
 	//[Range(.1f, 1.5f)]
 	//public float UpperArmLength = .45f;
 
+	[SerializeField]
 	[Range(.1f, .8f)]
-	public float TorsoHeight = .4f;
+	private float torsoHeight = .4f;
 
 	[Header("Arm Shoulder Vertical Offset")]
+	[SerializeField]
 	[Range(.2f, .75f)]
-	public float VerticalShoulderOffset = .5f;
+	private float verticalShoulderOffset = .5f;
 
 	[Header("Upper Torso Dimensions")]
+	[SerializeField]
 	[Range(.1f, .75f)]
-	public float UpperTorsoWidth = .35f;
+	private float upperTorsoWidth = .35f;
+	[SerializeField]
 	[Range(.1f, .75f)]
-	public float UpperTorsoHeight = .4f;
+	private float upperTorsoHeight = .4f;
+	[SerializeField]
 	[Range(.05f, 1f)]
-	public float UpperTorsoDepth = .15f;
+	private float upperTorsoDepth = .15f;
 
 	[Header("Lower Torso Dimensions")]
+	[SerializeField]
 	[Range(.1f, .5f)]
-	public float LowerTorsoWidth = .3f;
+	private float lowerTorsoWidth = .3f;
+	[SerializeField]
 	[Range(.1f, .5f)]
-	public float LowerTorsoHeight = .3f;
+	private float lowerTorsoHeight = .3f;
+	[SerializeField]
 	[Range(.05f, 1f)]
-	public float LowerTorsoDepth = .1f;
+	private float lowerTorsoDepth = .1f;
 
 	public Vector3 UpperTorsoDimensions
 	{
@@ -52,6 +63,144 @@ public class VRBodyDimensions : ScriptableObject
 		get
 		{
 			return new Vector3(LowerTorsoWidth, LowerTorsoDepth, LowerTorsoHeight);
+		}
+	}
+
+	public float NeckSize
+	{
+		get
+		{
+			return neckSize;
+		}
+
+		set
+		{
+			neckSize = value;
+		}
+	}
+
+	public float ForwardAmount
+	{
+		get
+		{
+			return forwardAmount;
+		}
+
+		set
+		{
+			forwardAmount = value;
+		}
+	}
+
+	public float ShoulderWidth
+	{
+		get
+		{
+			return shoulderWidth;
+		}
+
+		set
+		{
+			shoulderWidth = value;
+		}
+	}
+	public float TorsoHeight
+	{
+		get
+		{
+			return torsoHeight;
+		}
+
+		set
+		{
+			torsoHeight = value;
+		}
+	}
+
+	public float VerticalShoulderOffset
+	{
+		get
+		{
+			return verticalShoulderOffset;
+		}
+
+		set
+		{
+			verticalShoulderOffset = value;
+		}
+	}
+
+	public float UpperTorsoDepth
+	{
+		get
+		{
+			return upperTorsoDepth;
+		}
+
+		set
+		{
+			upperTorsoDepth = value;
+		}
+	}
+	public float UpperTorsoHeight
+	{
+		get
+		{
+			return upperTorsoHeight;
+		}
+
+		set
+		{
+			upperTorsoHeight = value;
+		}
+	}
+	public float UpperTorsoWidth
+	{
+		get
+		{
+			return upperTorsoWidth;
+		}
+
+		set
+		{
+			upperTorsoWidth = value;
+		}
+	}
+
+	public float LowerTorsoDepth
+	{
+		get
+		{
+			return lowerTorsoDepth;
+		}
+
+		set
+		{
+			lowerTorsoDepth = value;
+		}
+	}
+	public float LowerTorsoHeight
+	{
+		get
+		{
+			return lowerTorsoHeight;
+		}
+
+		set
+		{
+			lowerTorsoHeight = value;
+		}
+	}
+	public float LowerTorsoWidth
+	{
+		get
+		{
+			return lowerTorsoWidth;
+		}
+
+		set
+		{
+			lowerTorsoWidth = value;
 		}
 	}
 }
