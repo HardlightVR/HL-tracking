@@ -40,20 +40,44 @@ namespace Hardlight.SDK.Tracking
 
 		public Vector3 Offset = new Vector3(-270, 0, 90);
 
-		public float BaseZOffsetAmount = 90;
+		private float BaseZOffsetAmount = 90;
+		[Header("Hardlight SDK\\Resources\\Saved Tracking Calibration")]
 		[SerializeField]
-		private float additionalZOffsetAmount = 40;
-
-		public float AdditionalZOffsetAmount
+		private SavedTrackingCalibration _trackingCalibration;
+		public SavedTrackingCalibration Calibration
 		{
 			get
 			{
-				return additionalZOffsetAmount;
+				if (_trackingCalibration == null)
+				{
+					_trackingCalibration = Resources.Load<SavedTrackingCalibration>("Saved Tracking Calibration");
+				}
+				if (_trackingCalibration == null)
+					_trackingCalibration = ScriptableObject.CreateInstance<SavedTrackingCalibration>();
+				return _trackingCalibration;
 			}
 
 			set
 			{
-				additionalZOffsetAmount = value;
+				if (_trackingCalibration == null)
+				{
+					_trackingCalibration = Resources.Load<SavedTrackingCalibration>("Saved Tracking Calibration");
+				}
+				if (_trackingCalibration == null)
+					_trackingCalibration = ScriptableObject.CreateInstance<SavedTrackingCalibration>();
+				_trackingCalibration = value;
+			}
+		}
+		public float AdditionalZOffsetAmount
+		{
+			get
+			{
+				return Calibration.Heading;
+			}
+
+			set
+			{
+				Calibration.Heading = value;
 			}
 		}
 

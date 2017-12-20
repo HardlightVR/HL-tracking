@@ -14,12 +14,12 @@ MonoBehaviour:
   UpdateEveryFrame: 0
   neckSize: 0.1
   forwardAmount: -0.4
-  ShoulderWidth: 0.25
-  TorsoHeight: 0.4
-  VerticalShoulderOffset: 0.5
-  UpperTorsoWidth: 0.4
-  UpperTorsoHeight: 0.4
-  UpperTorsoDepth: 0.15
-  LowerTorsoWidth: 0.5
-  LowerTorsoHeight: 0.3
-  LowerTorsoDepth: 0.089
+  shoulderWidth: 0.25
+  torsoHeight: 0.4
+  verticalShoulderOffset: 0.4
+  upperTorsoWidth: 0.35
+  upperTorsoHeight: 0.4
+  upperTorsoDepth: 0.15
+  lowerTorsoWidth: 0.3
+  lowerTorsoHeight: 0.3
+  lowerTorsoDepth: 0.1

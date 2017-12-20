@@ -40,10 +40,10 @@ namespace Hardlight.SDK.Demos
 				if (samples.ContainsKey(SuitObjects[i].regionID))
 				{
 					float val = (samples[SuitObjects[i].regionID].Strength) / 1000.0f;
-					Color color = GetColorByFamily(samples[SuitObjects[i].regionID].Family);
-					Color currentColor = GetObjectCurrentColor(SuitObjects[i].gameObject);
-					//Debug.Log(samples[SuitObjects[i].regionID].Strength + "\n" + Color.Lerp(color, playingColor, val) + "   " + val, this);
-					ColorSuitObject(SuitObjects[i], Color.Lerp(currentColor, Color.Lerp(color, playingColor, val), .85f), .1f, .15f);
+					//Color color = GetColorByFamily(samples[SuitObjects[i].regionID].Family);
+					//Color currentColor = GetObjectCurrentColor(SuitObjects[i].gameObject);
+					////Debug.Log(samples[SuitObjects[i].regionID].Strength + "\n" + Color.Lerp(color, playingColor, val) + "   " + val, this);
+					//ColorSuitObject(SuitObjects[i], Color.Lerp(currentColor, Color.Lerp(color, playingColor, val), .85f), .1f, .15f);
 				}
 			}
 		}

@@ -9,6 +9,7 @@ namespace Hardlight.SDK
 		public GameObject UpperArmVisual;
 		public GameObject Elbow;
 		private Transform child;
+		public float upperArmLength = 0.109f;
 		public Vector3 TrackerEulerOffset = new Vector3(0,0,0);
 		public Vector3 rotatedOffset = new Vector3(0, 0f, -.05f);
 		public Vector3 globalOffset = new Vector3(0, 0f, -.05f);
@@ -26,6 +27,7 @@ namespace Hardlight.SDK
 		{
 			if (child)
 			{
+				Elbow.transform.localPosition = Vector3.up * upperArmLength;
 				Quaternion euler = Quaternion.identity;
 				euler.eulerAngles = TrackerEulerOffset;
 
