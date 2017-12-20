@@ -6,7 +6,7 @@ namespace Hardlight.SDK.Tracking
 	public class SuitAbsoluteComparer : MonoBehaviour
 	{
 		public RequestTracker ArmSetup;
-		public TrackingTest suitObjSetup;
+		public HardlightTracking suitObjSetup;
 		public FrameEvaluator representation;
 		public float aboveAmt = .6f;
 

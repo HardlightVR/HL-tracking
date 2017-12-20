@@ -120,7 +120,6 @@ namespace Hardlight.SDK
 		private bool _isTrackingCoroutineRunning = false;
 		private bool _isFrozen = false;
 
-		private IImuCalibrator _imuCalibrator;
 		private IEnumerator _trackingUpdateLoop;
 		private IEnumerator _ServiceConnectionStatusLoop;
 		private IEnumerator _DeviceConnectionStatusLoop;
@@ -195,15 +194,6 @@ namespace Hardlight.SDK
 
 		}
 
-		/// <summary>
-		/// Tell the manager to use a different IMU calibrator
-		/// </summary>
-		/// <param name="calibrator">A custom calibrator which will receive raw orientation data from the suit and calibrate it for your game. Create a class that implements IImuCalibrator and pass it to this method to receive data.</param>
-		public void SetImuCalibrator(IImuCalibrator calibrator)
-		{
-			((CalibratorWrapper)_imuCalibrator).SetCalibrator(calibrator);
-		}
-
 		private DeviceConnectionStatus ChangeDeviceConnectionStatus(DeviceConnectionStatus newStatus)
 		{
 			if (newStatus == DeviceConnectionStatus.Connected)
@@ -246,8 +236,6 @@ namespace Hardlight.SDK
 			_trackingUpdateLoop = UpdateTracking();
 			_ServiceConnectionStatusLoop = CheckServiceConnection();
 			_DeviceConnectionStatusLoop = CheckHardlightSuitConnection();
-
-			_imuCalibrator = new CalibratorWrapper(new MockImuCalibrator());
 
 			InitPluginIfNull();
 		}
@@ -453,15 +441,5 @@ namespace Hardlight.SDK
 			ClearAllEffects();
 			System.Threading.Thread.Sleep(100);
 		}
-
-		/// <summary>
-		/// Retrieve the current IMU calibration utility
-		/// </summary>
-		/// <returns></returns>
-		public IImuCalibrator GetImuCalibrator()
-		{
-			return _imuCalibrator;
-		}
-
 	}
 }

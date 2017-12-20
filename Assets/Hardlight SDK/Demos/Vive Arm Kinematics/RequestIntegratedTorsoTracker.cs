@@ -12,7 +12,7 @@ namespace Hardlight.SDK.Tracking
 		[SerializeField]
 		private bool TrackerIsValid = false;
 		[SerializeField]
-		private TrackingTest imuTracker;
+		private HardlightTracking imuTracker;
 
 		protected override VRObjectMimic RequestTrackerMimic()
 		{
@@ -20,14 +20,14 @@ namespace Hardlight.SDK.Tracking
 			{
 				if (!TrackerIsValid && imuTracker == null)
 				{
-					imuTracker = Tracker.GetComponent<TrackingTest>();
+					imuTracker = Tracker.GetComponent<HardlightTracking>();
 					if (imuTracker)
 					{
 						TrackerIsValid = true;
 					}
 					else
 					{
-						Debug.LogError("Attempted to get an IMU tracker script [" + typeof(TrackingTest).ToString() + "] from " + Tracker + " but it did not have the necessary script.\n");
+						Debug.LogError("Attempted to get an IMU tracker script [" + typeof(HardlightTracking).ToString() + "] from " + Tracker + " but it did not have the necessary script.\n");
 					}
 				}
 			}

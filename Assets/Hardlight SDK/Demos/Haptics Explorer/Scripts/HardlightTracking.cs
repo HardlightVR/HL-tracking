@@ -12,10 +12,8 @@ using System;
 
 namespace Hardlight.SDK.Tracking
 {
-	public class TrackingTest : MonoBehaviour
+	public class HardlightTracking : MonoBehaviour
 	{
-		public static int NORTHOFFSET = 40;
-		private IImuCalibrator imus;
 		public GameObject TrackedRepresentation;
 		public GameObject ParentObject;
 		public Imu whichIMU = Imu.Chest;
@@ -84,9 +82,7 @@ namespace Hardlight.SDK.Tracking
 		void Start()
 		{
 			BaseZOffsetAmount = Offset.z;
-			imus = GetComponent<DefaultImuCalibrator>();
-			HardlightManager.Instance.SetImuCalibrator(GetComponent<DefaultImuCalibrator>());
-
+			
 			if (ParentObject != null)
 			{
 				ParentObject.SetActive(!DisableObject);
@@ -121,26 +117,21 @@ namespace Hardlight.SDK.Tracking
 				Offset.z = BaseZOffsetAmount + AdditionalZOffsetAmount;
 
 				var tracking = HardlightManager.Instance.PollTracking();
-				//Debug.Log(tracking.Chest + "\n" + imus.GetType().ToString());
 				Quaternion assign = Quaternion.identity;
 
 				if (whichIMU == Imu.Chest)
 				{
 					assign = tracking.Chest;
-					//DrawTrackingUpdate(assign, tracking.ChestNorth, tracking.ChestUp);
 				}
 				else if (whichIMU == Imu.Left_Upper_Arm)
 				{
 					assign = tracking.LeftUpperArm;
-					//Debug.Log("Left Upper Arm: " + tracking.LeftUpperArm
 				}
 				else if (whichIMU == Imu.Right_Upper_Arm)
 				{
 					assign = tracking.RightUpperArm;
 				}
 				VisibleIdentity = assign != Quaternion.identity;
-
-				//Debug.Log(whichIMU + "     " + assign + "\n");
 
 				assign.y = -assign.y;
 
@@ -234,11 +225,9 @@ namespace Hardlight.SDK.Tracking
 			Debug.DrawLine(pos, pos + fwd, Color.blue);
 			Debug.DrawLine(pos, pos + rght, Color.red);
 
-
 			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdUp, Color.green);
 			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdFwd, Color.blue);
 			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdRght, Color.red);
-
 		}
 
 		private void DrawTrackingUpdate(Quaternion assign, Vector3 north, Vector3 imuUp)
