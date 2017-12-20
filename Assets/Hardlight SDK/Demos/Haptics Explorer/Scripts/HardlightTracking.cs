@@ -142,9 +142,9 @@ namespace Hardlight.SDK.Tracking
 				Vector3 fwd = assign * Vector3.forward * .1f;
 				Vector3 rght = assign * Vector3.right * .1f;
 				Vector3 pos = TrackedRepresentation.transform.position + Vector3.up * .1f;
-				Debug.DrawLine(pos, pos + up, Color.green);
-				Debug.DrawLine(pos, pos + fwd, Color.blue);
-				Debug.DrawLine(pos, pos + rght, Color.red);
+				//Debug.DrawLine(pos, pos + up, Color.green);
+				//Debug.DrawLine(pos, pos + fwd, Color.blue);
+				//Debug.DrawLine(pos, pos + rght, Color.red);
 
 				float angle = 0;
 				Vector3 axis = Vector3.zero;
@@ -186,7 +186,7 @@ namespace Hardlight.SDK.Tracking
 
 				postChiralOffsetQuat.ToAngleAxis(out angle, out axis);
 				infoDetails += "Offset Axis: " + axis + "  -  " + angle + "   -    " + postChiralOffsetQuat + "\n\n";
-				Debug.DrawLine(pos - axis * .1f, pos + axis * .1f, Color.black);
+				//Debug.DrawLine(pos - axis * .1f, pos + axis * .1f, Color.black);
 
 				//=============================================
 				var FinalizedQuat = postChiralOffsetQuat * assign;
@@ -221,13 +221,13 @@ namespace Hardlight.SDK.Tracking
 			Vector3 hmdFwd = VRMimic.Instance.VRCamera.transform.forward.normalized * .1f;
 			Vector3 hmdRght = VRMimic.Instance.VRCamera.transform.right.normalized * .1f;
 
-			Debug.DrawLine(pos, pos + up, Color.green);
-			Debug.DrawLine(pos, pos + fwd, Color.blue);
-			Debug.DrawLine(pos, pos + rght, Color.red);
+			//Debug.DrawLine(pos, pos + up, Color.green);
+			//Debug.DrawLine(pos, pos + fwd, Color.blue);
+			//Debug.DrawLine(pos, pos + rght, Color.red);
 
-			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdUp, Color.green);
-			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdFwd, Color.blue);
-			Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdRght, Color.red);
+			//Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdUp, Color.green);
+			//Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdFwd, Color.blue);
+			//Debug.DrawLine(hmdDrawPos, hmdDrawPos + hmdRght, Color.red);
 		}
 
 		private void DrawTrackingUpdate(Quaternion assign, Vector3 north, Vector3 imuUp)
@@ -247,10 +247,10 @@ namespace Hardlight.SDK.Tracking
 			//Debug.DrawLine(up * 4, up * 4 + assign * chestRight.normalized, Color.yellow);
 			//Debug.DrawLine(up * 4, up * 4 + Quaternion.Inverse(assign) * chestRight.normalized, Color.grey);
 
-			Debug.Log("Chest North: " + north.normalized + "  Red \t\tMagenta: " + assign * north.normalized +
-				"\n\t\tBlack: " + (Quaternion.Inverse(assign) * north.normalized).normalized);
-			Debug.Log("Chest Up:    " + imuUp.normalized + "  Green \t\tCyan:    " + assign * imuUp.normalized +
-				"\n\t\tWhite: " + (Quaternion.Inverse(assign) * imuUp.normalized).normalized);
+			//Debug.Log("Chest North: " + north.normalized + "  Red \t\tMagenta: " + assign * north.normalized +
+			//	"\n\t\tBlack: " + (Quaternion.Inverse(assign) * north.normalized).normalized);
+			//Debug.Log("Chest Up:    " + imuUp.normalized + "  Green \t\tCyan:    " + assign * imuUp.normalized +
+			//	"\n\t\tWhite: " + (Quaternion.Inverse(assign) * imuUp.normalized).normalized);
 			#endregion
 		}
 
