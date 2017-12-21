@@ -2,12 +2,23 @@
 using System.Collections;
 using System;
 
-namespace Hardlight.SDK
+//Contents of this namespace are subject to change
+namespace Hardlight.SDK.Experimental
 {
+	/// <summary>
+	/// This enum will grow to encompass the IMU arm modes as our internal development & tests move forward.
+	/// </summary>
 	public enum ArmKinematicMode { ControllerOnly, ViveUpperArms, ArmsDisabled, ImuUpperArms }
 
+	/// <summary>
+	/// Unfortunately, we aren't leaving the door open to support more than two arms.
+	/// There is some really cool research on the concept of phantom limbs (which are controlled by input from both arms).
+	/// </summary>
 	public enum ArmSide { Right, Left }
 
+	/// <summary>
+	/// A basic approach to how to handle the arm mimic behaviors
+	/// </summary>
 	public interface IArmMimic
 	{
 		//Shoulder Mount position
@@ -68,6 +79,9 @@ namespace Hardlight.SDK
 		void Setup(ArmSide WhichSide, GameObject ShoulderMountConnector, VRObjectMimic Tracker, VRObjectMimic Controller);
 	}
 
+	/// <summary>
+	/// Following the Interface-Abstract-UseCase approach allows for defaulted behavior while still achieving interface required implementations.
+	/// </summary>
 	public abstract class AbstractArmMimic : MonoBehaviour, IArmMimic
 	{
 		public virtual ArmKinematicMode ArmMode

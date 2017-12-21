@@ -2,8 +2,13 @@
 using System.Collections;
 using System;
 
-namespace Hardlight.SDK
+//Contents of this namespace are subject to change
+namespace Hardlight.SDK.Experimental
 {
+	/// <summary>
+	/// Basically a 2 ball-bearing & shoulder bar visual.
+	/// I want to generalize this for further tracking development
+	/// </summary>
 	public class ShoulderVisual : MonoBehaviour
 	{
 		public GameObject ShoulderBarRepresentation;
@@ -11,7 +16,6 @@ namespace Hardlight.SDK
 		bool initialized = false;
 		public AbsoluteArmMimic LeftArm;
 		public AbsoluteArmMimic RightArm;
-
 
 		public void Setup(AbsoluteArmMimic lArm, AbsoluteArmMimic rArm)
 		{

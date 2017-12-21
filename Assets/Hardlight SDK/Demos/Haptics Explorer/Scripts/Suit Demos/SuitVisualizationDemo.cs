@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Hardlight.SDK.Demos
 {
-	public class SuitEmulationDemo : SuitDemo
+	public class SuitVisualizationDemo : SuitDemo
 	{
 		public Color notPlayingColor = new Color(227 / 255f, 227 / 255f, 227 / 255f, 1f);
 		public Color playingColor = new Color(227 / 255f, 227 / 255f, 227 / 255f, 1f);
@@ -34,21 +34,25 @@ namespace Hardlight.SDK.Demos
 			//Our initial emulation techniques 
 			var samples = HardlightManager.Instance.SamplePlayingStatus();
 
+			//foreach (var sample in samples)
+			//{
+			//	if(sample.Key
+			//}
+
 			for (int i = 0; i < SuitObjects.Count; i++)
 			{
-				//Debug.Log(thing.Count);
 				if (samples.ContainsKey(SuitObjects[i].regionID))
 				{
 					float val = (samples[SuitObjects[i].regionID].Strength) / 1000.0f;
-					//Color color = GetColorByFamily(samples[SuitObjects[i].regionID].Family);
-					//Color currentColor = GetObjectCurrentColor(SuitObjects[i].gameObject);
-					////Debug.Log(samples[SuitObjects[i].regionID].Strength + "\n" + Color.Lerp(color, playingColor, val) + "   " + val, this);
-					//ColorSuitObject(SuitObjects[i], Color.Lerp(currentColor, Color.Lerp(color, playingColor, val), .85f), .1f, .15f);
+					Color color = GetColorByFamily(samples[SuitObjects[i].regionID].Family);
+					Color currentColor = GetObjectCurrentColor(SuitObjects[i].gameObject);
+					//Debug.Log(samples[SuitObjects[i].regionID].Strength + "\n" + Color.Lerp(color, playingColor, val) + "   " + val, this);
+					ColorSuitObject(SuitObjects[i], Color.Lerp(currentColor, Color.Lerp(color, playingColor, val), .85f), .1f, .15f);
 				}
 			}
 		}
 
-		private Color GetColorByFamily(uint family)
+		private Color GetColorByFamily(int family)
 		{
 			if ((Effect)family == Effect.Click)
 			{
@@ -86,7 +90,7 @@ namespace Hardlight.SDK.Demos
 			{
 				return Color.yellow;
 			}
-			return Color.white;
+			return notPlayingColor;
 		}
 
 		public override void OnSuitClicked(HardlightCollider clicked, RaycastHit hit)

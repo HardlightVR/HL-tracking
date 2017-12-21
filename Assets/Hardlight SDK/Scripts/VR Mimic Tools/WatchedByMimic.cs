@@ -3,6 +3,11 @@ using System.Collections;
 
 namespace Hardlight.SDK
 {
+	/// <summary>
+	/// This component is attached to objects that are registered with the VRMimic systems.
+	/// Each VRObjectMimic has a WatchedByMimic. Both of these components know of the other.
+	/// Useful for avoid duplicate copycats.
+	/// </summary>
 	public class WatchedByMimic : MonoBehaviour
 	{
 		[SerializeField]

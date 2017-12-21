@@ -1,8 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Hardlight.SDK
+//Contents of this namespace are subject to change
+namespace Hardlight.SDK.Experimental
 {
+	/// <summary>
+	/// A class similar to ForearmMimic. Used for offsetting the upper arm from its tied tracker.
+	/// Keeps track of its visual (even though it is created/assigned outside of this class)
+	/// This behavior will be generalized later.
+	/// </summary>
 	public class UpperArmMimic : MonoBehaviour
 	{
 		public GameObject UpperArmBody;
@@ -31,7 +37,6 @@ namespace Hardlight.SDK
 				Quaternion euler = Quaternion.identity;
 				euler.eulerAngles = TrackerEulerOffset;
 
-				Quaternion rot = transform.rotation;
 				var newOffset = euler * rotatedOffset;
 				
 				//Incorporate our ability to offset based on euler angles.

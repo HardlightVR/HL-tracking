@@ -1,206 +1,217 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[CreateAssetMenu(menuName = "Hardlight/VR Body Dimension")]
-public class VRBodyDimensions : ScriptableObject
+//Contents of this namespace are subject to change
+namespace Hardlight.SDK.Experimental
 {
-	public bool UpdateEveryFrame;
-	[Header("Head Offset")]
-	[SerializeField]
-	[Range(-2, 2)]
-	private float neckSize = .1f;
-	[SerializeField]
-	[Range(-2, 2)]
-	private float forwardAmount = -.4f;
-
-	[Header("Arm Dimensions")]
-	[SerializeField]
-	[Range(.2f, .65f)]
-	private float shoulderWidth = .25f;
-	//[Range(.1f, 1.5f)]
-	//public float UpperArmLength = .45f;
-
-	[SerializeField]
-	[Range(.1f, .8f)]
-	private float torsoHeight = .4f;
-
-	[Header("Arm Shoulder Vertical Offset")]
-	[SerializeField]
-	[Range(.2f, .75f)]
-	private float verticalShoulderOffset = .5f;
-
-	[Header("Upper Torso Dimensions")]
-	[SerializeField]
-	[Range(.1f, .75f)]
-	private float upperTorsoWidth = .35f;
-	[SerializeField]
-	[Range(.1f, .75f)]
-	private float upperTorsoHeight = .4f;
-	[SerializeField]
-	[Range(.05f, 1f)]
-	private float upperTorsoDepth = .15f;
-
-	[Header("Lower Torso Dimensions")]
-	[SerializeField]
-	[Range(.1f, .5f)]
-	private float lowerTorsoWidth = .3f;
-	[SerializeField]
-	[Range(.1f, .5f)]
-	private float lowerTorsoHeight = .3f;
-	[SerializeField]
-	[Range(.05f, 1f)]
-	private float lowerTorsoDepth = .1f;
-
-	public Vector3 UpperTorsoDimensions
+	/// <summary>
+	/// A stub class for future functionality (where the service keeps track of the user dimensions and SDK plugins can query for the dimensions of the current player.
+	/// The in-game body then configures based on these dimensions adjusting the character accordingly.
+	/// </summary>
+	[CreateAssetMenu(menuName = "Hardlight/VR/Body Dimension Data")]
+	public class VRBodyDimensions : ScriptableObject
 	{
-		get
-		{
-			return new Vector3(UpperTorsoWidth, UpperTorsoDepth, UpperTorsoHeight);
-		}
-	}
-	public Vector3 LowerTorsoDimensions
-	{
-		get
-		{
-			return new Vector3(LowerTorsoWidth, LowerTorsoDepth, LowerTorsoHeight);
-		}
-	}
+		public bool UpdateEveryFrame;
+		/// <summary>
+		/// The vertical height of the neck, similar to ForwardAmount (which we use to hang the rest of the non-softbody torso)
+		/// </summary>
+		[Header("Head Offset")]
+		[SerializeField]
+		[Range(-2, 2)]
+		private float neckSize = .1f;
+		[SerializeField]
+		[Range(-2, 2)]
+		private float forwardAmount = -.4f;
 
-	public float NeckSize
-	{
-		get
-		{
-			return neckSize;
-		}
+		[Header("Arm Dimensions")]
+		[SerializeField]
+		[Range(.2f, .65f)]
+		private float shoulderWidth = .25f;
+		//[Range(.1f, 1.5f)]
+		//public float UpperArmLength = .45f;
 
-		set
-		{
-			neckSize = value;
-		}
-	}
+		[SerializeField]
+		[Range(.1f, .8f)]
+		private float torsoHeight = .4f;
 
-	public float ForwardAmount
-	{
-		get
-		{
-			return forwardAmount;
-		}
+		[Header("Arm Shoulder Vertical Offset")]
+		[SerializeField]
+		[Range(.2f, .75f)]
+		private float verticalShoulderOffset = .5f;
 
-		set
-		{
-			forwardAmount = value;
-		}
-	}
+		[Header("Upper Torso Dimensions")]
+		[SerializeField]
+		[Range(.1f, .75f)]
+		private float upperTorsoWidth = .35f;
+		[SerializeField]
+		[Range(.1f, .75f)]
+		private float upperTorsoHeight = .4f;
+		[SerializeField]
+		[Range(.05f, 1f)]
+		private float upperTorsoDepth = .15f;
 
-	public float ShoulderWidth
-	{
-		get
-		{
-			return shoulderWidth;
-		}
+		[Header("Lower Torso Dimensions")]
+		[SerializeField]
+		[Range(.1f, .5f)]
+		private float lowerTorsoWidth = .3f;
+		[SerializeField]
+		[Range(.1f, .5f)]
+		private float lowerTorsoHeight = .3f;
+		[SerializeField]
+		[Range(.05f, 1f)]
+		private float lowerTorsoDepth = .1f;
 
-		set
+		public Vector3 UpperTorsoDimensions
 		{
-			shoulderWidth = value;
+			get
+			{
+				return new Vector3(UpperTorsoWidth, UpperTorsoDepth, UpperTorsoHeight);
+			}
 		}
-	}
-	public float TorsoHeight
-	{
-		get
+		public Vector3 LowerTorsoDimensions
 		{
-			return torsoHeight;
-		}
-
-		set
-		{
-			torsoHeight = value;
-		}
-	}
-
-	public float VerticalShoulderOffset
-	{
-		get
-		{
-			return verticalShoulderOffset;
+			get
+			{
+				return new Vector3(LowerTorsoWidth, LowerTorsoDepth, LowerTorsoHeight);
+			}
 		}
 
-		set
+		public float NeckSize
 		{
-			verticalShoulderOffset = value;
-		}
-	}
+			get
+			{
+				return neckSize;
+			}
 
-	public float UpperTorsoDepth
-	{
-		get
-		{
-			return upperTorsoDepth;
-		}
-
-		set
-		{
-			upperTorsoDepth = value;
-		}
-	}
-	public float UpperTorsoHeight
-	{
-		get
-		{
-			return upperTorsoHeight;
+			set
+			{
+				neckSize = value;
+			}
 		}
 
-		set
+		public float ForwardAmount
 		{
-			upperTorsoHeight = value;
-		}
-	}
-	public float UpperTorsoWidth
-	{
-		get
-		{
-			return upperTorsoWidth;
+			get
+			{
+				return forwardAmount;
+			}
+
+			set
+			{
+				forwardAmount = value;
+			}
 		}
 
-		set
+		public float ShoulderWidth
 		{
-			upperTorsoWidth = value;
-		}
-	}
+			get
+			{
+				return shoulderWidth;
+			}
 
-	public float LowerTorsoDepth
-	{
-		get
-		{
-			return lowerTorsoDepth;
+			set
+			{
+				shoulderWidth = value;
+			}
 		}
+		public float TorsoHeight
+		{
+			get
+			{
+				return torsoHeight;
+			}
 
-		set
-		{
-			lowerTorsoDepth = value;
-		}
-	}
-	public float LowerTorsoHeight
-	{
-		get
-		{
-			return lowerTorsoHeight;
-		}
-
-		set
-		{
-			lowerTorsoHeight = value;
-		}
-	}
-	public float LowerTorsoWidth
-	{
-		get
-		{
-			return lowerTorsoWidth;
+			set
+			{
+				torsoHeight = value;
+			}
 		}
 
-		set
+		public float VerticalShoulderOffset
 		{
-			lowerTorsoWidth = value;
+			get
+			{
+				return verticalShoulderOffset;
+			}
+
+			set
+			{
+				verticalShoulderOffset = value;
+			}
+		}
+
+		public float UpperTorsoDepth
+		{
+			get
+			{
+				return upperTorsoDepth;
+			}
+
+			set
+			{
+				upperTorsoDepth = value;
+			}
+		}
+		public float UpperTorsoHeight
+		{
+			get
+			{
+				return upperTorsoHeight;
+			}
+
+			set
+			{
+				upperTorsoHeight = value;
+			}
+		}
+		public float UpperTorsoWidth
+		{
+			get
+			{
+				return upperTorsoWidth;
+			}
+
+			set
+			{
+				upperTorsoWidth = value;
+			}
+		}
+
+		public float LowerTorsoDepth
+		{
+			get
+			{
+				return lowerTorsoDepth;
+			}
+
+			set
+			{
+				lowerTorsoDepth = value;
+			}
+		}
+		public float LowerTorsoHeight
+		{
+			get
+			{
+				return lowerTorsoHeight;
+			}
+
+			set
+			{
+				lowerTorsoHeight = value;
+			}
+		}
+		public float LowerTorsoWidth
+		{
+			get
+			{
+				return lowerTorsoWidth;
+			}
+
+			set
+			{
+				lowerTorsoWidth = value;
+			}
 		}
 	}
 }

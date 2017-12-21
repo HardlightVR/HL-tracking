@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Name: Default Body Dimensions
   m_EditorClassIdentifier: 
   UpdateEveryFrame: 0
-  neckSize: 0.1
-  forwardAmount: -0.4
+  neckSize: 0.051807165
+  forwardAmount: -0.44819272
   shoulderWidth: 0.25
   torsoHeight: 0.4
   verticalShoulderOffset: 0.4

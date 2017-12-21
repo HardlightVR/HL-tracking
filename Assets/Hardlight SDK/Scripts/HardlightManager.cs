@@ -9,7 +9,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using Hardlight.SDK.Tracking;
+using Hardlight.SDK.Experimental;
+using Hardlight.SDK.Internal;
 
 namespace Hardlight.SDK
 {
@@ -19,11 +20,10 @@ namespace Hardlight.SDK
 	/// including enabling/disabling tracking, monitoring suit connection status, 
 	/// globally pausing and playing effects, and clearing all playing effects.
 	/// 
-	/// If you prefer to interact directly with the plugin, you may instantiate and destroy your own
-	/// HLVR_Plugin and remove HardlightManager.
+	/// If you prefer to interact directly with the plugin, you may create your own HLVR_Plugin and remove HardlightManager.
 	/// </summary>
 
-	[ExecuteInEditMode]
+	//[ExecuteInEditMode]
 	public sealed class HardlightManager : MonoBehaviour
 	{
 		public const int HAPTIC_LAYER = 31;
@@ -78,33 +78,43 @@ namespace Hardlight.SDK
 		{
 			get
 			{
-				if (instance == null)
+
+				lock (_lock)
 				{
-					instance = FindObjectOfType<HardlightManager>();
-
-					if (FindObjectsOfType<HardlightManager>().Length > 1)
-					{
-						Debug.LogError("[HardlightManager] There is more than one HardlightManager Singleton\n" +
-							"There shouldn't be multiple HardlightManager objects");
-						return instance;
-					}
-
 					if (instance == null)
 					{
-						GameObject singleton = new GameObject();
-						instance = singleton.AddComponent<HardlightManager>();
-						singleton.name = "HardlightManager [Runtime Singleton]";
+						instance = FindObjectOfType<HardlightManager>();
+
+						if (FindObjectsOfType<HardlightManager>().Length > 1)
+						{
+							Debug.LogError("[HardlightManager] .Instance access: There is more than one HardlightManager Singleton\n" +
+								"There shouldn't be multiple HardlightManager objects");
+
+						}
+
+						else if (instance == null)
+						{
+							//Debug.Log("[HardlightManager] .Instance access: Instance was null, creating for first time");
+							GameObject singleton = new GameObject();
+							instance = singleton.AddComponent<HardlightManager>();
+							singleton.name = "HardlightManager [Runtime Singleton]";
+						}
+						else
+						{
+							//	Debug.Log("[HardlightManager] .Instance access: Instance was not null, using that");
+						}
+
 					}
-					else
-					{
-						//Debug.Log("[Singleton] Using instance already created: " +
-						//	_instance.gameObject.name + "\n");
-					}
+
+					instance.InstantiateNativePlugin();
+
+					return instance;
 				}
-				return instance;
 			}
 			set { instance = value; }
 		}
+
+		HardlightPlugin _cachedTempPlugin;
 
 		#region Suit Options 
 		[Header("- Suit Options -")]
@@ -128,6 +138,7 @@ namespace Hardlight.SDK
 		private ServiceConnectionStatus _ServiceConnectionStatus;
 
 		private HLVR.HLVR_Plugin _plugin;
+		private static object _lock = new object();
 
 		/// <summary>
 		/// Enable SDK tracking management loop.
@@ -156,8 +167,7 @@ namespace Hardlight.SDK
 		{
 			if (_plugin != null)
 			{
-				var update = _plugin.PollTracking();
-				return update;
+				return _plugin.PollTracking();
 			}
 			return new TrackingUpdate();
 		}
@@ -168,31 +178,56 @@ namespace Hardlight.SDK
 		}
 		public Dictionary<AreaFlag, EffectSampleInfo> SamplePlayingStatus()
 		{
-			throw new NotImplementedException("There is a big problem.\n\tSample Playing Status has not been reimplemented.\n");
+			var dict = new Dictionary<AreaFlag, EffectSampleInfo>();
+
+			var playing = _plugin.PollBodyView();
+
+			foreach (var ele in playing)
+			{
+				dict.Add(RegionToAreaFlag.GetAreaFlag(ele.Key), ele.Value);
+			}
+			string playingThisFrame = "" + playing.Count + "\n";
+			foreach (var ele in dict)
+			{
+				playingThisFrame += ele.Key.ToString() + "  " + ele.Value.ToString() + "\n";
+			}
+			//Debug.Log(playingThisFrame);
+			return dict;
+		}
+		public Dictionary<Region, EffectSampleInfo> SamplePlayingRegions()
+		{
+			var playing = _plugin.PollBodyView();
+			string playingThisFrame = "" + playing.Count + "\n";
+			foreach (var ele in playing)
+			{
+				playingThisFrame += ele.Key.ToString() + "  " + ele.Value.ToString() + "\n";
+			}
+			//Debug.Log(playingThisFrame);
+			return playing;
 			//return _plugin.PollBodyView();
 			//return _plugin.SampleCurrentlyPlayingEffects();
 			//return _plugin.SampleStrengths();
 		}
-		/// <summary>
-		/// Control the haptic volume of an area directly. 
-		/// </summary>
-		/// <param name="singleArea">An AreaFlag representing a single area</param>
-		/// <param name="strength">Strength to play, from 0.0-1.0</param>
-		public void ControlDirectly(AreaFlag singleArea, double strength)
-		{
-			//_plugin.ControlDirectly(singleArea, strength * .66f);
-		}
+		//Disabled Direct/RTP (Real time playback) Mode
+		///// <summary>
+		///// Control the haptic volume of an area directly. 
+		///// </summary>
+		///// <param name="singleArea">An AreaFlag representing a single area</param>
+		///// <param name="strength">Strength to play, from 0.0-1.0</param>
+		//public void ControlDirectly(AreaFlag singleArea, double strength)
+		//{
+		//_plugin.ControlDirectly(singleArea, strength * .66f);
+		//}
 
-		/// <summary>
-		/// Control the haptic volume of multiple areas directly. 
-		/// </summary>
-		/// <param name="singleAreas">List of AreaFlags, each representing a single area</param>
-		/// <param name="strengths">Strength to play, from 0-255</param>
-		public void ControlDirectly(AreaFlag[] singleAreas, ushort[] strengths)
-		{
-			//_plugin.ControlDirectly(singleAreas, strengths);
-
-		}
+		///// <summary>
+		///// Control the haptic volume of multiple areas directly. 
+		///// </summary>
+		///// <param name="singleAreas">List of AreaFlags, each representing a single area</param>
+		///// <param name="strengths">Strength to play, from 0-255</param>
+		//public void ControlDirectly(AreaFlag[] singleAreas, ushort[] strengths)
+		//{
+		//_plugin.ControlDirectly(singleAreas, strengths);
+		//}
 
 		private DeviceConnectionStatus ChangeDeviceConnectionStatus(DeviceConnectionStatus newStatus)
 		{
@@ -233,19 +268,24 @@ namespace Hardlight.SDK
 					"If there is no HardlightManager, one will be created for you if you call any HardlightManager.Instance function.");
 			}
 
+			InstantiateNativePlugin();
+
 			_trackingUpdateLoop = UpdateTracking();
 			_ServiceConnectionStatusLoop = CheckServiceConnection();
 			_DeviceConnectionStatusLoop = CheckHardlightSuitConnection();
-
-			InitPluginIfNull();
 		}
-		public void InitPluginIfNull()
+		public void InstantiateNativePlugin()
 		{
-			//The plugin needs to load resources from your app's Streaming Assets folder
 			if (_plugin == null)
 			{
-				//Debug.Log("Plugin has been initialized\n", this);
-				_plugin = new HLVR.HLVR_Plugin();
+				//Debug.Log("[HardlightManager] Gotta make a new instance");
+
+				//create a new one because user didn't make an asset
+				_cachedTempPlugin = ScriptableObject.CreateInstance<HardlightPlugin>();
+				_cachedTempPlugin.name = "T " + System.DateTime.Now.ToString();
+				_plugin = _cachedTempPlugin.Plugin;
+
+				Debug.Assert(_plugin != null);
 			}
 		}
 		private void DoDelayedAction(float delay, Action action)
@@ -353,7 +393,7 @@ namespace Hardlight.SDK
 		{
 			while (true)
 			{
-				if(true)
+				if (true)
 				{
 					var devices = _plugin.GetKnownDevices();
 					bool hasSuit = false;
@@ -427,19 +467,16 @@ namespace Hardlight.SDK
 			}
 		}
 
-		public void Shutdown()
+		public void OnDestroy()
 		{
-			if (_plugin != null)
-			{
-				_plugin.Dispose();
-			}
-			_plugin = null;
 		}
-
-		void OnApplicationQuit()
-		{
-			ClearAllEffects();
-			System.Threading.Thread.Sleep(100);
-		}
+		//public void Shutdown()
+		//{
+		//	if (_plugin != null)
+		//	{
+		//		_plugin.Dispose();
+		//	}
+		//	_plugin = null;
+		//}
 	}
 }

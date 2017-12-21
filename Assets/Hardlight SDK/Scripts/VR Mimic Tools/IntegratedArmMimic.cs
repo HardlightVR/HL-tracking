@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace Hardlight.SDK
+namespace Hardlight.SDK.Experimental
 {
 	public class IntegratedArmMimic : AbstractArmMimic
 	{

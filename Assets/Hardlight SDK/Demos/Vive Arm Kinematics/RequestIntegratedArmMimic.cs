@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Hardlight.SDK.Tracking
+namespace Hardlight.SDK.Experimental
 {
 	public class RequestIntegratedArmMimic : RequestTracker
 	{

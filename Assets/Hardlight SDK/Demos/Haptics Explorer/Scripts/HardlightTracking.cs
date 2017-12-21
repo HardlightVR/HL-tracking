@@ -7,10 +7,10 @@
 
 using UnityEngine;
 using Hardlight.SDK;
-using Hardlight.SDK.Tracking;
+using Hardlight.SDK.Experimental;
 using System;
 
-namespace Hardlight.SDK.Tracking
+namespace Hardlight.SDK.Experimental
 {
 	public class HardlightTracking : MonoBehaviour
 	{

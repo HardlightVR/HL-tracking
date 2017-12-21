@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace Hardlight.SDK
 {
+	/// <summary>
+	/// The core class for the VR Mimic tools. It is used to mimic cameras, controllers, camera rigs and tracked objects.
+	/// It also provides the ability for a positional, scalar and euler rotation offset of the mimicked object 
+	/// </summary>
 	public class VRObjectMimic : MonoBehaviour
 	{
 		public GameObject ObjectToMimic;
@@ -35,9 +39,8 @@ namespace Hardlight.SDK
 			}
 		}
 
-		public void Init(GameObject NewMimicTarget)
+		public void Init(GameObject NewMimicTarget, Vector3 rotationOffset = default(Vector3))
 		{
-			//Debug.Log("Initializing: " + NewMimicTarget + "\n", NewMimicTarget);
 			if (!initialized)
 			{
 				if (ObjectToMimic == null || NewMimicTarget != null)
@@ -88,7 +91,7 @@ namespace Hardlight.SDK
 
 		void OnDrawGizmos()
 		{
-			string icon = (MimickedObjectType == TypeOfMimickedObject.Camera ? "hmd-icon" : MimickedObjectType == TypeOfMimickedObject.TrackedObject ? "tracker-icon" : "controller-icon");
+			string icon = (MimickedObjectType == TypeOfMimickedObject.Camera ? "VRObjectMimic HMD Icon" : MimickedObjectType == TypeOfMimickedObject.TrackedObject ? "VRObjectMimic Tracker Icon" : "VRObjectMimic Controller Icon");
 			Gizmos.DrawIcon(transform.position, icon, true);
 		}
 

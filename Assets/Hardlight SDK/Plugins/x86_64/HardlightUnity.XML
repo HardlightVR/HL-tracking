@@ -658,7 +658,7 @@
             Disposes the plugin. After calling dispose, the plugin cannot be used again.
             </summary>
         </member>
-        <member name="T:Hardlight.SDK.TrackingUpdate">
+        <member name="T:Hardlight.SDK.ExperimentalUpdate">
             <summary>
             Able to hold tracking data for chest and arm IMUs
             </summary>

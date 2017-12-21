@@ -1,24 +1,27 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[CreateAssetMenu(menuName = "Hardlight/VR Saved Tracking Heading")]
-public class SavedTrackingCalibration : ScriptableObject
+namespace Hardlight.SDK.Experimental
 {
-	[Header("Head Offset")]
-	[SerializeField]
-	[Range(-0, 360)]
-	private float heading = 0;
-
-	public float Heading
+	[CreateAssetMenu(menuName = "Hardlight/VR Saved Tracking Heading")]
+	public class SavedTrackingCalibration : ScriptableObject
 	{
-		get
-		{
-			return heading;
-		}
+		[Header("Head Offset")]
+		[SerializeField]
+		[Range(-0, 360)]
+		private float heading = 0;
 
-		set
+		public float Heading
 		{
-			heading = value;
+			get
+			{
+				return heading;
+			}
+
+			set
+			{
+				heading = value;
+			}
 		}
 	}
 }

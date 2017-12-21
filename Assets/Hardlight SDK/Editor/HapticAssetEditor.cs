@@ -17,10 +17,10 @@ namespace Hardlight.SDK.UEditor
 			EnsurePluginIsValid();
 		}
 
-		public void OnDisable()
-		{
-			HardlightManager.Instance.Shutdown();
-		}
+		//public void OnDisable()
+		//{
+		//	HardlightManager.Instance.Shutdown();
+		//}
 		#endregion
 
 		public override void OnInspectorGUI()
@@ -86,7 +86,7 @@ namespace Hardlight.SDK.UEditor
 
 		protected void EnsurePluginIsValid()
 		{
-			HardlightManager.Instance.InitPluginIfNull();
+			HardlightManager.Instance.InstantiateNativePlugin();
 		}
 		
 		//protected void DirtyThing()
