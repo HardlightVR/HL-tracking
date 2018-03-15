@@ -825,6 +825,7 @@ namespace Hardlight.SDK
 				ShoulderBarVisual.transform.SetParent(ShoulderBarData.transform);
 				ShoulderBarVisual.transform.localScale = Vector3.one;
 				ShoulderBarVisual.transform.localPosition = Vector3.zero;
+				ShoulderBarVisual.transform.localRotation = Quaternion.identity;
 			}
 		}
 

@@ -5,6 +5,7 @@ namespace Hardlight.SDK.Experimental
 {
 	public class RequestArmMimic : RequestTracker
 	{
+		[Header("This is the old Request Technique")]
 		public GameObject Controller;
 		public ArmSide MySide = ArmSide.Left;
 		public bool UseNewArmCreation = false;

@@ -140,14 +140,23 @@ namespace Hardlight.SDK
 		private HLVR.HLVR_Plugin _plugin;
 		private static object _lock = new object();
 
+		public enum RequestHardwareStateChange { AssignStateChangeToHardware = 0, OnlyAdjustUnityTrackingState = 1}
+
 		/// <summary>
 		/// Enable SDK tracking management loop.
+		/// [This does not do anything currently]
+		/// [Users must manually enable tracking in the service]
 		/// </summary>
-		public void EnableTracking()
+		public void EnableTracking(RequestHardwareStateChange shouldAutoEnableService = RequestHardwareStateChange.AssignStateChangeToHardware)
 		{
 			EnableSuitTracking = true;
 			if (!_isTrackingCoroutineRunning)
 			{
+				//if (shouldAutoEnableService == RequestHardwareStateChange.AssignStateChangeToHardware)
+				//{
+				//	_plugin.EnableTracking();
+				//}
+
 				StartCoroutine(_trackingUpdateLoop);
 				_isTrackingCoroutineRunning = true;
 			}
@@ -155,9 +164,16 @@ namespace Hardlight.SDK
 
 		/// <summary>
 		/// Disable SDK tracking management loop.
+		/// [This does not do anything currently]
+		/// [Users must manually enable tracking in the service]
 		/// </summary>
-		public void DisableTracking()
+		public void DisableTracking(RequestHardwareStateChange shouldAutoDisableService = RequestHardwareStateChange.OnlyAdjustUnityTrackingState)
 		{
+			//if (shouldAutoDisableService == RequestHardwareStateChange.AssignStateChangeToHardware)
+			//{
+			//	_plugin.DisableTracking();
+			//}
+
 			EnableSuitTracking = false;
 			StopCoroutine(_trackingUpdateLoop);
 			_isTrackingCoroutineRunning = false;
@@ -384,6 +400,7 @@ namespace Hardlight.SDK
 		{
 			while (true)
 			{
+				
 				//_imuCalibrator.ReceiveUpdate(_plugin.PollTracking());
 				yield return null;
 			}
